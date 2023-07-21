@@ -1,0 +1,57 @@
+package com.mygdx.dijkstra;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+
+import java.util.ArrayList;
+
+import static com.badlogic.gdx.utils.Align.left;
+
+public class ConnectionOverview extends Group {
+    public ConnectionOverview(int vertices, ArrayList<City> cities, Skin skin, int width, int height, int x, int y, Graph connections, int mode) {
+        for (int i = 0; i < vertices; i++) {
+            java.util.List<Edge> neighbors = connections.getNeighbors(i);
+            for (int j = 0; j < neighbors.size(); j++) {
+                int destination = neighbors.get(j).destination;
+                String destCity = cities.get(destination).name;
+                String sourceCity = cities.get(i).name;
+                int weight = neighbors.get(j).weight;
+                String boxText = "";
+
+                switch(mode){
+                    case 1:
+                        boxText = sourceCity + " <--> " + destCity;
+                        break;
+                    case 2:
+                        boxText = sourceCity + " --> " + destCity;
+                        break;
+                    case 3:
+                        boxText = sourceCity + " --> " + destCity + ": " + weight;
+
+                }
+
+                Table infoTable = new Table(skin);
+                int space = 10;
+                infoTable.setSize(width, height/3);
+                infoTable.setPosition( x + infoTable.getWidth() * i + space * (i + 1) , y - infoTable.getHeight() * j - space * j);
+
+                Label codeLabel = new Label(boxText, skin);
+                codeLabel.setAlignment(left);
+                codeLabel.setFontScale(0.7f);
+                infoTable.add(codeLabel);
+                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("white.png"))));
+                infoTable.setBackground(backgroundDrawable);
+
+                addActor(infoTable);
+            }
+        }
+
+    }
+}
