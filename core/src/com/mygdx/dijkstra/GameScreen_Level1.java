@@ -84,9 +84,9 @@ public class GameScreen_Level1 implements Screen {
                 });
             }
             else if(actor.getName().equals("dropBox")) dropBox = (DropBox)actor;
-            else if(actor.getName().equals("cockpit")) cockpit = (Image)actor;
+            //else if(actor.getName().equals("cockpit")) cockpit = (Image)actor;
             else if (actor.getName().equals("doneButton")){
-                doneButton = (Button) background.getChild(5);
+                doneButton = (Button) background.getChild(4);
                 doneButton.remove();
             }
             else if(actor.getName().equals("boatImage")) boatImage = (Image)actor;
@@ -196,7 +196,7 @@ public class GameScreen_Level1 implements Screen {
         if(mode == 3) y = (int) (camera.viewportHeight*0.225 - 2*game.space);
         stage.addActor(new ConnectionOverview(game.vertices, game.cities, game.fontSkin,
                 (int) (width* 0.8), height, x, y, connections, mode));
-        stage.addActor(cockpit);
+        //stage.addActor(cockpit);
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);
         stage.addActor(infotext);

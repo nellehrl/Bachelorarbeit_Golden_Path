@@ -5,11 +5,13 @@ public class City {
     String name;
     int x;
     int y;
+    String shortName;
 
-    public City(String name, int x, int y){
+    public City(String name, int x, int y, String shortName){
         this.name = name;
         this.x = x;
         this.y = y;
+        this.shortName = shortName;
     }
 
     public void setName(String name){

@@ -67,9 +67,9 @@ public class GameScreen_Level2 implements Screen {
                 });
             }
             else if(actor.getName().equals("dropBox")) dropBox = (DropBox)actor;
-            else if(actor.getName().equals("cockpit")) cockpit = (Image)actor;
+            //else if(actor.getName().equals("cockpit")) cockpit = (Image)actor;
             else if (actor.getName().equals("doneButton")){
-                doneButton = (Button) background.getChild(5);
+                doneButton = (Button) background.getChild(4);
                 doneButton.remove();
             }
             else if(actor.getName().equals("boatImage")) boatImage = (Image)actor;
@@ -163,7 +163,7 @@ public class GameScreen_Level2 implements Screen {
         }
 
         // Add the tableGroup to the stage after the cockpit, ensuring that the cockpit is rendered on top
-        stage.addActor(cockpit);
+        //stage.addActor(cockpit);
         tableGroup.addActor(boatImage);
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);

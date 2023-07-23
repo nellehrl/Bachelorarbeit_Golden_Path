@@ -79,8 +79,11 @@ public class MainMenuScreen implements Screen {
         TextButton level32Button = generateButton("3.2", 885 - col_width/2, 230 - row_height/2, new GameScreen_Level3(game, 2));
         stage.addActor(level32Button);
 
-        TextButton level33Button = generateButton("3.3", 830 - col_width/2, 440 - row_height/2, new GameScreen_Level3(game, 3));
+        TextButton level33Button = generateButton("3.3", 850 - col_width/2, 340 - row_height/2, new GameScreen_Level3(game, 3));
         stage.addActor(level33Button);
+
+        TextButton level34Button = generateButton("3.4", 830 - col_width/2, 440 - row_height/2, new GameScreen_Level3(game, 4));
+        stage.addActor(level34Button);
     }
 
     @Override

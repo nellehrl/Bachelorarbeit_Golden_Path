@@ -46,7 +46,7 @@ public class ConnectionOverview extends Group {
                 codeLabel.setAlignment(left);
                 codeLabel.setFontScale(0.7f);
                 infoTable.add(codeLabel);
-                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("white.png"))));
+                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("white 1.png"))));
                 infoTable.setBackground(backgroundDrawable);
 
                 addActor(infoTable);

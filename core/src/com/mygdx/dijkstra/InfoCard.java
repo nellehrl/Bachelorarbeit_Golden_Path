@@ -31,7 +31,7 @@ public class InfoCard extends Actor {
         cardTable.add(cardLabel).expand().fill().pad(10f);
 
         // Set the background color of the cardTable
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("box.png"))));
+        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("white 1.png"))));
         cardTable.setBackground(backgroundDrawable);
 
         this.visible = visible;

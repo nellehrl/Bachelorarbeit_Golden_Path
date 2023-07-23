@@ -34,6 +34,10 @@ public class Background extends Group {
 
         yWater = camera.viewportWidth / 6 + offset;
 
+        cockpit = createActor((int) (Gdx.graphics.getWidth()*1.1), (float) (Gdx.graphics.getHeight()*1.1), -52, -45, new Texture(Gdx.files.internal("background.png")));
+        addActor(cockpit);
+        cockpit.setName("cockpit");
+
         water = createActor(Gdx.graphics.getWidth(), (float) (Gdx.graphics.getHeight() * 0.65), 0, camera.viewportHeight/3, new Texture(Gdx.files.internal("map.png")));
         addActor(water);
         water.setName("water");
@@ -41,14 +45,6 @@ public class Background extends Group {
         mapImage = createActor((int) (Gdx.graphics.getWidth() * 0.9), (float) (Gdx.graphics.getHeight() * 0.6), (float) (2.5 * game.offset), (float) Gdx.graphics.getHeight()/3 + 25, new Texture(Gdx.files.internal("worldMap 1.png")));
         addActor(mapImage);
         mapImage.setName("mapImage");
-
-        cockpit = createActor((int) (Gdx.graphics.getWidth()*1.08), (float) (Gdx.graphics.getHeight()*1.16), -52, -45, new Texture(Gdx.files.internal("cockpit.png")));
-        addActor(cockpit);
-        cockpit.setName("cockpit");
-
-        /*box = createActor(Gdx.graphics.getWidth(), (float) Gdx.graphics.getHeight()/3, 1, 3, new Texture(Gdx.files.internal("white.png")));
-        addActor(box);
-        box.setName("box");*/
 
         //boat
         float boatWidth = (float) (Gdx.graphics.getWidth() * 0.075);
