@@ -2,17 +2,15 @@ package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -23,14 +21,16 @@ import static com.badlogic.gdx.utils.Align.left;
 
 public class GameScreen_Level2 implements Screen {
     final DijkstraAlgorithm game;
-    Image boatImage, connectionArea, cockpit;
-    Table portTable;
+    Image boatImage, connectionArea, parrotImage;
+    Sound battle;
+    Table portTable, mangoCounter;
+    Label mangoCounterLabel;
     OrthographicCamera camera;
     private final FitViewport fitViewport;
     ArrayList<City> currentConnection = new ArrayList<>();
     private Stage stage;
     private final ScreenViewport viewport = new ScreenViewport();
-    Button mainMenuButton,closeButton, doneButton;
+    Button mainMenuButton, closeButton;
     Group tableGroup;
     private List<LineData> linesToDraw;
     DropBox dropBox;
@@ -51,36 +51,35 @@ public class GameScreen_Level2 implements Screen {
 
         //init cities and starting point
         currentConnection.add(game.cities.get(0));
+        battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
 
         connections = new Graph(game.vertices, 1);
 
         background = new Background(game, 2);
         for (Actor actor : background.getChildren()) {
-            if(actor.getName().equals("mainMenuButton")) {
+            if (actor.getName().equals("mainMenuButton")) {
                 mainMenuButton = (Button) actor;
                 mainMenuButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        game.setScreen(new MainMenuScreen(game));
+                        game.currentLevel = 2;
+                        game.setScreen(new MainMenuScreen(game, 2));
                         dispose();
                     }
                 });
-            }
-            else if(actor.getName().equals("dropBox")) dropBox = (DropBox)actor;
-            //else if(actor.getName().equals("cockpit")) cockpit = (Image)actor;
-            else if (actor.getName().equals("doneButton")){
-                doneButton = (Button) background.getChild(4);
-                doneButton.remove();
-            }
-            else if(actor.getName().equals("boatImage")) boatImage = (Image)actor;
+            } else if (actor.getName().equals("dropBox")) dropBox = (DropBox) actor;
+            else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
+            else if (actor.getName().equals("mangoCounter")) mangoCounter = (Table) actor;
         }
+
+        mangoCounterLabel = (Label) mangoCounter.getChild(1);
 
         linesToDraw = new ArrayList<>();
         tableGroup = new Group();
         for (int i = 0; i < game.vertices; i++) {
 
             City sourceCity = game.cities.get(i);
-            portTable = new Ports(sourceCity, game.fontSkin);
+            portTable = new Ports(sourceCity, game);
             tableGroup.addActor(portTable);
             java.util.List<Edge> neighbors = connections.getNeighbors(i);
 
@@ -100,16 +99,18 @@ public class GameScreen_Level2 implements Screen {
                 LineData lineData = new LineData(start, end, Color.BLACK);
                 linesToDraw.add(lineData);
 
-                InfoCard card = new InfoCard(game.fontSkin, (float) (destCity.x + sourceCity.x) / 2,
+                InfoCard card = new InfoCard(game, (float) (destCity.x + sourceCity.x) / 2,
                         (float) (destCity.y + sourceCity.y) / 2, 150, 60, sourceCity.name, destCity.name, weight, false);
                 final Table cardTableFinal = card.getTable(); // Create a final variable
 
                 connectionArea.addListener(new InputListener() {
                     final Table cardTable = cardTableFinal; // Use the final variable
+
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                         stage.addActor(cardTable);
                     }
+
                     @Override
                     public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                         cardTable.remove();
@@ -117,10 +118,12 @@ public class GameScreen_Level2 implements Screen {
                 });
                 connectionArea2.addListener(new InputListener() {
                     final Table cardTable = cardTableFinal; // Use the final variable
+
                     @Override
                     public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                         stage.addActor(cardTable);
                     }
+
                     @Override
                     public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
                         cardTable.remove();
@@ -134,36 +137,30 @@ public class GameScreen_Level2 implements Screen {
                 "the right weight to the connections, we have a great overview over everything!\n\n" +
                 "Let`s check if everything is clear - find out the weights for the connections written down below.\n\n" +
                 "We need to understand how these graphs work to get ahead of the other crews. Like that we can generate " +
-                "much more loooooooooooooooot!";
+                "much more loooooooooooooooot!\n\nDOn`t forget to ENTER to check if you got the right costs!";
 
-        infotext = new InfoText(game,text);
-
-        for (Actor actor : infotext.getChildren()) {
-            if (actor.getName().equals("closeButton")) {
-                closeButton = (Button) actor;
-                closeButton.addListener(new ClickListener() {
+        infotext = new InfoText(game, text);
+        closeButton = infotext.closeButton;
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                infotext.remove();
+                int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
+                parrotImage = new Image(game.assetManager.get("parrott.png", Texture.class));
+                parrotImage.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
+                parrotImage.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.31));
+                parrotImage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        infotext.remove();
-                        int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
-                        final Image image = new Image(new Texture(Gdx.files.internal("parrott.png")));
-                        image.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                        image.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.31));
-                        image.addListener(new ClickListener(){
-                            @Override
-                            public void clicked(InputEvent event, float x, float y){
-                                stage.addActor(infotext);
-                                image.remove();
-                            }
-                        });
-                        stage.addActor(image);
+                        stage.addActor(infotext);
+                        parrotImage.remove();
                     }
                 });
+                stage.addActor(parrotImage);
             }
-        }
+        });
 
-        // Add the tableGroup to the stage after the cockpit, ensuring that the cockpit is rendered on top
-        //stage.addActor(cockpit);
+
         tableGroup.addActor(boatImage);
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);
@@ -186,7 +183,7 @@ public class GameScreen_Level2 implements Screen {
 
         //render lines alias connections
         for (LineData lineData : linesToDraw) {
-            new DrawLineOrArrow(5, camera.combined, lineData.getColor(), lineData.getStart(), lineData.getEnd(),1);
+            new DrawLineOrArrow(5, camera.combined, lineData.getColor(), lineData.getStart(), lineData.getEnd(), 1);
         }
 
         //render stage
@@ -196,6 +193,7 @@ public class GameScreen_Level2 implements Screen {
     }
 
     public void dropBoxItems() {
+        final int[] numOfEdges = {0};
         for (int i = 0; i < game.vertices; i++) {
             java.util.List<Edge> neighbors = connections.getNeighbors(i);
             for (int j = 0; j < neighbors.size(); j++) {
@@ -214,41 +212,65 @@ public class GameScreen_Level2 implements Screen {
                     final String fieldText = "Costs: ";
 
                     Table infoTable = new Table(game.fontSkin);
-                    infoTable.setSize((camera.viewportWidth)/(game.vertices), 50);
-                    infoTable.setPosition(2*game.offset + infoTable.getWidth() * i + game.space * (i + 1), (float) ((camera.viewportHeight*0.28) - game.offset - (infoTable.getHeight() + game.space) * j));
+                    infoTable.setSize((camera.viewportWidth) / (game.vertices), 50);
+                    infoTable.setPosition(2 * game.offset + infoTable.getWidth() * i + game.space * (i + 1), (float) ((camera.viewportHeight * 0.28) - game.offset - (infoTable.getHeight() + game.space) * j));
 
                     Label codeLabel = new Label(labelText, game.fontSkin);
                     codeLabel.setAlignment(left);
                     codeLabel.setFontScale(0.75f);
                     infoTable.add(codeLabel).row();
                     final TextField textfield = new TextField(fieldText, game.fontSkin);
+                    textfield.setColor(0, 0, 0, 1);
                     textfield.setAlignment(left);
                     textfield.addListener(new ClickListener() {
                         @Override
                         public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                            String userInput = textfield.getText();
-                            boolean isCorrect = userInput.equals(fieldText + weight);
-                            if (!isCorrect) {
-                                textfield.setColor(Color.RED);
-                                linesToDraw.add(new LineData(start, end, Color.RED));
-                            }
+                            textfield.setColor(Color.RED);
+                            linesToDraw.add(new LineData(start, end, Color.RED));
                             return true;
                         }
                     });
                     textfield.setTextFieldListener(new TextField.TextFieldListener() {
                         @Override
                         public void keyTyped(TextField textField, char key) {
-                            String userInput = textField.getText();
-                            boolean isCorrect = userInput.equals(fieldText + weight);
-                            if (isCorrect) {
-                                textField.setColor(Color.GREEN);
-                                linesToDraw.add(new LineData(start, end, Color.GREEN));
+                            if (key == '\r' || key == '\n') {
+                                String userInput = textField.getText();
+                                boolean isCorrect = userInput.equals(fieldText + weight);
+                                if (isCorrect) {
+                                    textField.setColor(Color.GREEN);
+                                    linesToDraw.add(new LineData(start, end, Color.GREEN));
+                                    numOfEdges[0]++;
+                                    final int finalNumOfEdges = numOfEdges[0];
+                                    if (finalNumOfEdges == connections.numOfEdges) {
+                                        game.setScreen(new LevelWon(game, 3.1));
+                                        dispose();
+                                    }
+                                } else {
+                                    battle.play();
+                                    final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
+                                    if (newValue > 0) mangoCounterLabel.setText(newValue);
+                                    else {
+                                        parrotImage.remove();
+                                        final LevelLost lost = new LevelLost(game);
+                                        stage.addActor(lost);
+                                        Button close = (Button) lost.getChild(2);
+                                        close.addListener(new ClickListener() {
+                                            @Override
+                                            public void clicked(InputEvent event, float x, float y) {
+                                                game.mangos = 30;
+                                                mangoCounterLabel.setText(game.mangos);
+                                                game.setScreen(new GameScreen_Level2(game));
+                                                dispose();
+                                            }
+                                        });
+                                    }
+
+                                }
                             }
                         }
                     });
                     infoTable.add(textfield);
-                    Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("gray.png"))));
-                    infoTable.setBackground(backgroundDrawable);
+                    infoTable.setBackground(game.fontSkin.getDrawable("color"));
                     tableGroup.addActor(infoTable);
                 }
             }
@@ -281,5 +303,6 @@ public class GameScreen_Level2 implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
+        battle.dispose();
     }
 }

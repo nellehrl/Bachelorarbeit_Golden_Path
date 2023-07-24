@@ -1,11 +1,9 @@
 package com.mygdx.dijkstra;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
@@ -15,7 +13,7 @@ import java.util.ArrayList;
 import static com.badlogic.gdx.utils.Align.left;
 
 public class ConnectionOverview extends Group {
-    public ConnectionOverview(int vertices, ArrayList<City> cities, Skin skin, int width, int height, int x, int y, Graph connections, int mode) {
+    public ConnectionOverview(int vertices, ArrayList<City> cities, final DijkstraAlgorithm game, int width, int height, int x, int y, Graph connections, int mode) {
         for (int i = 0; i < vertices; i++) {
             java.util.List<Edge> neighbors = connections.getNeighbors(i);
             for (int j = 0; j < neighbors.size(); j++) {
@@ -37,16 +35,16 @@ public class ConnectionOverview extends Group {
 
                 }
 
-                Table infoTable = new Table(skin);
+                Table infoTable = new Table(game.fontSkin);
                 int space = 10;
                 infoTable.setSize(width, height/3);
                 infoTable.setPosition( x + infoTable.getWidth() * i + space * (i + 1) , y - infoTable.getHeight() * j - space * j);
 
-                Label codeLabel = new Label(boxText, skin);
+                Label codeLabel = new Label(boxText, game.fontSkin);
                 codeLabel.setAlignment(left);
                 codeLabel.setFontScale(0.7f);
                 infoTable.add(codeLabel);
-                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("white 1.png"))));
+                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
                 infoTable.setBackground(backgroundDrawable);
 
                 addActor(infoTable);

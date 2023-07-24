@@ -5,12 +5,12 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
@@ -18,17 +18,21 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
+import java.util.ArrayList;
+
 public class MainMenuScreen implements Screen {
     final DijkstraAlgorithm game;
+    InfoText infotext;
     Image boatImage;
     private Stage stage;
     OrthographicCamera camera;
+    Button closeButton;
     private final FitViewport fitViewport;
     private final ScreenViewport viewport = new ScreenViewport();
     int row_height, col_width;
     float boatWidth;
 
-    public MainMenuScreen(final DijkstraAlgorithm game) {
+    public MainMenuScreen(final DijkstraAlgorithm game, double currentLevel) {
         this.game = game;
 
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -42,17 +46,31 @@ public class MainMenuScreen implements Screen {
         row_height = 25;
         col_width = 75;
 
-        final Image image = new Image(new Texture(Gdx.files.internal("mainMenuScreen.png")));
+        String text = "Hey Captain,\n" +
+                "\n" +
+                "Welcome on board - I am papou. Your help is much needed!\n\nThis crew gets lost on the routes and cant " +
+                "read cards let alone finding fast paths. Let`s get on it and find the hidden treasures.\n\n" +
+                "If you are new here start with level 1.1. If you are already familiar with Graphs you can start with " +
+                "level 1.3. If you are pro go to level 3 than we can get to the treasures even faster and I will finally get my mangooooooos.";
+
+        infotext = new InfoText(game, text);
+        closeButton = infotext.closeButton;
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                infotext.remove();
+            }
+        });
+
+        Image background = new Image(game.assetManager.get("background.png", Texture.class));
+        background.setSize((float) (Gdx.graphics.getWidth() * 1.1), (float) (Gdx.graphics.getHeight() * 1.1));
+        background.setPosition(-52, -45);
+        stage.addActor(background);
+
+        final Image image = new Image(game.assetManager.get("mainMenuScreen.png", Texture.class));
         image.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         image.setPosition(0, 0);
         stage.addActor(image);
-
-        boatWidth = (float) (Gdx.graphics.getWidth() * 0.125);
-        boatImage = new Image(new Texture(Gdx.files.internal("ship.png")));
-        boatImage.setSize(boatWidth, boatWidth);
-        boatImage.setPosition(175, 50);
-        stage.addActor(boatImage);
-        boatImage.setName("boatImage");
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.mySkin.getFont("title"), game.mySkin.getColor("color"));  // Replace 'otherStyle' with the desired style
 
@@ -61,29 +79,63 @@ public class MainMenuScreen implements Screen {
         welcomeLabel.setPosition((float) (Gdx.graphics.getWidth() * 0.425), 100);
         stage.addActor(welcomeLabel);
 
-        TextButton level1Button = generateButton("1.1", 310 - col_width/2, 55 - row_height/2, new GameScreen_Level1(game, 1));
-        stage.addActor(level1Button);
+        ArrayList<TextButton> levelButtons = new ArrayList<>();
 
-        TextButton level12Button = generateButton("1.2", 300 - col_width/2, 225 - row_height/2, new GameScreen_Level1(game, 2));
+        TextButton level11Button = generateButton("1.1", 310 - col_width / 2, 55 - row_height / 2, new GameScreen_Level1(game, 1));
+        stage.addActor(level11Button);
+        level11Button.setName("1.1");
+        levelButtons.add(level11Button);
+
+        TextButton level12Button = generateButton("1.2", 300 - col_width / 2, 225 - row_height / 2, new GameScreen_Level1(game, 2));
         stage.addActor(level12Button);
+        level12Button.setName("1.2");
+        levelButtons.add(level12Button);
 
-        TextButton level13Button = generateButton("1.3", 327 - col_width/2, 550 - row_height/2, new GameScreen_Level1(game, 3));
+        TextButton level13Button = generateButton("1.3", 327 - col_width / 2, 400 - row_height / 2, new GameScreen_Level1(game, 3));
         stage.addActor(level13Button);
+        level13Button.setName("1.3");
+        levelButtons.add(level13Button);
 
-        TextButton level21Button = generateButton("2", 560 - col_width/2, 465 - row_height/2, new GameScreen_Level2(game));
+        TextButton level21Button = generateButton("2", 540 - col_width / 2, 380 - row_height / 2, new GameScreen_Level2(game));
         stage.addActor(level21Button);
+        level21Button.setName("2");
+        levelButtons.add(level21Button);
 
-        TextButton level3Button = generateButton("3.1", 625 - col_width/2, 190 - row_height/2, new GameScreen_Level3(game, 1));
+        TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 1));
         stage.addActor(level3Button);
+        level3Button.setName("3.1");
+        levelButtons.add(level3Button);
 
-        TextButton level32Button = generateButton("3.2", 885 - col_width/2, 230 - row_height/2, new GameScreen_Level3(game, 2));
+        TextButton level32Button = generateButton("3.2", 850 - col_width / 2, 160 - row_height / 2, new GameScreen_Level3(game, 2));
         stage.addActor(level32Button);
+        level32Button.setName("3.2");
+        levelButtons.add(level32Button);
 
-        TextButton level33Button = generateButton("3.3", 850 - col_width/2, 340 - row_height/2, new GameScreen_Level3(game, 3));
+        TextButton level33Button = generateButton("3.3", 900 - col_width / 2, 300 - row_height / 2, new GameScreen_Level3(game, 3));
         stage.addActor(level33Button);
+        level33Button.setName("3.3");
+        levelButtons.add(level33Button);
 
-        TextButton level34Button = generateButton("3.4", 830 - col_width/2, 440 - row_height/2, new GameScreen_Level3(game, 4));
+        TextButton level34Button = generateButton("3.4", 830 - col_width / 2, 440 - row_height / 2, new GameScreen_Level3(game, 4));
         stage.addActor(level34Button);
+        level34Button.setName("3.4");
+        levelButtons.add(level34Button);
+
+        boatWidth = (float) (Gdx.graphics.getWidth() * 0.125);
+        boatImage = new
+
+                Image(game.assetManager.get("ship.png", Texture.class));
+        boatImage.setSize(boatWidth, boatWidth);
+        for (
+                TextButton button : levelButtons) {
+            String name = button.getName();
+            if (name.equals(String.valueOf(currentLevel))) {
+                boatImage.setPosition(button.getX() - boatWidth / 2, button.getY() + row_height);
+            }
+        }
+        stage.addActor(boatImage);
+        stage.addActor(infotext);
+        boatImage.setName("boatImage");
     }
 
     @Override
@@ -93,6 +145,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void render(float delta) {
+
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
@@ -102,11 +155,12 @@ public class MainMenuScreen implements Screen {
         stage.act();
         stage.draw();
     }
-    public TextButton generateButton(String name, int x, int y, final Screen screen){
+
+    public TextButton generateButton(String name, int x, int y, final Screen screen) {
         final TextButton button = new TextButton(name, game.mySkin, "default");
         button.setSize(col_width, row_height);
-        button.setPosition(x,y);
-        button.addListener(new ClickListener(){
+        button.setPosition(x, y);
+        button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 // Create the moveTo action for the boatImage
@@ -159,6 +213,6 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void dispose() {
-
+        stage.dispose();
     }
 }

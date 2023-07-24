@@ -6,7 +6,6 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -17,8 +16,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
@@ -27,7 +24,7 @@ import java.util.List;
 
 public class GameScreen_Level3 implements Screen {
     final DijkstraAlgorithm game;
-    Image boatImage, connectionArea, cockpit;
+    Image boatImage, connectionArea;
     OrthographicCamera camera;
     private final FitViewport fitViewport;
     private Map<String, TextField> cellMap;
@@ -54,7 +51,7 @@ public class GameScreen_Level3 implements Screen {
     float cellWidth = 140f, cellHeight = 20f;
 
 
-    public GameScreen_Level3(final DijkstraAlgorithm game, int mode) {
+    public GameScreen_Level3(final DijkstraAlgorithm game, final int mode) {
 
         //init variables
         this.game = game;
@@ -85,13 +82,25 @@ public class GameScreen_Level3 implements Screen {
                 mainMenuButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        game.setScreen(new MainMenuScreen(game));
+                        switch (mode) {
+                            case 1:
+                                game.currentLevel = 3.1;
+                                break;
+                            case 2:
+                                game.currentLevel = 3.2;
+                                break;
+                            case 3:
+                                game.currentLevel = 3.3;
+                                break;
+                            case 4:
+                                game.currentLevel = 3.4;
+                                break;
+                        }
+                        game.setScreen(new MainMenuScreen(game, mode));
                         dispose();
                     }
                 });
             } else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
-            else if (actor.getName().equals("doneButton")) doneButton = (Button) actor;
-            //else if (actor.getName().equals("cockpit")) cockpit = (Image) actor;
         }
 
         Group tableGroup = new Group();
@@ -100,12 +109,12 @@ public class GameScreen_Level3 implements Screen {
         linesToDraw = new ArrayList<>();
         for (int i = 0; i < game.vertices; i++) {
             City sourceCity = game.cities.get(i);
-            portTable = new Ports(sourceCity, game.fontSkin);
-            if(mode == 4) {
+            portTable = new Ports(sourceCity, game);
+            if (mode == 4) {
                 portTable.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        boatImage.addAction(Actions.moveTo(x - boatImage.getHeight()/2,y - boatImage.getHeight()/2));
+                        boatImage.addAction(Actions.moveTo(x - boatImage.getHeight() / 2, y - boatImage.getHeight() / 2));
                     }
                 });
             }
@@ -123,7 +132,7 @@ public class GameScreen_Level3 implements Screen {
                 connectionArea = new ConnectionArea(sourceCity, destCity);
                 Image connectionArea2 = new ConnectionArea(destCity, sourceCity);
 
-                InfoCard card = new InfoCard(game.fontSkin, (float) (destCity.x + sourceCity.x) / 2,
+                InfoCard card = new InfoCard(game, (float) (destCity.x + sourceCity.x) / 2,
                         (float) (destCity.y + sourceCity.y) / 2, 150, 60, sourceCity.name, destCity.name, weight, false);
                 final Table cardTableFinal = card.getTable();
 
@@ -158,25 +167,33 @@ public class GameScreen_Level3 implements Screen {
         }
 
         algorithmTable = new Table(game.fontSkin);
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("beige.png"))));
-        algorithmTable.setBackground(backgroundDrawable);
+        algorithmTable.setBackground(game.fontSkin.getDrawable("color"));
 
         //dijkstra
         dijkstra();
         createTable();
 
         dropBox = new ScrollPane(algorithmTable, scrollPaneStyle);
-        dropBox.setWidth(camera.viewportWidth+20);
+        dropBox.setWidth(camera.viewportWidth + 20);
         dropBox.setHeight((float) (camera.viewportHeight * 0.34) + 2);
         dropBox.setPosition(-10, 4);
 
-        for (int distance : distances) {
-            if (distance == Integer.MAX_VALUE) distance = 0;
-            code += String.valueOf(distance);
+        for (int i = 0; i < distances.length; i++) {
+            if (distances[i] == Integer.MAX_VALUE) distances[i] = 0;
+            code += distances[i];
         }
+        System.out.println(code);
+
+        int row_height = game.offset;
+        int col_width = 2 * game.offset;
 
         //check if dijkstra is correct
-        checkCode = new checkCode((float) Gdx.graphics.getWidth() / 2, (float) Gdx.graphics.getHeight() / 2, 300, 150, code, game, mode);
+        checkCode = new checkCode((float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 2,
+                (float) Gdx.graphics.getWidth() / 2, 150, code, game, mode);
+        doneButton = new TextButton("Done", game.mySkin, "default");
+        doneButton.setSize((float) (2 * col_width), (float) (1.5 * row_height));
+        doneButton.setPosition(3 * game.space, (float) (Gdx.graphics.getHeight() - (1.5 * row_height) - mainMenuButton.getHeight() - 3 * game.space));
+        stage.addActor(doneButton);
         doneButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -187,68 +204,68 @@ public class GameScreen_Level3 implements Screen {
         String text = "";
         switch (mode) {
             case 1:
-                text = "Servus Captain, \n\nWe need to deliver now! Cause these damn mangos are hard to get let`s see if we are able to find " +
-                        "the shortest paths to each city from our home town so that we can get those mangos fast when they are available! :D \n" +
-                        "\n" +
-                        "Look at the table down below and try to fill it out! In the end we will know how long it takes us to " +
-                        "travel to each city and what the fastest path is! I ams ure you will find our how it works!\n" +
-                        "\n" +
-                        "Oh and you will need to find out the code to unlock this treasure I have found!\n\n"+
-                        "TIP: Remember that we are always looking for the shortest connection from our start city"+
-                        "our ship shows you were we are currently at and the available connections";
+                text = "Servus Captain, \n\nWe need to deliver now! Cause these damn mangos are hard to get. :D Let`s see if we are able to find " +
+                        "the shortest paths to each city from our home town! Fill out the table below, I will help you! " +
+                        "In the end we will know how long it takes us to " +
+                        "travel to each city and the fastest path to it! I ams ure you will find out how it works!\n" +
+                        "\nOh and you will need to find out the code to unlock this treasure I have found!\n\n" +
+                        "TIP: Remember that we are always looking for the shortest connection from our start city" +
+                        " our ship shows you were we are currently at and the available connections." +
+                        "\n\nCode: The code is build by the distances of the" +
+                        " connection to the city. For INFINITY it was a ...... 0";
                 break;
             case 2:
-                text = "Hola Captain, \n\nYou are getting on it! We are surely becoming the pirates of the golden paths!  Everyone will pay" +
-                        " millions to know our secret - but first get back to work\n" +
-                        "\n" +
+                text = "Hola Captain, \n\nYou are getting on it! We are surely becoming the pirates of the golden paths! Everyone will pay" +
+                        " millions to know our secret - but first: let`s get back to work\n\n" +
                         "I guess you know what to do? If not I am here to help cause you know - I am the endless source " +
-                        "of wisdom.\n" +
-                        "\n" +
-                        "And don`t forget about the code so we can get an endless amount of mangos!\n\n"+
-                        "TIP: Remember that we are always looking for the shortest connection from our start city"+
-                        "our ship shows you were we are currently at and the available connections";
+                        "of wisdom.\n And don`t forget about the code so we can get an endless amount of mangoooooooooos!\n\n" +
+                        "TIP: Remember that we are always looking for the shortest connection from our start city" +
+                        " our ship shows you were we are currently at and the available connections." +
+                        "\n\nCode: Remember the code is build by the distances of the" +
+                        " connection to the city. For INFINITY it was a ...... 0";
                 break;
             case 3:
-                text = "Ay Ay Captain, \n\nFinally! I think all our hard wokr paid off if we can open this last treasure we can finally retire. \n" +
-                        "\n" +
-                        "Find the last code to unlock the last treasure.\n\n"+
-                        "TIP: Remember that we are always looking for the shortest connection from our start city"+
-                        "our ship shows you were we are currently at and the available connections";;
+                text = "Hello and welcome on board again Captain, \n\nThere are still some routes to calculate but we " +
+                        "are getting better. SO I ams ure we will find the solution this time tooooooo!\n\nTIP: Remember that we are always looking " +
+                        "for the shortest connection from our start city our ship shows you were we are currently at and" +
+                        " the available connections.\n\nCode: Remember the code is build by distances of the connection " +
+                        "to the city. For INFINITY it was a ...... 0";
+                break;
+            case 4:
+                text = "Ay Ay Captain, \n\nFinally! I think all our hard work pais off if we can open this last treasure we can finally retire. \n" +
+                        "\n Find the last code to unlock the last treasure.\n\nTIP: Remember that we are always looking " +
+                        "for the shortest connection from our start city our ship shows you were we are currently at and" +
+                        " the available connections.\n\nCode: Remember the code is build by the distances of the connection " +
+                        "to the city. For INFINITY it was a ...... 0";
                 break;
         }
 
         infotext = new InfoText(game, text);
-
-        for (Actor actor : infotext.getChildren()) {
-            if (actor.getName().equals("closeButton")) {
-                closeButton = (Button) actor;
-                closeButton.addListener(new ClickListener() {
+        closeButton = infotext.closeButton;
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                infotext.remove();
+                int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
+                final Image image = new Image(game.assetManager.get("parrott.png", Texture.class));
+                image.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
+                image.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.32));
+                image.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        infotext.remove();
-                        int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
-                        final Image image = new Image(new Texture(Gdx.files.internal("parrott.png")));
-                        image.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                        image.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.32));
-                        image.addListener(new ClickListener() {
-                            @Override
-                            public void clicked(InputEvent event, float x, float y) {
-                                stage.addActor(infotext);
-                                image.remove();
-                            }
-                        });
-                        stage.addActor(image);
+                        stage.addActor(infotext);
+                        image.remove();
                     }
                 });
+                stage.addActor(image);
             }
-        }
+        });
 
         // Add the tableGroup to the stage after the cockpit, ensuring that the cockpit is rendered on top
         tableGroup.addActor(dropBox);
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);
         stage.addActor(boatImage);
-        stage.addActor(doneButton);
         stage.addActor(infotext);
     }
 
@@ -316,7 +333,7 @@ public class GameScreen_Level3 implements Screen {
 
                     //check if there has already been a shorter connection via a different node
                     if (newDistance < distances[neighbor]) {
-                        for(int i = count; i < game.vertices; i++){
+                        for (int i = count; i < game.vertices; i++) {
                             precursor[i][neighbor] = vertex;
                         }
                         distances[neighbor] = newDistance;
@@ -367,12 +384,14 @@ public class GameScreen_Level3 implements Screen {
 
         //init first col
         final TextField textField0 = new TextField(" ", game.fontSkin);
+        textField0.setColor(0, 0, 0, 1);
         textField0.setText("Costs - Precursor");
         newRow.add(textField0).expandX().fillX();
 
         //fill rest of cols
         for (int col = 0; col < game.vertices; col++) {
             TextField textField = new TextField(" ", game.fontSkin);
+            textField.setColor(0, 0, 0, 1);
             //fill table for help if level is below 3.4
             if (mode < 4) {
                 int costs = iterations[iteration][col];
@@ -385,7 +404,7 @@ public class GameScreen_Level3 implements Screen {
                 final Vector2 end = new Vector2(destCity.x, destCity.y);
                 boolean filled = false;
                 //define level of help per mode
-                switch(mode){
+                switch (mode) {
                     case 1:
                         if (costs == Integer.MAX_VALUE || costs == 0 || correctNodes.contains(col)) {
                             correctlyFilledTextFieldsInCurrentRow++;
@@ -402,7 +421,7 @@ public class GameScreen_Level3 implements Screen {
                         break;
                 }
                 //add listeners
-                for(Edge edge : neighbors) {
+                for (Edge edge : neighbors) {
                     if (edge.getDestination() == col) {
                         filled = true;
                         textField = addNeighborListener(textField, start, end, correctValue, iteration, true);
@@ -412,27 +431,29 @@ public class GameScreen_Level3 implements Screen {
             }
             //if mode is 4 only count filled textFields and generate new row if all are filled
             else textField.setTextFieldListener(new TextField.TextFieldListener() {
-                    @Override
-                    public void keyTyped(TextField textField, char key) {
-                            correctlyFilledTextFieldsInCurrentRow++;
-                            if (correctlyFilledTextFieldsInCurrentRow == game.vertices) {
-                                if (iteration + 1 < dijkstraConnections.size()) {
-                                    addNewRow(iteration + 1);
-                                }
-                            }
+                @Override
+                public void keyTyped(TextField textField, char key) {
+                    correctlyFilledTextFieldsInCurrentRow++;
+                    if (correctlyFilledTextFieldsInCurrentRow == game.vertices) {
+                        if (iteration + 1 < dijkstraConnections.size()) {
+                            addNewRow(iteration + 1);
+                        } else {
+                            stage.addActor(checkCode);
                         }
-                    });
+                    }
+                }
+            });
             newRow.add(textField).expandX().fillX();
         }
         algorithmTable.row();
         algorithmTable.add(newRow).colspan(game.vertices + 1).padRight(5);
     }
 
-    private TextField addNeighborListener(final TextField textField, final Vector2 start, final Vector2 end, final String finalCorrectValue, final int iteration, final boolean neighbor){
+    private TextField addNeighborListener(final TextField textField, final Vector2 start, final Vector2 end, final String finalCorrectValue, final int iteration, final boolean neighbor) {
         textField.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                if(neighbor)linesToDraw.add(new LineData(start, end, Color.RED));
+                if (neighbor) linesToDraw.add(new LineData(start, end, Color.RED));
                 textField.setColor(Color.RED);
                 return true;
             }
@@ -444,7 +465,7 @@ public class GameScreen_Level3 implements Screen {
                 boolean isCorrect = userInput.equals(" " + finalCorrectValue);
                 if (isCorrect) {
                     textField.setColor(Color.GREEN);
-                    if(neighbor)linesToDraw.add(new LineData(start, end, Color.GREEN));
+                    if (neighbor) linesToDraw.add(new LineData(start, end, Color.GREEN));
                     checkIfNewRow(iteration);
                 }
             }
@@ -455,18 +476,19 @@ public class GameScreen_Level3 implements Screen {
     private void checkIfNewRow(int iteration) {
         correctlyFilledTextFieldsInCurrentRow++;
         if (correctlyFilledTextFieldsInCurrentRow == game.vertices) {
-            if (iteration + 1 < dijkstraConnections.size()) {
+            if (iteration + 1 < dijkstraConnections.size() - 1) {
                 City nextCity = game.cities.get(dijkstraConnections.get(iteration + 1));
-                if (mode < 4) boatImage.addAction(Actions.moveTo(nextCity.x + boatImage.getHeight()/2, nextCity.y - boatImage.getHeight()/2, 1f));
+                if (mode < 4)
+                    boatImage.addAction(Actions.moveTo(nextCity.x - boatImage.getHeight() / 2, nextCity.y + 10, 1f));
                 correctNodes.add(dijkstraConnections.get(iteration + 1));
                 addNewRow(iteration + 1);
             }
         }
     }
 
-    public String buildCorrectValue(int costs, String precursorString){
+    public String buildCorrectValue(int costs, String precursorString) {
         String correctValue = "";
-        if (costs == Integer.MAX_VALUE) correctValue += "-- - --";
+        if (costs == Integer.MAX_VALUE) correctValue += "INFINITY";
         else if (costs == 0) correctValue += precursorString + " - " + 0;
         else correctValue += precursorString + " - " + costs;
         return correctValue;

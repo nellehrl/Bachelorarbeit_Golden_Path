@@ -16,25 +16,22 @@ import static com.badlogic.gdx.utils.Align.left;
 
 public class InfoCard extends Actor {
     private Table cardTable;
-    private boolean visible;
-    public InfoCard(Skin skin, float x, float y, float width, float height, String source, String destination, int weight, boolean visible) {
+    public InfoCard(final DijkstraAlgorithm game, float x, float y, float width, float height, String source, String destination, int weight, boolean visible) {
         String text = "Connection\n From: " + source + "\n To: " + destination + "\n Costs: " + weight;
 
-        cardTable = new Table(skin);
+        cardTable = new Table(game.fontSkin);
         cardTable.setSize(width, height);
         cardTable.setPosition(x, y);
 
-        Label cardLabel = new Label(text, skin);
+        Label cardLabel = new Label(text, game.fontSkin);
         cardLabel.setWrap(true);
         cardLabel.setAlignment(left);
         cardLabel.setFontScale(0.66f);
         cardTable.add(cardLabel).expand().fill().pad(10f);
 
         // Set the background color of the cardTable
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(new Texture(Gdx.files.internal("white 1.png"))));
+        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
         cardTable.setBackground(backgroundDrawable);
-
-        this.visible = visible;
     }
 
     public Table getTable() {

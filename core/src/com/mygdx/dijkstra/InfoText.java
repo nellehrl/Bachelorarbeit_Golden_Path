@@ -1,18 +1,16 @@
 package com.mygdx.dijkstra;
 
-import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import static com.badlogic.gdx.utils.Align.left;
 
 public class InfoText extends Group {
     Image parrottImage, shadowImage;
-    boolean visible = true;
     Button closeButton;
     final DijkstraAlgorithm game;
     public InfoText(final DijkstraAlgorithm game, String text){
@@ -22,9 +20,12 @@ public class InfoText extends Group {
         int row_height = 25;
         int col_width = 50;
 
+        GlyphLayout layout = new GlyphLayout();
+        layout.setText(game.fontSkin.getFont("font"), text, Color.BLACK, (float) (Gdx.graphics.getWidth()*0.62), left, true);
+
         Table table = new Table();
         table.setBackground(game.fontSkin.getDrawable("color"));
-        table.setSize((float) Gdx.graphics.getWidth()/2 , (float) (Gdx.graphics.getHeight()*0.4));
+        table.setSize(layout.width , (float) (layout.height + row_height*1.5 + 100));
         table.setPosition((float) Gdx.graphics.getWidth()/2 - table.getWidth()/2, (float) Gdx.graphics.getHeight()/2 - table.getHeight()/2);
 
         Label codeLabel = new Label(text, game.fontSkin);
@@ -33,17 +34,20 @@ public class InfoText extends Group {
         codeLabel.setFontScale(1f);
         table.add(codeLabel).expand().fill().padLeft(10f).padRight(10f).top().padTop(-50);
 
-        shadowImage = createActor((int) (Gdx.graphics.getWidth()*0.62), (float) (Gdx.graphics.getHeight()/2), 235, 180, new Texture(Gdx.files.internal("shadow.png")));
-        addActor(shadowImage);
-        shadowImage.setName("shadowImage");
-
         addActor(table);
         table.setName("table");
 
         //parrott
         int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
         parrottImage = createActor(parrottWidth, (float) (parrottWidth * 1.25), table.getX() + table.getWidth() - parrottWidth,
-                table.getY() + table.getHeight() - 18, new Texture(Gdx.files.internal("parrott.png")));
+                table.getY() + table.getHeight() - 18, game.assetManager.get("parrott.png", Texture.class));
+
+        shadowImage = createActor((int) (table.getWidth()*1.25), (float) (table.getHeight()*1.25), table.getX() - 100, table.getY()-40, game.assetManager.get("shadow.png", Texture.class));
+        addActor(shadowImage);
+        shadowImage.toBack();
+        shadowImage.setName("shadowImage");
+        addActor(table);
+        table.setName("table");
         addActor(parrottImage);
         parrottImage.setName("parrottImage");
 

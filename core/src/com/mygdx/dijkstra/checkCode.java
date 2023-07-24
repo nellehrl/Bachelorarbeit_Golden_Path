@@ -1,11 +1,14 @@
 package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+
 import static com.badlogic.gdx.utils.Align.left;
 
 public class checkCode extends Group {
@@ -13,16 +16,17 @@ public class checkCode extends Group {
     public boolean isCorrect = false;
     private String input = "";
     final DijkstraAlgorithm game;
-    public checkCode(final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final int mode){
+
+    public checkCode(final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final int mode) {
         this.game = game;
 
         codeTable = new Table(game.fontSkin);
-        codeTable.setSize(width, (float) (height*0.66));
-        codeTable.setPosition(x - width/2, y - height/2);
+        codeTable.setSize(width, (float) (height * 0.66));
+        codeTable.setPosition(x, y - height / 2);
 
         String text = "Did you find the correct Code?\n";
         int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.04);
-        final Image image = new Image(new Texture(Gdx.files.internal("treasure.png")));
+        final Image image = new Image(game.assetManager.get("treasure.png", Texture.class));
         Label codeLabel = new Label(text, game.fontSkin);
         codeLabel.setWrap(true);
         codeLabel.setAlignment(left);
@@ -37,29 +41,66 @@ public class checkCode extends Group {
         final TextField codeInput = new TextField("", game.fontSkin);
         codeInput.setMessageText("Enter code here");
         codeTable.row();
-        codeTable.add(codeInput).width(width/2).height(height/6).center().padTop(-60);
+        codeTable.add(codeInput).width(width / 2).height(height / 6).center().padTop(-60);
+
+        Background background = new Background(game, 3);
+        Table mangoCounter = background.mangoCounter;
+        final Label mangoCounterLabel = (Label) mangoCounter.getChild(1);
+        addActor(mangoCounter);
 
         // Handle input events or validation for the codeInput field as needed
         codeInput.addListener(new InputListener() {
             @Override
-            public boolean keyTyped(InputEvent event, char character) {
-                input += character;
-                int nextMode = (mode + 1);
-                if(input.equals(code)){
-                    game.setScreen(new GameScreen_Level3(game, nextMode));
-                    isCorrect = true;
+            public boolean keyTyped(InputEvent event, char key) {
+                input += key;
+                if (key == '\r' || key == '\n') {
+                    System.out.println(input.equals(code));
+                    if (input.equals(code)) {
+                        mangoCounterLabel.setText(game.mangos);
+                        switch (mode) {
+                            case 1:
+                                game.currentLevel = 3.2;
+                                break;
+                            case 2:
+                                game.currentLevel = 3.3;
+                                break;
+                            case 3:
+                                game.currentLevel = 3.4;
+                                break;
+                            case 4:
+                                game.currentLevel = 3.4;
+                                break;
+                        }
+                        game.setScreen(new LevelWon(game, game.currentLevel));
+                        isCorrect = true;
+                    } else {
+                        game.mangos -= 10;
+                        mangoCounterLabel.setText(game.mangos);
+
+                        Sound battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
+                        battle.play();
+                        if (game.mangos > 0) mangoCounterLabel.setText(game.mangos);
+                        else {
+                            final LevelLost lost = new LevelLost(game);
+                            addActor(lost);
+                            Button close = (Button) lost.getChild(2);
+                            close.addListener(new ClickListener() {
+                                @Override
+                                public void clicked(InputEvent event, float x, float y) {
+                                    game.mangos = 30;
+                                    mangoCounterLabel.setText(game.mangos);
+                                    game.setScreen(new GameScreen_Level3(game, mode));
+                                }
+                            });
+                        }
+                    }
                 }
-                return super.keyTyped(event, character);
-            }
-            @Override
-            public boolean keyDown(InputEvent event, int keycode) {
-                return super.keyDown(event, keycode);
+                return super.keyTyped(event, key);
             }
         });
-
-        Image shadowImage = new Image(new Texture(Gdx.files.internal("shadow.png")));
-        shadowImage.setSize((float) (codeTable.getWidth()*1.25), (float) (codeTable.getHeight()*1.15));
-        shadowImage.setPosition(codeTable.getX() - 40, codeTable.getY()-10);
+        Image shadowImage = new Image(game.assetManager.get("shadow.png", Texture.class));
+        shadowImage.setSize((float) (codeTable.getWidth() * 1.25), (float) (codeTable.getHeight() * 1.15));
+        shadowImage.setPosition(codeTable.getX() - 70, codeTable.getY() - 10);
         addActor(shadowImage);
         shadowImage.setName("shadowImage");
 

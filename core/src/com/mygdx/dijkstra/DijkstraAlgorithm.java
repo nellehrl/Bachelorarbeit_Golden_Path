@@ -2,8 +2,12 @@ package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
+import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 import java.util.ArrayList;
@@ -13,7 +17,7 @@ public class DijkstraAlgorithm extends Game {
 
 	public SpriteBatch batch;
 	public BitmapFont font;
-	int offset = 25, vertices, space = 15;
+	int offset = 25, vertices, space = 15, mangos = 30;
 	public Skin mySkin;
 	public Skin fontSkin;
 	public ArrayList<City> allCities = new ArrayList<>();
@@ -24,10 +28,48 @@ public class DijkstraAlgorithm extends Game {
 	public ArrayList<City> northEast = new ArrayList<>();
 	public ArrayList<City> southEast = new ArrayList<>();
 	public ArrayList<City> cities = new ArrayList<>();
+	public double currentLevel;
 	int city;
+	public Music backGroundMusic;
+	AssetManager assetManager;
 
 	public void create() {
+
+		assetManager = new AssetManager();
+		assetManager.load("background.png", Texture.class);
+		assetManager.load("bucket.png", Texture.class);
+		assetManager.load("mainMenuScreen.png", Texture.class);
+		assetManager.load("mango.png", Texture.class);
+		assetManager.load("mangoCounter.png", Texture.class);
+		assetManager.load("map.png", Texture.class);
+		assetManager.load("parrott.png", Texture.class);
+		assetManager.load("port.png", Texture.class);
+		assetManager.load("shadow.png", Texture.class);
+		assetManager.load("ship.png", Texture.class);
+		assetManager.load("shipWreck.png", Texture.class);
+		assetManager.load("transparent.png", Texture.class);
+		assetManager.load("treasure.png", Texture.class);
+		assetManager.load("triangle.png", Texture.class);
+		assetManager.load("white 1.png", Texture.class);
+		assetManager.load("levelWon.png", Texture.class);
+		assetManager.load("worldMap 1.png", Texture.class);
+		assetManager.load("battle.wav", Sound.class);
+		assetManager.load("yesss.wav", Sound.class);
+		assetManager.load("pirates.mp3", Music.class);
+		assetManager.finishLoading();
+
 		createCities(allCities);
+		currentLevel = 1.1;
+
+		batch = new SpriteBatch();
+		font = new BitmapFont(); // use libGDX's default Arial font
+		mySkin = new Skin(Gdx.files.internal("quantum-horizon/skin/quantum-horizon-ui.json"));
+		fontSkin = new Skin(Gdx.files.internal("neon/skin/neon-ui.json"));
+
+		backGroundMusic = assetManager.get("pirates.mp3", Music.class);
+		backGroundMusic.setLooping(true);
+		backGroundMusic.play();
+
 		int widthWorld = (int) (Gdx.graphics.getWidth() * 0.725);
 		int heightWorld = Gdx.graphics.getHeight() + Gdx.graphics.getHeight()/3;
 		for(City city : allCities){
@@ -85,14 +127,11 @@ public class DijkstraAlgorithm extends Game {
 
 		vertices = cities.size();
 
-		batch = new SpriteBatch();
-		font = new BitmapFont(); // use libGDX's default Arial font
-		mySkin = new Skin(Gdx.files.internal("quantum-horizon/skin/quantum-horizon-ui.json"));
-		fontSkin = new Skin(Gdx.files.internal("neon/skin/neon-ui.json"));
-		this.setScreen(new MainMenuScreen(this));
+		this.setScreen(new MainMenuScreen(this, currentLevel));
 	}
 
 	public void render() {
+		assetManager.update();
 		super.render(); // important!
 	}
 

@@ -1,19 +1,17 @@
 package com.mygdx.dijkstra;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class Ports extends Table {
     Image portImage;
-    public Ports(City value, Skin skin){
-        portImage = new Image(new Texture(Gdx.files.internal("port.png")));
+    public Ports(City value, final DijkstraAlgorithm game){
+        portImage = new Image(game.assetManager.get("port.png", Texture.class));
         portImage.setSize(50f, 50f);
 
-        Label label = new Label(value.getName(), skin);
+        Label label = new Label(value.getName(), game.fontSkin);
         label.setFontScale(0.66f);
 
         this.add(portImage).row();
