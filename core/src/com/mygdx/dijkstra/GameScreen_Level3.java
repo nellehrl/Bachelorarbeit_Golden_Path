@@ -38,26 +38,24 @@ public class GameScreen_Level3 implements Screen {
     Graph connections;
     int[] distances;
     ArrayList<Integer> correctNodes = new ArrayList<>();
-    int[][] iterations;
+    int[][] iterations,precursor;
     ArrayList<Integer> dijkstraConnections;
     private List<LineData> linesToDraw;
     Group background;
     checkCode checkCode;
     InfoText infotext;
     Button closeButton;
-    int[][] precursor;
     private int correctlyFilledTextFieldsInCurrentRow = 0;
     int mode;
     float cellWidth = 140f, cellHeight = 20f;
-
 
     public GameScreen_Level3(final DijkstraAlgorithm game, final int mode) {
 
         //init variables
         this.game = game;
+        this.mode = mode;
         stage = new Stage(viewport);
         connections = new Graph(game.vertices, 1);
-        this.mode = mode;
 
         //init camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -175,8 +173,8 @@ public class GameScreen_Level3 implements Screen {
 
         dropBox = new ScrollPane(algorithmTable, scrollPaneStyle);
         dropBox.setWidth(camera.viewportWidth + 20);
-        dropBox.setHeight((float) (camera.viewportHeight * 0.34) + 2);
-        dropBox.setPosition(-10, 4);
+        dropBox.setHeight((float) (camera.viewportHeight * 0.33) + 25);
+        dropBox.setPosition(-10, -10);
 
         for (int i = 0; i < distances.length; i++) {
             if (distances[i] == Integer.MAX_VALUE) distances[i] = 0;

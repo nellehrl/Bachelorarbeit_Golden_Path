@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import static com.badlogic.gdx.utils.Align.center;
 import static com.badlogic.gdx.utils.Align.left;
 
 public class checkCode extends Group {
@@ -29,7 +30,7 @@ public class checkCode extends Group {
         final Image image = new Image(game.assetManager.get("treasure.png", Texture.class));
         Label codeLabel = new Label(text, game.fontSkin);
         codeLabel.setWrap(true);
-        codeLabel.setAlignment(left);
+        codeLabel.setAlignment(center);
         codeLabel.setFontScale(1.0f);
         codeTable.add(codeLabel).expand().fill().center().padLeft(10f);
         codeTable.add(image).size(parrottWidth, parrottWidth).padRight(10f);
@@ -53,9 +54,10 @@ public class checkCode extends Group {
             @Override
             public boolean keyTyped(InputEvent event, char key) {
                 input += key;
+                System.out.println(input);
+                System.out.println(code);
                 if (key == '\r' || key == '\n') {
-                    System.out.println(input.equals(code));
-                    if (input.equals(code)) {
+                    if (input.trim().equals(code.trim())) {
                         mangoCounterLabel.setText(game.mangos);
                         switch (mode) {
                             case 1:
@@ -68,7 +70,7 @@ public class checkCode extends Group {
                                 game.currentLevel = 3.4;
                                 break;
                             case 4:
-                                game.currentLevel = 3.4;
+                                game.currentLevel = 3.5;
                                 break;
                         }
                         game.setScreen(new LevelWon(game, game.currentLevel));

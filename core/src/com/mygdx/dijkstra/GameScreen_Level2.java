@@ -160,7 +160,10 @@ public class GameScreen_Level2 implements Screen {
             }
         });
 
-
+        Image box = new Image(game.assetManager.get("box.png", Texture.class));
+        box.setSize(Gdx.graphics.getWidth()-2, Gdx.graphics.getHeight()/3 - 2);
+        box.setPosition(1,1);
+        stage.addActor(box);
         tableGroup.addActor(boatImage);
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);

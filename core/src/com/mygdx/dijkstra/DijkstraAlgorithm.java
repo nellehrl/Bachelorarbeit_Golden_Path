@@ -33,6 +33,8 @@ public class DijkstraAlgorithm extends Game {
 	public Music backGroundMusic;
 	AssetManager assetManager;
 
+	boolean firstOpened = true;
+
 	public void create() {
 
 		assetManager = new AssetManager();
@@ -52,9 +54,12 @@ public class DijkstraAlgorithm extends Game {
 		assetManager.load("triangle.png", Texture.class);
 		assetManager.load("white 1.png", Texture.class);
 		assetManager.load("levelWon.png", Texture.class);
+		assetManager.load("gameWon.png", Texture.class);
 		assetManager.load("worldMap 1.png", Texture.class);
+		assetManager.load("box.png", Texture.class);
 		assetManager.load("battle.wav", Sound.class);
 		assetManager.load("yesss.wav", Sound.class);
+		assetManager.load("ambiente.wav", Sound.class);
 		assetManager.load("pirates.mp3", Music.class);
 		assetManager.finishLoading();
 
@@ -146,18 +151,17 @@ public class DijkstraAlgorithm extends Game {
 		cities.add(new City("Rotterdam", (int) (280*1.5), (int) (360*1.5), "RD"));
 		cities.add(new City("Bergen", (int) (280*1.5), (int) (390*1.5), "BG"));
 		cities.add(new City("Jebel Ali", (int) (352*1.5), (int) (325*1.5), "JA"));
-		cities.add(new City("Los Angeles", (int) (120*1.5), (int) (335*1.5), "LA"));
+		cities.add(new City("Los Angeles", (int) (110*1.5), (int) (350*1.5), "LA"));
 		cities.add(new City("New York", (int) (184*1.5), (int) (360*1.5),"NY"));
 		cities.add(new City("Colombo", (int) (395*1.5), (int) (290*1.5),"CB"));
-		cities.add(new City("Colon", (int) (169*1.5), (int) (295*1.5),"CL"));
-		cities.add(new City("Santos", (int) (219*1.5), (int) (250*1.5),"ST"));
+		cities.add(new City("Colon", (int) (160*1.5), (int) (295*1.5),"CL"));
+		cities.add(new City("Santos", (int) (225*1.5), (int) (250*1.5),"ST"));
 		cities.add(new City("Buenos Aires", (int) (200*1.5), (int) (210*1.5),"BA"));
 		cities.add(new City("Antisarana", (int) (351*1.5), (int) (255*1.5),"AS"));
 		cities.add(new City("Banjul", (int) (261*1.5), (int) (305*1.5),"BJ"));
 		cities.add(new City("Portland", (int) (482*1.5), (int) (210*1.5),"PL"));
 		cities.add(new City("Wyndham", (int) (453*1.5), (int) (250*1.5),"WH"));
-		cities.add(new City("San Antonio", (int) (167*1.5), (int) (200*1.5),"SA"));
-		cities.add(new City("Lima", (int) (167*1.5), (int) (250*1.5),"L"));
+		cities.add(new City("Lima", (int) (167*1.5), (int) (250*1.5),"LM"));
 	}
 
 }

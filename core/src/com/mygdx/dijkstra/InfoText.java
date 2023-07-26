@@ -13,6 +13,8 @@ public class InfoText extends Group {
     Image parrottImage, shadowImage;
     Button closeButton;
     final DijkstraAlgorithm game;
+
+    boolean firstOpened = false;
     public InfoText(final DijkstraAlgorithm game, String text){
 
         this.game = game;

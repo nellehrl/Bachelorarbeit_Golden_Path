@@ -14,9 +14,20 @@ public class ConnectionArea extends Image {
         Vector2 point2 = new Vector2(destCity.x, destCity.y);
 
         float width = point1.dst(point2);
+        float height = 16f;
+        double angle = Math.toDegrees(Math.atan2(destCity.y - sourceCity.y, (destCity.x) - sourceCity.x));
 
-        this.setPosition(sourceCity.x, sourceCity.y);
-        this.setSize(width, 8);
-        this.rotateBy((float) Math.toDegrees(Math.atan2(destCity.y - sourceCity.y, (destCity.x) - sourceCity.x)));
+        double rotatedAngle = angle - 90; // Rotate the angle 90 degrees
+
+        double rotatedAngleRadians = Math.toRadians(rotatedAngle);
+        double rotatedX = Math.cos(rotatedAngleRadians);
+        double rotatedY = Math.sin(rotatedAngleRadians);
+
+        double newX = sourceCity.x + rotatedX * height/2;
+        double newY = sourceCity.y + rotatedY * height/2;
+
+        this.setSize(width, height);
+        this.rotateBy((float) angle);
+        this.setPosition((float) newX, (float) newY);
     }
 }

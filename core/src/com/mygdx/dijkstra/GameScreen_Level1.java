@@ -25,8 +25,9 @@ public class GameScreen_Level1 implements Screen {
     final DijkstraAlgorithm game;
     final int mode;
     Sound battle;
-    Image boatImage, connectionArea, connectionArea2, parrotImage;
+    Image boatImage, connectionArea, parrotImage;
     Table portTable, mangoCounter;
+    boolean correctDrop;
     OrthographicCamera camera;
     private final FitViewport fitViewport;
     Graph connections;
@@ -41,7 +42,6 @@ public class GameScreen_Level1 implements Screen {
     DropBox dropBox;
     ArrayList<City> visited = new ArrayList<>();
     private DragAndDrop dragAndDrop;
-    Stack stack;
     ArrayList<Actor> added = new ArrayList<com.badlogic.gdx.scenes.scene2d.Actor>();
     InfoText infotext;
     Label mangoCounterLabel;
@@ -151,12 +151,12 @@ public class GameScreen_Level1 implements Screen {
                     City sourceCity = game.cities.get(i);
 
                     connectionArea = new ConnectionArea(sourceCity, destCity);
-                    connectionArea2 = new ConnectionArea(destCity, sourceCity);
-                    createWeights(String.valueOf(neighbors.get(j).weight), 40, 5 * game.offset + game.space + count * (game.space + 40), (float) (Gdx.graphics.getHeight() * 0.3 - game.space / 2));
+                    connectionArea.setName(i+ "-" + j);
+                    Stack stack = createWeights(String.valueOf(neighbors.get(j).weight), 40, 5 * game.offset + game.space + count * (game.space + 40), (float) (Gdx.graphics.getHeight() * 0.3 - game.space / 2));
+                    stack.setName(i+ "-" + j);
                     tableGroup.addActor(connectionArea);
-                    tableGroup.addActor(connectionArea2);
                     tableGroup.addActor(stack);
-                    addDragAndDrop();
+                    addDragAndDrop(stack);
                     count++;
                 }
             }
@@ -215,6 +215,11 @@ public class GameScreen_Level1 implements Screen {
         int x = 3 * game.offset;
         int y = (int) (camera.viewportHeight * 0.28 - game.space);
         if (mode == 3) y = (int) (camera.viewportHeight * 0.225 - 2 * game.space);
+
+        Image box = new Image(game.assetManager.get("box.png", Texture.class));
+        box.setSize(Gdx.graphics.getWidth()-2, Gdx.graphics.getHeight()/3 - 2);
+        box.setPosition(1,1);
+        stage.addActor(box);
         stage.addActor(new ConnectionOverview(game.vertices, game.cities, game, (int) (width * 0.8), height, x, y, connections, mode));
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);
@@ -351,13 +356,11 @@ public class GameScreen_Level1 implements Screen {
         boatImage.addAction(Actions.moveTo(currentConnection.get(currentConnection.size() - 1).x - boatImage.getWidth() / 2, currentConnection.get(currentConnection.size() - 1).y - boatImage.getHeight() / 2, 1f));
     }
 
-    public void addDragAndDrop() {
+    public void addDragAndDrop(Stack stack) {
         DragAndDrop.Source source = createSource(stack);
         DragAndDrop.Target target = createTarget(connectionArea);
-        DragAndDrop.Target target2 = createTarget(connectionArea2);
         dragAndDrop.addSource(source);
         dragAndDrop.addTarget(target);
-        dragAndDrop.addTarget(target2);
     }
 
     private DragAndDrop.Source createSource(final Stack stack) {
@@ -372,17 +375,21 @@ public class GameScreen_Level1 implements Screen {
 
                 DragAndDrop.Payload payload = new DragAndDrop.Payload();
                 payload.setDragActor(getActor());
+                dragAndDrop.setDragActorPosition(x, y - 30);
                 stage.addActor(getActor());
-                dragAndDrop.setDragActorPosition(x, y);
 
                 return payload;
             }
 
             @Override
             public void dragStop(InputEvent event, float x, float y, int pointer, DragAndDrop.Payload payload, DragAndDrop.Target target) {
-                if (target == null) {
+                if (target != null && target.getActor().getName().equals(payload.getDragActor().getName())){
+                    correctDrop = true;
+                }
+                else {
                     stack.setPosition(initialX, initialY);
                     battle.play();
+
                     final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
                     if (newValue > 0) mangoCounterLabel.setText(newValue);
                     else {
@@ -415,18 +422,21 @@ public class GameScreen_Level1 implements Screen {
             @Override
             public void drop(DragAndDrop.Source source, DragAndDrop.Payload payload, float x, float y, int pointer) {
                 payload.getDragActor();
-                stack.setUserObject(connectionArea);
-                stack.toFront();
-                if (!added.contains(payload.getDragActor())) added.add(payload.getDragActor());
+                payload.getDragActor().setUserObject(connectionArea);
+                payload.getDragActor().toFront();
+
+                if (!added.contains(payload.getDragActor())){
+                    added.add(payload.getDragActor());
+                }
                 if (added.size() == connections.numOfEdges) {
-                    game.setScreen(new LevelWon(game, 2));
+                    game.setScreen(new LevelWon(game, 2.0));
                     dispose();
                 }
             }
         };
     }
 
-    public void createWeights(String weight, float triangleSize, float centerX, float centerY) {
+    public Stack createWeights(String weight, float triangleSize, float centerX, float centerY) {
         // Create the triangle texture
         Image triangleImage = new Image(game.assetManager.get("triangle.png", Texture.class));
 
@@ -438,7 +448,7 @@ public class GameScreen_Level1 implements Screen {
         // Create a table to hold the triangle and number
         triangleImage.setSize(triangleSize, triangleSize);
         triangleImage.setPosition(centerX, centerY);
-        stack = new Stack();
+        Stack stack = new Stack();
 
         //create table for label to position it correctly
         Table table1 = new Table();
@@ -455,6 +465,7 @@ public class GameScreen_Level1 implements Screen {
         stack.add(table1);
         stack.setPosition(centerX - game.offset, centerY - game.offset);
         stack.setSize(triangleSize, triangleSize);
+        return stack;
     }
 
     @Override

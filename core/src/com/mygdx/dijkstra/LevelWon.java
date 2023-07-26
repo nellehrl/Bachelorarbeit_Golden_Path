@@ -5,16 +5,22 @@ import java.util.Iterator;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+
+import static com.badlogic.gdx.utils.Align.left;
 
 public class LevelWon implements Screen {
     private Texture mangoImage;
@@ -30,11 +36,20 @@ public class LevelWon implements Screen {
     private Array<Rectangle> mangos;
     double nextLevel;
     private long lastDropTime;
+    Music music;
+    Sound sound;
+
 
     public LevelWon(final DijkstraAlgorithm game, double nextLevel) {
 
         this.game = game;
         this.nextLevel = nextLevel;
+
+        music = game.assetManager.get("pirates.mp3", Music.class);
+        music.setVolume(0.5f);
+
+        sound = game.assetManager.get("ambiente.wav", Sound.class);
+        sound.play();
 
         mangoImage = game.assetManager.get("mango.png", Texture.class);
         levelWonImage = game.assetManager.get("levelWon.png", Texture.class);
@@ -111,19 +126,26 @@ public class LevelWon implements Screen {
             if (spawnedMangos >= 10) {
                 // If 10 mangos were collected or lost, switch to a new screen
                 game.mangos += collectedMangos;
-                game.setScreen(new MainMenuScreen(game, nextLevel));
-                dispose();
+                if(nextLevel != 3.5){
+                    game.setScreen(new MainMenuScreen(game, nextLevel));
+                    sound.pause();
+                    music.setVolume(1f);
+                    dispose();
+                }
+                else {
+                    game.setScreen(new GameWon(game));
+                }
             }
         }
 
         for (Iterator<Rectangle> iter = mangos.iterator(); iter.hasNext(); ) {
             Rectangle mango = iter.next();
-            mango .y -= 200 * Gdx.graphics.getDeltaTime();
-            if (mango .y + 64 < 0) {
+            mango.y -= 200 * Gdx.graphics.getDeltaTime();
+            if (mango.y + 64 < 0) {
                 iter.remove();
                 spawnedMangos++;
             }
-            if (mango .overlaps(bucket)) {
+            if (mango.overlaps(bucket)) {
                 collectedMangos++;
                 spawnedMangos++;
                 dropSound.play();
@@ -161,7 +183,6 @@ public class LevelWon implements Screen {
     public void dispose() {
         mangoImage.dispose();
         bucketImage.dispose();
-        //dropSound.dispose();
         batch.dispose();
     }
 }

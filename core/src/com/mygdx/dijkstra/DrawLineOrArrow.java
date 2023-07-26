@@ -26,15 +26,21 @@ public class DrawLineOrArrow extends ShapeRenderer {
             float endY = end.y;
             float arrowSize = 8;
 
-            // Draw the main line of the arrow
-            this.rectLine(startX, startY, endX, endY, arrowSize/4);
-
-            // Calculate the direction of the arrow
             float directionX = endX - startX;
             float directionY = endY - startY;
+
             float length = (float) Math.sqrt(directionX * directionX + directionY * directionY);
+
             directionX /= length;
             directionY /= length;
+
+            // Shorten the arrow
+            float shortenBy = 15;
+            endX = startX + directionX * (length - shortenBy);
+            endY = startY + directionY * (length - shortenBy);
+
+            // Draw the main line of the shortened arrow
+            this.rectLine(startX, startY, endX, endY, arrowSize/4);
 
             // Draw & Calculate the arrow wings
             float wingX = -directionY;

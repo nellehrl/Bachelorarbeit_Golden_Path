@@ -46,7 +46,6 @@ public class ConnectionOverview extends Group {
                 infoTable.add(codeLabel);
                 Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
                 infoTable.setBackground(backgroundDrawable);
-
                 addActor(infoTable);
             }
         }

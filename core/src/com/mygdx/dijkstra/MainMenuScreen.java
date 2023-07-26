@@ -96,9 +96,9 @@ public class MainMenuScreen implements Screen {
         level13Button.setName("1.3");
         levelButtons.add(level13Button);
 
-        TextButton level21Button = generateButton("2", 540 - col_width / 2, 380 - row_height / 2, new GameScreen_Level2(game));
+        TextButton level21Button = generateButton("2.0", 540 - col_width / 2, 380 - row_height / 2, new GameScreen_Level2(game));
         stage.addActor(level21Button);
-        level21Button.setName("2");
+        level21Button.setName("2.0");
         levelButtons.add(level21Button);
 
         TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 1));
@@ -122,19 +122,19 @@ public class MainMenuScreen implements Screen {
         levelButtons.add(level34Button);
 
         boatWidth = (float) (Gdx.graphics.getWidth() * 0.125);
-        boatImage = new
-
-                Image(game.assetManager.get("ship.png", Texture.class));
+        boatImage = new Image(game.assetManager.get("ship.png", Texture.class));
         boatImage.setSize(boatWidth, boatWidth);
-        for (
-                TextButton button : levelButtons) {
+        for (TextButton button : levelButtons) {
             String name = button.getName();
             if (name.equals(String.valueOf(currentLevel))) {
                 boatImage.setPosition(button.getX() - boatWidth / 2, button.getY() + row_height);
             }
         }
         stage.addActor(boatImage);
-        stage.addActor(infotext);
+        if(game.firstOpened){
+            stage.addActor(infotext);
+            game.firstOpened = false;
+        }
         boatImage.setName("boatImage");
     }
 
@@ -145,7 +145,6 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void render(float delta) {
-
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
