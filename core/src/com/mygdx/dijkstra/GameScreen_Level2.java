@@ -130,10 +130,10 @@ public class GameScreen_Level2 implements Screen {
         dropBoxItems();
 
         text = "You know who this is, Captain! \n\nFantastic job so far! We updated our system. Now that you have added " +
-                "the right weight to the connections, we have a great overview over everything!\n\n" +
-                "Let`s check if everything is clear - find out the weights for the connections written down below.\n\n" +
-                "We need to understand how these graphs work to get ahead of the other crews. Like that we can generate " +
-                "much more loooooooooooooooot!\n\nDOn`t forget to ENTER to check if you got the right costs!";
+                "the right weight to the connections, we have an excellent overview!\n\n" +
+                "Let`s check if everything is clear - find the weights for the connections written down below.\n\n" +
+                "We must to understand how these graphs work to get ahead of the other crews. Like that, we can generate " +
+                "much more loooooooooooooooot!\n\nRemember to ENTER to check if you got the costs correct!";
 
         infotext = new InfoTextGroup(game, text, camera);
         closeButton = infotext.closeButton;

@@ -162,25 +162,25 @@ public class GameScreen_Level1 implements Screen {
 
         switch (mode) {
             case 1:
-                text = "Howdy Captain, \n\nLet`s see what we got here….We want to visit all cities and then come back to bring " +
+                text = "Howdy Captain, \\n\\n Let's see what we got here….We want to visit all cities and then come back to bring" +
                         "all our conquests to our treasury.\n" + "\n" + "In the box down on the radar you can see all connections." +
-                        " They go both ways. So should be easy," + " right? Let`s get on it.\n\nPlease stay on the route cause there are " +
+                        "They go both ways. So it should be easy," + "right? Let's get on it.\n\nPlease stay on the route cause there are"+
                         "other pirates out there with canooons waiting for a fight.";
                 break;
             case 2:
-                text = "What`s kickin`, Captain?\n\nThat was great. Those mangos are quite delicious but I think we will" +
+                text = "What`s kickin`, Captain?\n\nThat was great. Those mangos are quite delicious, but we will" +
                         " need more of them for me " + "and more gold for you. Let`s keep chartering.\u2028\u2028It is " +
-                        "quite windy and stormy around " + "this time of the year lets use it to our advantage!\n\nYou cann " +
-                        "see all connections below. Keep in mind " + "to up check on the directions that are marked for " +
-                        "the connections.\n\nWe can`t go into the " + "other direction - the wind will hold us back! " +
-                        "Please remember the other pirates. I can`t see blood I am always getting sick when I see it.";
+                        "windy and stormy around this time of the year. Lets use it to our advantage!\n\nYou can " +
+                        "see all connections below. Keep in mind " + "to check the directions that are marked for " +
+                        "the connections.\n\nWe can`t go in the other direction - the wind will hold us back! " +
+                        "Please remember the other pirates. I can`t see blood. I am always getting sick when I see it.";
                 break;
             case 3:
-                text = "Ahoy Captain! \n\nWow, you are fast! I don`t know how to keep up with your pace! It`s great to have " +
-                        "you " + "finally on board - keeping this wild crew under control!\n" + "\n" + "Our crew is developing" +
-                        " and I think we can get more strategic now. Down there you can see all " + "connections. Let`s try to " +
-                        "organize the graph and put the  weights on the corresponding connection." + " Like that we will get a" +
-                        " better overview of the current situation.\n" + "\n" + "Just grap a weight and drop it at the right space. ";
+                text = "Ahoy, Captain! \n\nWow, you are fast! I don`t know how to keep up with your pace! It`s great to have " +
+                        "you finally on board - controlling wild crew!\n\nOur crew is developing" +
+                        " ,and we can get more strategic now. In the box below, you can see all connections. Let`s " +
+                        "organize the graph and put the weights on the corresponding connection." + " Like that, we will get a" +
+                        " better overview of the current situation.\n" + "\n" + "Just grab a weight and drop it at the right space.";
                 break;
         }
 

@@ -200,38 +200,37 @@ public class GameScreen_Level3 implements Screen {
         String text = "";
         switch (mode) {
             case 1:
-                text = "Servus Captain, \n\nWe need to deliver now! Cause these damn mangos are hard to get. :D Let`s see if we are able to find " +
-                        "the shortest paths to each city from our home town! Fill out the table below, I will help you! " +
-                        "In the end we will know how long it takes us to " +
-                        "travel to each city and the fastest path to it! I ams ure you will find out how it works!\n" +
-                        "\nOh and you will need to find out the code to unlock this treasure I have found!\n\n" +
-                        "TIP: Remember that we are always looking for the shortest connection from our start city" +
-                        " our ship shows you were we are currently at and the available connections." +
-                        "\n\nCode: The code is build by the distances of the" +
-                        " connection to the city. For INFINITY it was a ...... 0";
+                text = "Servus Captain, \n\nWe need to deliver now! Cause these damn mangooos are hard to get. :D Let`s see if we are able to find " +
+                        "the shortest paths to each city from our hometown! Fill out the table below, I will help you! " +
+                        "In the end we will know how long it takes us to travel to each city and the fastest path! I am " +
+                        "sure you will find out how it works!\n\nOh, you will need to find the code to unlock this treasure I have found!\n\n" +
+                        "TIP: Remember that we seek for the shortest connection from our start city." +
+                        " Our ship shows you where we are currently and the available connections." +
+                        "\n\nCode: The code is built by the distance of the" +
+                        " connection to the city. For INFINITY, it was a ...... 0";
                 break;
             case 2:
                 text = "Hola Captain, \n\nYou are getting on it! We are surely becoming the pirates of the golden paths! Everyone will pay" +
-                        " millions to know our secret - but first: let`s get back to work\n\n" +
-                        "I guess you know what to do? If not I am here to help cause you know - I am the endless source " +
-                        "of wisdom.\n And don`t forget about the code so we can get an endless amount of mangoooooooooos!\n\n" +
-                        "TIP: Remember that we are always looking for the shortest connection from our start city" +
-                        " our ship shows you were we are currently at and the available connections." +
-                        "\n\nCode: Remember the code is build by the distances of the" +
-                        " connection to the city. For INFINITY it was a ...... 0";
+                        " millions to know our secret - but first: Let`s get back to work\n\n" +
+                        "I guess you know what to do? If not I am here to help. Cause you know - I am the endless source " +
+                        "of wisdom.\n And don`t forget about the code so we can get an endless amount of mangooos!\n\n" +
+                        "TIP: Remember that we seek for the shortest connection from our start city." +
+                        " Our ship shows you where we are currently and the available connections." +
+                        "\n\nCode: Remember the code is built by the distance of the connection to the city. For INFINITY, " +
+                        "it was a ...... 0";
                 break;
             case 3:
                 text = "Hello and welcome on board again Captain, \n\nThere are still some routes to calculate but we " +
-                        "are getting better. SO I ams ure we will find the solution this time tooooooo!\n\nTIP: Remember that we are always looking " +
-                        "for the shortest connection from our start city our ship shows you were we are currently at and" +
-                        " the available connections.\n\nCode: Remember the code is build by distances of the connection " +
-                        "to the city. For INFINITY it was a ...... 0";
+                        "are getting better. So I am sure we will find the solution this time to!\n\nTIP: Remember that we seek " +
+                        "for the shortest connection from our start city. Our ship shows you where we are currently and" +
+                        " the available connections.\n\nCode: Remember the code is built by distance of the connection " +
+                        "to the city. For INFINITY, it was a ...... 0";
                 break;
             case 4:
                 text = "Ay Ay Captain, \n\nFinally! I think all our hard work pais off if we can open this last treasure we can finally retire. \n" +
-                        "\n Find the last code to unlock the last treasure.\n\nTIP: Remember that we are always looking " +
-                        "for the shortest connection from our start city our ship shows you were we are currently at and" +
-                        " the available connections.\n\nCode: Remember the code is build by the distances of the connection " +
+                        "\n Find the last code to unlock the last treasure.\n\nTIP: Remember that we seek " +
+                        "for the shortest connection from our start city. Our ship shows you where we are currently and" +
+                        " the available connections.\n\nCode: Remember the code is built by the distance of the connection " +
                         "to the city. For INFINITY it was a ...... 0";
                 break;
         }
