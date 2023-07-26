@@ -1,22 +1,18 @@
 package com.mygdx.dijkstra;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
-import static com.badlogic.gdx.utils.Align.center;
 import static com.badlogic.gdx.utils.Align.left;
 
-public class InfoCard extends Actor {
+public class InfoCardActor extends Actor {
     private Table cardTable;
-    public InfoCard(final DijkstraAlgorithm game, float x, float y, float width, float height, String source, String destination, int weight, boolean visible) {
+    public InfoCardActor(final DijkstraAlgorithm game, float x, float y, float width, float height, String source, String destination, int weight, boolean visible) {
         String text = "Connection\n From: " + source + "\n To: " + destination + "\n Costs: " + weight;
 
         cardTable = new Table(game.fontSkin);

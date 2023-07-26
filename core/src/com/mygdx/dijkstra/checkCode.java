@@ -2,6 +2,7 @@ package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -10,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import static com.badlogic.gdx.utils.Align.center;
-import static com.badlogic.gdx.utils.Align.left;
 
 public class checkCode extends Group {
     private Table codeTable;
@@ -44,7 +44,7 @@ public class checkCode extends Group {
         codeTable.row();
         codeTable.add(codeInput).width(width / 2).height(height / 6).center().padTop(-60);
 
-        Background background = new Background(game, 3);
+        BackgroundGroup background = new BackgroundGroup(game, 3);
         Table mangoCounter = background.mangoCounter;
         final Label mangoCounterLabel = (Label) mangoCounter.getChild(1);
         addActor(mangoCounter);
@@ -54,8 +54,6 @@ public class checkCode extends Group {
             @Override
             public boolean keyTyped(InputEvent event, char key) {
                 input += key;
-                System.out.println(input);
-                System.out.println(code);
                 if (key == '\r' || key == '\n') {
                     if (input.trim().equals(code.trim())) {
                         mangoCounterLabel.setText(game.mangos);
@@ -73,7 +71,7 @@ public class checkCode extends Group {
                                 game.currentLevel = 3.5;
                                 break;
                         }
-                        game.setScreen(new LevelWon(game, game.currentLevel));
+                        game.setScreen(new LevelWonScreen(game, game.currentLevel));
                         isCorrect = true;
                     } else {
                         game.mangos -= 10;
@@ -83,7 +81,7 @@ public class checkCode extends Group {
                         battle.play();
                         if (game.mangos > 0) mangoCounterLabel.setText(game.mangos);
                         else {
-                            final LevelLost lost = new LevelLost(game);
+                            final LevelLostGroup lost = new LevelLostGroup(game, new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
                             addActor(lost);
                             Button close = (Button) lost.getChild(2);
                             close.addListener(new ClickListener() {

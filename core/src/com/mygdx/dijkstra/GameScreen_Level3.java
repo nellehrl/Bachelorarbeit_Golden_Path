@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.*;
 import java.util.List;
@@ -31,7 +30,6 @@ public class GameScreen_Level3 implements Screen {
     ScrollPane.ScrollPaneStyle scrollPaneStyle;
     private Stage stage;
     String code = "";
-    private final ScreenViewport viewport = new ScreenViewport();
     Button mainMenuButton, doneButton;
     ScrollPane dropBox;
     Table algorithmTable, portTable;
@@ -43,7 +41,7 @@ public class GameScreen_Level3 implements Screen {
     private List<LineData> linesToDraw;
     Group background;
     checkCode checkCode;
-    InfoText infotext;
+    InfoTextGroup infotext;
     Button closeButton;
     private int correctlyFilledTextFieldsInCurrentRow = 0;
     int mode;
@@ -54,13 +52,13 @@ public class GameScreen_Level3 implements Screen {
         //init variables
         this.game = game;
         this.mode = mode;
-        stage = new Stage(viewport);
         connections = new Graph(game.vertices, 1);
 
         //init camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+        stage = new Stage();
 
         //init Arrays
         distances = new int[game.vertices];
@@ -72,7 +70,7 @@ public class GameScreen_Level3 implements Screen {
         scrollPaneStyle.background = game.fontSkin.getDrawable("window-c");
 
         //init background
-        background = new Background(game, 2);
+        background = new BackgroundGroup(game, 2);
 
         for (Actor actor : background.getChildren()) {
             if (actor.getName().equals("mainMenuButton")) {
@@ -127,10 +125,10 @@ public class GameScreen_Level3 implements Screen {
                 Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
                 Vector2 end = new Vector2(destCity.x, destCity.y);
 
-                connectionArea = new ConnectionArea(sourceCity, destCity);
-                Image connectionArea2 = new ConnectionArea(destCity, sourceCity);
+                connectionArea = new ConnectionAreaImage(sourceCity, destCity);
+                Image connectionArea2 = new ConnectionAreaImage(destCity, sourceCity);
 
-                InfoCard card = new InfoCard(game, (float) (destCity.x + sourceCity.x) / 2,
+                InfoCardActor card = new InfoCardActor(game, (float) (destCity.x + sourceCity.x) / 2,
                         (float) (destCity.y + sourceCity.y) / 2, 150, 60, sourceCity.name, destCity.name, weight, false);
                 final Table cardTableFinal = card.getTable();
 
@@ -186,11 +184,11 @@ public class GameScreen_Level3 implements Screen {
         int col_width = 2 * game.offset;
 
         //check if dijkstra is correct
-        checkCode = new checkCode((float) Gdx.graphics.getWidth() / 4, (float) Gdx.graphics.getHeight() / 2,
-                (float) Gdx.graphics.getWidth() / 2, 150, code, game, mode);
+        checkCode = new checkCode((float) camera.viewportWidth / 4, (float) camera.viewportHeight / 2,
+                (float) camera.viewportWidth / 2, 150, code, game, mode);
         doneButton = new TextButton("Done", game.mySkin, "default");
         doneButton.setSize((float) (2 * col_width), (float) (1.5 * row_height));
-        doneButton.setPosition(3 * game.space, (float) (Gdx.graphics.getHeight() - (1.5 * row_height) - mainMenuButton.getHeight() - 3 * game.space));
+        doneButton.setPosition(3 * game.space, (float) (camera.viewportHeight - (1.5 * row_height) - mainMenuButton.getHeight() - 3 * game.space));
         stage.addActor(doneButton);
         doneButton.addListener(new ClickListener() {
             @Override
@@ -238,16 +236,16 @@ public class GameScreen_Level3 implements Screen {
                 break;
         }
 
-        infotext = new InfoText(game, text);
+        infotext = new InfoTextGroup(game, text, camera);
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 infotext.remove();
-                int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
+                int parrottWidth = (int) (camera.viewportWidth * 0.1);
                 final Image image = new Image(game.assetManager.get("parrott.png", Texture.class));
                 image.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                image.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.32));
+                image.setPosition((float) (camera.viewportWidth * 0.85), (float) (camera.viewportHeight * 0.32));
                 image.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
@@ -495,6 +493,8 @@ public class GameScreen_Level3 implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
         camera.update();
     }
 

@@ -16,19 +16,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.ArrayList;
 
 public class MainMenuScreen implements Screen {
     final DijkstraAlgorithm game;
-    InfoText infotext;
+    InfoTextGroup infotext;
     Image boatImage;
     private Stage stage;
     OrthographicCamera camera;
     Button closeButton;
     private final FitViewport fitViewport;
-    private final ScreenViewport viewport = new ScreenViewport();
     int row_height, col_width;
     float boatWidth;
 
@@ -36,12 +34,9 @@ public class MainMenuScreen implements Screen {
         this.game = game;
 
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-
-        stage = new Stage(new ScreenViewport());
-        stage = new Stage(viewport);
-        Gdx.input.setInputProcessor(stage);
+        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
+        stage = new Stage();
 
         row_height = 25;
         col_width = 75;
@@ -53,7 +48,7 @@ public class MainMenuScreen implements Screen {
                 "If you are new here start with level 1.1. If you are already familiar with Graphs you can start with " +
                 "level 1.3. If you are pro go to level 3 than we can get to the treasures even faster and I will finally get my mangooooooos.";
 
-        infotext = new InfoText(game, text);
+        infotext = new InfoTextGroup(game, text, camera);
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
@@ -63,12 +58,12 @@ public class MainMenuScreen implements Screen {
         });
 
         Image background = new Image(game.assetManager.get("background.png", Texture.class));
-        background.setSize((float) (Gdx.graphics.getWidth() * 1.1), (float) (Gdx.graphics.getHeight() * 1.1));
+        background.setSize((float) (camera.viewportWidth * 1.1), (float) (camera.viewportHeight * 1.1));
         background.setPosition(-52, -45);
         stage.addActor(background);
 
         final Image image = new Image(game.assetManager.get("mainMenuScreen.png", Texture.class));
-        image.setSize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        image.setSize(camera.viewportWidth, camera.viewportHeight);
         image.setPosition(0, 0);
         stage.addActor(image);
 
@@ -76,7 +71,7 @@ public class MainMenuScreen implements Screen {
 
         Label welcomeLabel = new Label("Welcome to\n     Golden Path ", game.mySkin);
         welcomeLabel.setStyle(titleStyle);
-        welcomeLabel.setPosition((float) (Gdx.graphics.getWidth() * 0.425), 100);
+        welcomeLabel.setPosition((float) (camera.viewportWidth * 0.425), 100);
         stage.addActor(welcomeLabel);
 
         ArrayList<TextButton> levelButtons = new ArrayList<>();
@@ -121,7 +116,7 @@ public class MainMenuScreen implements Screen {
         level34Button.setName("3.4");
         levelButtons.add(level34Button);
 
-        boatWidth = (float) (Gdx.graphics.getWidth() * 0.125);
+        boatWidth = (float) (camera.viewportWidth * 0.125);
         boatImage = new Image(game.assetManager.get("ship.png", Texture.class));
         boatImage.setSize(boatWidth, boatWidth);
         for (TextButton button : levelButtons) {
@@ -140,7 +135,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override
@@ -192,6 +187,8 @@ public class MainMenuScreen implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
         camera.update();
     }
 

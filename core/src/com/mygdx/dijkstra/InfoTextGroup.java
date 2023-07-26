@@ -2,6 +2,7 @@ package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -9,32 +10,24 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 
 import static com.badlogic.gdx.utils.Align.left;
 
-public class LevelLost extends Group {
-    Image parrottImage;
+public class InfoTextGroup extends Group {
+    Image parrottImage, shadowImage;
     Button closeButton;
     final DijkstraAlgorithm game;
-    public LevelLost(final DijkstraAlgorithm game){
+    public InfoTextGroup(final DijkstraAlgorithm game, String text, OrthographicCamera camera){
 
         this.game = game;
 
         int row_height = 25;
         int col_width = 50;
 
-        String text = "Awwwww....I am so hungry but we have no more mangos. We lost them all with wreck!\n\nHelp!!!!Help!!!" +
-                "\n\n Keep your head held high, Captain. The Crew is rebuilding the ship already. Soon we will back on the sea."+
-                "Remember that you can always ask me if you need to revisit the instructions.";
-
         GlyphLayout layout = new GlyphLayout();
-        layout.setText(game.fontSkin.getFont("font"), text, Color.BLACK, (float) (Gdx.graphics.getWidth()*0.62), left, true);
-
+        layout.setText(game.fontSkin.getFont("font"), text, Color.BLACK, (float) (camera.viewportWidth*0.62), left, true);
 
         Table table = new Table();
         table.setBackground(game.fontSkin.getDrawable("color"));
-        table.setSize(layout.width , (float) ((layout.height + row_height*1.5 + 100) * 1.5));
-        table.setPosition((float) Gdx.graphics.getWidth()/2 - table.getWidth()/2, (float) Gdx.graphics.getHeight()/2 - table.getHeight()/2);
-
-        Image shipWreckImage = new Image(game.assetManager.get("shipWreck.png", Texture.class));
-        table.add(shipWreckImage).size((float) (table.getWidth()*0.25), (float) (table.getHeight()*0.5)).padTop(5f).row();
+        table.setSize(layout.width , (float) (layout.height + row_height*1.5 + 100));
+        table.setPosition((float) camera.viewportWidth/2 - table.getWidth()/2, (float) camera.viewportHeight/2 - table.getHeight()/2);
 
         Label codeLabel = new Label(text, game.fontSkin);
         codeLabel.setAlignment(left);
@@ -46,9 +39,16 @@ public class LevelLost extends Group {
         table.setName("table");
 
         //parrott
-        int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
+        int parrottWidth = (int) (camera.viewportWidth * 0.1);
         parrottImage = createActor(parrottWidth, (float) (parrottWidth * 1.25), table.getX() + table.getWidth() - parrottWidth,
                 table.getY() + table.getHeight() - 18, game.assetManager.get("parrott.png", Texture.class));
+
+        shadowImage = createActor((int) (table.getWidth()*1.25), (float) (table.getHeight()*1.25), table.getX() - 100, table.getY()-40, game.assetManager.get("shadow.png", Texture.class));
+        addActor(shadowImage);
+        shadowImage.toBack();
+        shadowImage.setName("shadowImage");
+        addActor(table);
+        table.setName("table");
         addActor(parrottImage);
         parrottImage.setName("parrottImage");
 

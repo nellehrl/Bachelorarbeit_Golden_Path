@@ -12,8 +12,8 @@ import java.util.ArrayList;
 
 import static com.badlogic.gdx.utils.Align.left;
 
-public class ConnectionOverview extends Group {
-    public ConnectionOverview(int vertices, ArrayList<City> cities, final DijkstraAlgorithm game, int width, int height, int x, int y, Graph connections, int mode) {
+public class ConnectionOverviewGroup extends Group {
+    public ConnectionOverviewGroup(int vertices, ArrayList<City> cities, final DijkstraAlgorithm game, int width, int height, int x, int y, Graph connections, int mode) {
         for (int i = 0; i < vertices; i++) {
             java.util.List<Edge> neighbors = connections.getNeighbors(i);
             for (int j = 0; j < neighbors.size(); j++) {

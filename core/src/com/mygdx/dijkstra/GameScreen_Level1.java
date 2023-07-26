@@ -17,7 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.ArrayList;
 
@@ -32,18 +31,17 @@ public class GameScreen_Level1 implements Screen {
     private final FitViewport fitViewport;
     Graph connections;
     private Stage stage;
-    private final ScreenViewport viewport = new ScreenViewport();
     Button mainMenuButton, closeButton;
     ArrayList<City> currentConnection = new ArrayList<>();
     ArrayList<Integer> validConnection = new ArrayList<>();
     private java.util.List<LineData> linesToDraw;
     Group background;
     String text;
-    DropBox dropBox;
+    DropBoxWindow dropBox;
     ArrayList<City> visited = new ArrayList<>();
     private DragAndDrop dragAndDrop;
     ArrayList<Actor> added = new ArrayList<com.badlogic.gdx.scenes.scene2d.Actor>();
-    InfoText infotext;
+    InfoTextGroup infotext;
     Label mangoCounterLabel;
 
     public GameScreen_Level1(final DijkstraAlgorithm game, final int mode) {
@@ -51,14 +49,14 @@ public class GameScreen_Level1 implements Screen {
         //init game and stage
         this.mode = mode;
         this.game = game;
-        stage = new Stage(viewport);
         linesToDraw = new ArrayList<>();
         battle = game.assetManager.get("battle.wav", Sound.class);
 
         //init camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+        stage = new Stage(fitViewport);
 
         //init cities and starting point
         currentConnection.add(game.cities.get(0));
@@ -66,16 +64,16 @@ public class GameScreen_Level1 implements Screen {
         switch (mode) {
             case 1:
                 connections = new Graph(game.vertices, 1);
-                background = new Background(game, 1);
+                background = new BackgroundGroup(game, 1);
 
                 break;
             case 2:
                 connections = new Graph(game.vertices, 2);
-                background = new Background(game, 3);
+                background = new BackgroundGroup(game, 3);
                 break;
             case 3:
                 connections = new Graph(game.vertices, 1);
-                background = new Background(game, 4);
+                background = new BackgroundGroup(game, 4);
                 break;
         }
 
@@ -102,7 +100,7 @@ public class GameScreen_Level1 implements Screen {
                         dispose();
                     }
                 });
-            } else if (actor.getName().equals("dropBox")) dropBox = (DropBox) actor;
+            } else if (actor.getName().equals("dropBox")) dropBox = (DropBoxWindow) actor;
             else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
             else if (actor.getName().equals("mangoCounter")) mangoCounter = (Table) actor;
         }
@@ -135,7 +133,7 @@ public class GameScreen_Level1 implements Screen {
                                     game.currentLevel = 2;
                                     break;
                             }
-                            game.setScreen(new LevelWon(game, game.currentLevel));
+                            game.setScreen(new LevelWonScreen(game, game.currentLevel));
                             dispose();
                         }
                     }
@@ -150,9 +148,9 @@ public class GameScreen_Level1 implements Screen {
                     City destCity = game.cities.get(destination);
                     City sourceCity = game.cities.get(i);
 
-                    connectionArea = new ConnectionArea(sourceCity, destCity);
+                    connectionArea = new ConnectionAreaImage(sourceCity, destCity);
                     connectionArea.setName(i+ "-" + j);
-                    Stack stack = createWeights(String.valueOf(neighbors.get(j).weight), 40, 5 * game.offset + game.space + count * (game.space + 40), (float) (Gdx.graphics.getHeight() * 0.3 - game.space / 2));
+                    Stack stack = createWeights(String.valueOf(neighbors.get(j).weight), 40, 5 * game.offset + game.space + count * (game.space + 40), (float) (camera.viewportHeight * 0.3 - game.space / 2));
                     stack.setName(i+ "-" + j);
                     tableGroup.addActor(connectionArea);
                     tableGroup.addActor(stack);
@@ -186,16 +184,16 @@ public class GameScreen_Level1 implements Screen {
                 break;
         }
 
-        infotext = new InfoText(game, text);
+        infotext = new InfoTextGroup(game, text, camera);
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 infotext.remove();
-                int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
+                int parrottWidth = (int) (camera.viewportWidth * 0.1);
                 parrotImage = new Image(game.assetManager.get("parrott.png", Texture.class));
                 parrotImage.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                parrotImage.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.31));
+                parrotImage.setPosition((float) (camera.viewportWidth * 0.85), (float) (camera.viewportHeight * 0.31));
                 parrotImage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
@@ -217,10 +215,10 @@ public class GameScreen_Level1 implements Screen {
         if (mode == 3) y = (int) (camera.viewportHeight * 0.225 - 2 * game.space);
 
         Image box = new Image(game.assetManager.get("box.png", Texture.class));
-        box.setSize(Gdx.graphics.getWidth()-2, Gdx.graphics.getHeight()/3 - 2);
+        box.setSize(camera.viewportWidth-2, camera.viewportHeight/3 - 2);
         box.setPosition(1,1);
         stage.addActor(box);
-        stage.addActor(new ConnectionOverview(game.vertices, game.cities, game, (int) (width * 0.8), height, x, y, connections, mode));
+        stage.addActor(new ConnectionOverviewGroup(game.vertices, game.cities, game, (int) (width * 0.8), height, x, y, connections, mode));
         stage.addActor(tableGroup);
         stage.addActor(mainMenuButton);
         stage.addActor(infotext);
@@ -333,7 +331,7 @@ public class GameScreen_Level1 implements Screen {
             if (newValue > 0) mangoCounterLabel.setText(newValue);
             else {
                 parrotImage.remove();
-                final LevelLost lost = new LevelLost(this.game);
+                final LevelLostGroup lost = new LevelLostGroup(this.game, camera);
                 stage.addActor(lost);
                 Button close = (Button) lost.getChild(2);
                 close.addListener(new ClickListener() {
@@ -394,7 +392,7 @@ public class GameScreen_Level1 implements Screen {
                     if (newValue > 0) mangoCounterLabel.setText(newValue);
                     else {
                         parrotImage.remove();
-                        final LevelLost lost = new LevelLost(game);
+                        final LevelLostGroup lost = new LevelLostGroup(game, camera);
                         stage.addActor(lost);
                         Button close = (Button) lost.getChild(2);
                         close.addListener(new ClickListener() {
@@ -429,7 +427,7 @@ public class GameScreen_Level1 implements Screen {
                     added.add(payload.getDragActor());
                 }
                 if (added.size() == connections.numOfEdges) {
-                    game.setScreen(new LevelWon(game, 2.0));
+                    game.setScreen(new LevelWonScreen(game, 2.0));
                     dispose();
                 }
             }
@@ -471,6 +469,8 @@ public class GameScreen_Level1 implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
         camera.update();
     }
 

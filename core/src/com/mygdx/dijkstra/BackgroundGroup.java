@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
-public class Background extends Group {
+public class BackgroundGroup extends Group {
     final DijkstraAlgorithm game;
     Image mapImage, boatImage, cockpit, water, mangoCounterImage;
     OrthographicCamera camera;
@@ -17,37 +17,37 @@ public class Background extends Group {
     Button mainMenuButton;
     Table mangoCounter;
 
-    public Background(final DijkstraAlgorithm game, int level) {
+    public BackgroundGroup(final DijkstraAlgorithm game, int level) {
         this.game = game;
         int row_height = offset;
         int col_width = 2 * offset;
 
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
 
         yWater = camera.viewportWidth / 6 + offset;
 
-        cockpit = createActor((int) (Gdx.graphics.getWidth() * 1.1), (float) (Gdx.graphics.getHeight() * 1.1), -52, -45, game.assetManager.get("background.png", Texture.class));
+        cockpit = createActor((int) (camera.viewportWidth * 1.1), (float) (camera.viewportHeight * 1.1), -52, -45, game.assetManager.get("background.png", Texture.class));
         addActor(cockpit);
         cockpit.setName("cockpit");
 
-        water = createActor(Gdx.graphics.getWidth(), (float) (Gdx.graphics.getHeight() * 0.65), 0, camera.viewportHeight / 3, game.assetManager.get("map.png", Texture.class));
+        water = createActor((int) camera.viewportWidth, (float) (camera.viewportHeight * 0.65), 0, camera.viewportHeight / 3, game.assetManager.get("map.png", Texture.class));
         addActor(water);
         water.setName("water");
 
-        mapImage = createActor((int) (Gdx.graphics.getWidth() * 0.9), (float) (Gdx.graphics.getHeight() * 0.6), (float) (2.5 * game.offset), (float) Gdx.graphics.getHeight() / 3 + 25, game.assetManager.get("worldMap 1.png", Texture.class));
+        mapImage = createActor((int) (camera.viewportWidth * 0.9), (float) (camera.viewportHeight * 0.6), (float) (2.5 * game.offset), (float) camera.viewportHeight / 3 + 25, game.assetManager.get("worldMap 1.png", Texture.class));
         addActor(mapImage);
         mapImage.setName("mapImage");
 
-        mangoCounterImage = createActor((int) (Gdx.graphics.getWidth() * 0.1), (float) (Gdx.graphics.getHeight() * 0.075),
-                (float) (Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() * 0.1)) - game.offset,
-                (float) (Gdx.graphics.getHeight() - (Gdx.graphics.getHeight() * 0.075) - game.offset),
+        mangoCounterImage = createActor((int) (camera.viewportWidth * 0.1), (float) (camera.viewportHeight * 0.075),
+                (float) (camera.viewportWidth - (camera.viewportWidth * 0.1)) - game.offset,
+                (float) (camera.viewportHeight - (camera.viewportHeight * 0.075) - game.offset),
                 game.assetManager.get("mangoCounter.png", Texture.class));
         mangoCounter = new Table(game.fontSkin);
-        mangoCounter.setSize((int) (Gdx.graphics.getWidth() * 0.1), (float) (Gdx.graphics.getHeight() * 0.075));
-        mangoCounter.setPosition((float) (Gdx.graphics.getWidth() - (Gdx.graphics.getWidth() * 0.1)) - game.offset,
-                (float) (Gdx.graphics.getHeight() - (Gdx.graphics.getHeight() * 0.075) - game.offset));
+        mangoCounter.setSize((int) (camera.viewportWidth * 0.1), (float) (camera.viewportHeight * 0.075));
+        mangoCounter.setPosition((float) (camera.viewportWidth - (camera.viewportWidth * 0.1)) - game.offset,
+                (float) (camera.viewportHeight - (camera.viewportHeight * 0.075) - game.offset));
         mangoCounter.add(mangoCounterImage);
         Label mangoCounterLabel = new Label(String.valueOf(game.mangos), game.fontSkin);
         mangoCounter.add(mangoCounterLabel).padLeft((float) (-0.6*mangoCounter.getWidth()));
@@ -55,7 +55,7 @@ public class Background extends Group {
         mangoCounter.setName("mangoCounter");
 
         //boat
-        float boatWidth = (float) (Gdx.graphics.getWidth() * 0.075);
+        float boatWidth = (float) (camera.viewportWidth * 0.075);
         boatImage = createActor((int) boatWidth, boatWidth, this.game.cities.get(0).getX() - boatWidth / 2,
                 this.game.cities.get(0).getY() - boatWidth / 7, game.assetManager.get("ship.png", Texture.class));
         addActor(boatImage);
@@ -63,7 +63,7 @@ public class Background extends Group {
 
         mainMenuButton = new TextButton("Menu", game.mySkin, "default");
         mainMenuButton.setSize(2 * col_width, (float) (1.5 * row_height));
-        mainMenuButton.setPosition(3 * space, (float) (Gdx.graphics.getHeight() - (1.5 * row_height) - 3 * space));
+        mainMenuButton.setPosition(3 * space, (float) (camera.viewportHeight - (1.5 * row_height) - 3 * space));
         addActor(mainMenuButton);
         mainMenuButton.setName("mainMenuButton");
     }

@@ -10,19 +10,14 @@ import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
 
-import static com.badlogic.gdx.utils.Align.left;
-
-public class LevelWon implements Screen {
+public class LevelWonScreen implements Screen {
     private Texture mangoImage;
     private Texture levelWonImage;
     private Texture bucketImage;
@@ -40,7 +35,7 @@ public class LevelWon implements Screen {
     Sound sound;
 
 
-    public LevelWon(final DijkstraAlgorithm game, double nextLevel) {
+    public LevelWonScreen(final DijkstraAlgorithm game, double nextLevel) {
 
         this.game = game;
         this.nextLevel = nextLevel;
@@ -133,7 +128,7 @@ public class LevelWon implements Screen {
                     dispose();
                 }
                 else {
-                    game.setScreen(new GameWon(game));
+                    game.setScreen(new GameWonScreen(game));
                 }
             }
         }

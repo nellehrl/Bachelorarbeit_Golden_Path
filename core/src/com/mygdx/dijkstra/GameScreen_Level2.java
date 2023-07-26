@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import java.util.ArrayList;;
 import java.util.List;
@@ -29,33 +28,30 @@ public class GameScreen_Level2 implements Screen {
     private final FitViewport fitViewport;
     ArrayList<City> currentConnection = new ArrayList<>();
     private Stage stage;
-    private final ScreenViewport viewport = new ScreenViewport();
     Button mainMenuButton, closeButton;
     Group tableGroup;
     private List<LineData> linesToDraw;
-    DropBox dropBox;
+    DropBoxWindow dropBox;
     Group background;
     Graph connections;
     String text;
-    InfoText infotext;
+    InfoTextGroup infotext;
 
     public GameScreen_Level2(final DijkstraAlgorithm game) {
 
         this.game = game;
 
-        stage = new Stage(viewport);
-
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-
+        stage = new Stage(fitViewport);
         //init cities and starting point
         currentConnection.add(game.cities.get(0));
         battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
 
         connections = new Graph(game.vertices, 1);
 
-        background = new Background(game, 2);
+        background = new BackgroundGroup(game, 2);
         for (Actor actor : background.getChildren()) {
             if (actor.getName().equals("mainMenuButton")) {
                 mainMenuButton = (Button) actor;
@@ -67,7 +63,7 @@ public class GameScreen_Level2 implements Screen {
                         dispose();
                     }
                 });
-            } else if (actor.getName().equals("dropBox")) dropBox = (DropBox) actor;
+            } else if (actor.getName().equals("dropBox")) dropBox = (DropBoxWindow) actor;
             else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
             else if (actor.getName().equals("mangoCounter")) mangoCounter = (Table) actor;
         }
@@ -91,15 +87,15 @@ public class GameScreen_Level2 implements Screen {
                 Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
                 Vector2 end = new Vector2(destCity.x, destCity.y);
 
-                connectionArea = new ConnectionArea(sourceCity, destCity);
-                Image connectionArea2 = new ConnectionArea(destCity, sourceCity);
+                connectionArea = new ConnectionAreaImage(sourceCity, destCity);
+                Image connectionArea2 = new ConnectionAreaImage(destCity, sourceCity);
                 tableGroup.addActor(connectionArea);
                 tableGroup.addActor(connectionArea);
 
                 LineData lineData = new LineData(start, end, Color.BLACK);
                 linesToDraw.add(lineData);
 
-                InfoCard card = new InfoCard(game, (float) (destCity.x + sourceCity.x) / 2,
+                InfoCardActor card = new InfoCardActor(game, (float) (destCity.x + sourceCity.x) / 2,
                         (float) (destCity.y + sourceCity.y) / 2, 150, 60, sourceCity.name, destCity.name, weight, false);
                 final Table cardTableFinal = card.getTable(); // Create a final variable
 
@@ -139,7 +135,7 @@ public class GameScreen_Level2 implements Screen {
                 "We need to understand how these graphs work to get ahead of the other crews. Like that we can generate " +
                 "much more loooooooooooooooot!\n\nDOn`t forget to ENTER to check if you got the right costs!";
 
-        infotext = new InfoText(game, text);
+        infotext = new InfoTextGroup(game, text, camera);
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
@@ -148,7 +144,7 @@ public class GameScreen_Level2 implements Screen {
                 int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
                 parrotImage = new Image(game.assetManager.get("parrott.png", Texture.class));
                 parrotImage.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                parrotImage.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (Gdx.graphics.getHeight() * 0.31));
+                parrotImage.setPosition((float) (Gdx.graphics.getWidth() * 0.85), (float) (camera.viewportHeight * 0.31));
                 parrotImage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
@@ -161,7 +157,7 @@ public class GameScreen_Level2 implements Screen {
         });
 
         Image box = new Image(game.assetManager.get("box.png", Texture.class));
-        box.setSize(Gdx.graphics.getWidth()-2, Gdx.graphics.getHeight()/3 - 2);
+        box.setSize(camera.viewportWidth-2, camera.viewportHeight/3 - 2);
         box.setPosition(1,1);
         stage.addActor(box);
         tableGroup.addActor(boatImage);
@@ -245,7 +241,7 @@ public class GameScreen_Level2 implements Screen {
                                     numOfEdges[0]++;
                                     final int finalNumOfEdges = numOfEdges[0];
                                     if (finalNumOfEdges == connections.numOfEdges) {
-                                        game.setScreen(new LevelWon(game, 3.1));
+                                        game.setScreen(new LevelWonScreen(game, 3.1));
                                         dispose();
                                     }
                                 } else {
@@ -254,7 +250,7 @@ public class GameScreen_Level2 implements Screen {
                                     if (newValue > 0) mangoCounterLabel.setText(newValue);
                                     else {
                                         parrotImage.remove();
-                                        final LevelLost lost = new LevelLost(game);
+                                        final LevelLostGroup lost = new LevelLostGroup(game, camera);
                                         stage.addActor(lost);
                                         Button close = (Button) lost.getChild(2);
                                         close.addListener(new ClickListener() {
@@ -283,6 +279,8 @@ public class GameScreen_Level2 implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
         camera.update();
     }
 

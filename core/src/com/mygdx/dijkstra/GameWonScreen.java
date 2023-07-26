@@ -1,36 +1,33 @@
 package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.MathUtils;
 import com.badlogic.gdx.math.Rectangle;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.TimeUtils;
-import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.MainMenuScreen;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
-import java.util.Iterator;
-
-public class GameWon implements Screen {
+public class GameWonScreen implements Screen {
     final DijkstraAlgorithm game;
     private SpriteBatch batch;
     private OrthographicCamera camera;
+    private final FitViewport fitViewport;
+    Stage stage;
 
-    public GameWon(final DijkstraAlgorithm game) {
+    public GameWonScreen(final DijkstraAlgorithm game) {
         this.game = game;
 
-        camera = new OrthographicCamera();
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.setToOrtho(false, 800, 480);
+        fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+
+        stage = new Stage(fitViewport);
+        Gdx.input.setInputProcessor(stage);
         batch = new SpriteBatch();
 
         Music music = game.assetManager.get("pirates.mp3", Music.class);
@@ -70,7 +67,10 @@ public class GameWon implements Screen {
 
     @Override
     public void resize(int width, int height) {
-
+        fitViewport.update(width, height, true);
+        camera.viewportWidth = width;
+        camera.viewportHeight = height;
+        camera.update();
     }
 
     @Override

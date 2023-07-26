@@ -5,7 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
 
-public class DropBox extends Window {
+public class DropBoxWindow extends Window {
 
     private static final WindowStyle windowStyle;
 
@@ -27,7 +27,7 @@ public class DropBox extends Window {
     /**
      * Default constructor.
      */
-    public DropBox() {
+    public DropBoxWindow() {
         super("", windowStyle);
         setClip(false);
         setTransform(true);
