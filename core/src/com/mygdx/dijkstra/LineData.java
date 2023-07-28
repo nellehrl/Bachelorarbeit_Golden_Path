@@ -25,6 +25,20 @@ public class LineData {
     public Color getColor() {
         return color;
     }
+    public void setStart(Vector2 start) {
+
+        this.start = start;
+    }
+
+    public void setEnd(Vector2 end) {
+
+        this.end = end;
+    }
+
+    public void setColor(Color color) {
+
+        this.color = color;
+    }
 }
 
 

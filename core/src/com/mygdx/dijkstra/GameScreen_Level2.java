@@ -51,7 +51,7 @@ public class GameScreen_Level2 implements Screen {
 
         connections = new Graph(game.vertices, 1);
 
-        background = new BackgroundGroup(game, 2);
+        background = new BackgroundGroup(game);
         for (Actor actor : background.getChildren()) {
             if (actor.getName().equals("mainMenuButton")) {
                 mainMenuButton = (Button) actor;
@@ -129,7 +129,7 @@ public class GameScreen_Level2 implements Screen {
         }
         dropBoxItems();
 
-        text = "You know who this is, Captain! \n\nFantastic job so far! We updated our system. Now that you have added " +
+        text = "You know who this is, Captain!\n\nFantastic job so far! We updated our system. Now that you have added " +
                 "the right weight to the connections, we have an excellent overview!\n\n" +
                 "Let`s check if everything is clear - find the weights for the connections written down below.\n\n" +
                 "We must to understand how these graphs work to get ahead of the other crews. Like that, we can generate " +
@@ -229,22 +229,21 @@ public class GameScreen_Level2 implements Screen {
                             return true;
                         }
                     });
+                    final boolean[] edgeAdded = {false};
                     textfield.setTextFieldListener(new TextField.TextFieldListener() {
                         @Override
                         public void keyTyped(TextField textField, char key) {
+                            String userInput = textField.getText();
+                            boolean isCorrect = userInput.equals(fieldText + weight);
                             if (key == '\r' || key == '\n') {
-                                String userInput = textField.getText();
-                                boolean isCorrect = userInput.equals(fieldText + weight);
-                                if (isCorrect) {
+                                if (isCorrect && !edgeAdded[0]) {
+                                    numOfEdges[0]++;
+                                    edgeAdded[0] = true;
                                     textField.setColor(Color.GREEN);
                                     linesToDraw.add(new LineData(start, end, Color.GREEN));
-                                    numOfEdges[0]++;
-                                    final int finalNumOfEdges = numOfEdges[0];
-                                    if (finalNumOfEdges == connections.numOfEdges) {
-                                        game.setScreen(new LevelWonScreen(game, 3.1));
-                                        dispose();
-                                    }
-                                } else {
+                                    System.out.println(numOfEdges[0]);
+                                }
+                                else {
                                     battle.play();
                                     final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
                                     if (newValue > 0) mangoCounterLabel.setText(newValue);
@@ -265,6 +264,10 @@ public class GameScreen_Level2 implements Screen {
                                     }
 
                                 }
+                            }
+                            if (numOfEdges[0] == connections.numOfEdges) {
+                                game.setScreen(new LevelWonScreen(game, 2));
+                                dispose();
                             }
                         }
                     });

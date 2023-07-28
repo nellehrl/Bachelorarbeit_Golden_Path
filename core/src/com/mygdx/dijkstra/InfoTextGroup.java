@@ -27,7 +27,7 @@ public class InfoTextGroup extends Group {
         Table table = new Table();
         table.setBackground(game.fontSkin.getDrawable("color"));
         table.setSize(layout.width , (float) (layout.height + row_height*1.5 + 100));
-        table.setPosition((float) camera.viewportWidth/2 - table.getWidth()/2, (float) camera.viewportHeight/2 - table.getHeight()/2);
+        table.setPosition(camera.viewportWidth/2 - table.getWidth()/2,camera.viewportHeight/2 - table.getHeight()/2);
 
         Label codeLabel = new Label(text, game.fontSkin);
         codeLabel.setAlignment(left);
@@ -43,7 +43,7 @@ public class InfoTextGroup extends Group {
         parrottImage = createActor(parrottWidth, (float) (parrottWidth * 1.25), table.getX() + table.getWidth() - parrottWidth,
                 table.getY() + table.getHeight() - 18, game.assetManager.get("parrott.png", Texture.class));
 
-        shadowImage = createActor((int) (table.getWidth()*1.25), (float) (table.getHeight()*1.25), table.getX() - 100, table.getY()-40, game.assetManager.get("shadow.png", Texture.class));
+        shadowImage = createActor((int) (table.getWidth()*1.25), (float) (table.getHeight()*1.2), table.getX() - 100, table.getY()-30, game.assetManager.get("shadow.png", Texture.class));
         addActor(shadowImage);
         shadowImage.toBack();
         shadowImage.setName("shadowImage");

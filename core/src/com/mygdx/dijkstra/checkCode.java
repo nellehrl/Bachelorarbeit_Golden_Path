@@ -44,7 +44,7 @@ public class checkCode extends Group {
         codeTable.row();
         codeTable.add(codeInput).width(width / 2).height(height / 6).center().padTop(-60);
 
-        BackgroundGroup background = new BackgroundGroup(game, 3);
+        BackgroundGroup background = new BackgroundGroup(game);
         Table mangoCounter = background.mangoCounter;
         final Label mangoCounterLabel = (Label) mangoCounter.getChild(1);
         addActor(mangoCounter);
@@ -57,20 +57,6 @@ public class checkCode extends Group {
                 if (key == '\r' || key == '\n') {
                     if (input.trim().equals(code.trim())) {
                         mangoCounterLabel.setText(game.mangos);
-                        switch (mode) {
-                            case 1:
-                                game.currentLevel = 3.2;
-                                break;
-                            case 2:
-                                game.currentLevel = 3.3;
-                                break;
-                            case 3:
-                                game.currentLevel = 3.4;
-                                break;
-                            case 4:
-                                game.currentLevel = 3.5;
-                                break;
-                        }
                         game.setScreen(new LevelWonScreen(game, game.currentLevel));
                         isCorrect = true;
                     } else {

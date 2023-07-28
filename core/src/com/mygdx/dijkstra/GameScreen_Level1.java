@@ -61,22 +61,10 @@ public class GameScreen_Level1 implements Screen {
         //init cities and starting point
         currentConnection.add(game.cities.get(0));
         validConnection.add(0);
-        switch (mode) {
-            case 1:
-                connections = new Graph(game.vertices, 1);
-                background = new BackgroundGroup(game, 1);
+        if(mode == 3) connections = new Graph(game.vertices, 1);
+        else connections = new Graph(game.vertices, 2);
 
-                break;
-            case 2:
-                connections = new Graph(game.vertices, 2);
-                background = new BackgroundGroup(game, 3);
-                break;
-            case 3:
-                connections = new Graph(game.vertices, 1);
-                background = new BackgroundGroup(game, 4);
-                break;
-        }
-
+        background = new BackgroundGroup(game);
         Group tableGroup = new Group();
         //init background
         for (Actor actor : background.getChildren()) {
@@ -96,7 +84,7 @@ public class GameScreen_Level1 implements Screen {
                                 game.currentLevel = 1.3;
                                 break;
                         }
-                        game.setScreen(new MainMenuScreen(game, 1.1));
+                        game.setScreen(new MainMenuScreen(game, game.currentLevel));
                         dispose();
                     }
                 });
@@ -122,17 +110,6 @@ public class GameScreen_Level1 implements Screen {
                         currentConnection.add(value);
                         if (!visited.contains(value)) visited.add(value);
                         if (visited.size() == game.cities.size()) {
-                            switch (mode) {
-                                case 1:
-                                    game.currentLevel = 1.2;
-                                    break;
-                                case 2:
-                                    game.currentLevel = 1.3;
-                                    break;
-                                case 3:
-                                    game.currentLevel = 2;
-                                    break;
-                            }
                             game.setScreen(new LevelWonScreen(game, game.currentLevel));
                             dispose();
                         }
@@ -162,7 +139,7 @@ public class GameScreen_Level1 implements Screen {
 
         switch (mode) {
             case 1:
-                text = "Howdy Captain, \\n\\n Let's see what we got here….We want to visit all cities and then come back to bring" +
+                text = "Howdy Captain,\n\n Let's see what we got here….We want to visit all cities and then come back to bring" +
                         "all our conquests to our treasury.\n" + "\n" + "In the box down on the radar you can see all connections." +
                         "They go both ways. So it should be easy," + "right? Let's get on it.\n\nPlease stay on the route cause there are"+
                         "other pirates out there with canooons waiting for a fight.";
@@ -207,8 +184,7 @@ public class GameScreen_Level1 implements Screen {
 
 
         tableGroup.addActor(boatImage);
-        int width = (int) (camera.viewportWidth / (game.vertices - 1));
-        if (mode == 2) width = (int) (camera.viewportWidth / game.vertices);
+        int width = (int) (camera.viewportWidth / game.vertices);
         int height = (int) (camera.viewportHeight / 6 - game.space);
         int x = 3 * game.offset;
         int y = (int) (camera.viewportHeight * 0.28 - game.space);
@@ -427,7 +403,7 @@ public class GameScreen_Level1 implements Screen {
                     added.add(payload.getDragActor());
                 }
                 if (added.size() == connections.numOfEdges) {
-                    game.setScreen(new LevelWonScreen(game, 2.0));
+                    game.setScreen(new LevelWonScreen(game, 1.3));
                     dispose();
                 }
             }

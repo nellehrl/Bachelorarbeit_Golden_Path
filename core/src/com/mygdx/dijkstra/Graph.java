@@ -69,6 +69,12 @@ public class Graph {
         numOfEdges++;
     }
 
+    public void removeEdge(int source, int destination, int weight) {
+        Edge edge = new Edge(source, destination, weight);
+        adjacencyList[source].remove(edge);
+        numOfEdges--;
+    }
+
     public List<Edge> getNeighbors(int vertex) {
         return adjacencyList[vertex];
     }

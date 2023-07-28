@@ -14,7 +14,7 @@ public class ConnectionAreaImage extends Image {
         Vector2 point2 = new Vector2(destCity.x, destCity.y);
 
         float width = point1.dst(point2);
-        float height = 16f;
+        float height = 20f;
         double angle = Math.toDegrees(Math.atan2(destCity.y - sourceCity.y, (destCity.x) - sourceCity.x));
 
         double rotatedAngle = angle - 90; // Rotate the angle 90 degrees

@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -16,19 +17,24 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import java.util.*;
 import java.util.List;
 
+import static com.badlogic.gdx.utils.Align.left;
+
 public class GameScreen_Level3 implements Screen {
     final DijkstraAlgorithm game;
-    Image boatImage, connectionArea;
-    OrthographicCamera camera;
+    private final Stage stage;
+    private final List<LineData> linesToDraw;
     private final FitViewport fitViewport;
-    private Map<String, TextField> cellMap;
+    Image boatImage, connectionArea, parrottimage;
+    OrthographicCamera camera;
     ScrollPane.ScrollPaneStyle scrollPaneStyle;
-    private Stage stage;
     String code = "";
     Button mainMenuButton, doneButton;
     ScrollPane dropBox;
@@ -36,9 +42,8 @@ public class GameScreen_Level3 implements Screen {
     Graph connections;
     int[] distances;
     ArrayList<Integer> correctNodes = new ArrayList<>();
-    int[][] iterations,precursor;
+    int[][] iterations, precursor;
     ArrayList<Integer> dijkstraConnections;
-    private List<LineData> linesToDraw;
     Group background;
     checkCode checkCode;
     InfoTextGroup infotext;
@@ -53,6 +58,9 @@ public class GameScreen_Level3 implements Screen {
         this.game = game;
         this.mode = mode;
         connections = new Graph(game.vertices, 1);
+        linesToDraw = new ArrayList<>();
+        int row_height = game.offset;
+        int col_width = 2 * game.offset;
 
         //init camera
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -65,13 +73,8 @@ public class GameScreen_Level3 implements Screen {
         iterations = new int[game.vertices][game.vertices];
         dijkstraConnections = new ArrayList<>();
 
-        // Create the ScrollPane
-        scrollPaneStyle = new ScrollPane.ScrollPaneStyle();
-        scrollPaneStyle.background = game.fontSkin.getDrawable("window-c");
-
         //init background
-        background = new BackgroundGroup(game, 2);
-
+        background = new BackgroundGroup(game);
         for (Actor actor : background.getChildren()) {
             if (actor.getName().equals("mainMenuButton")) {
                 mainMenuButton = (Button) actor;
@@ -80,29 +83,24 @@ public class GameScreen_Level3 implements Screen {
                     public void clicked(InputEvent event, float x, float y) {
                         switch (mode) {
                             case 1:
-                                game.currentLevel = 3.1;
+                                game.currentLevel = 1.1;
                                 break;
                             case 2:
-                                game.currentLevel = 3.2;
+                                game.currentLevel = 1.2;
                                 break;
                             case 3:
-                                game.currentLevel = 3.3;
-                                break;
-                            case 4:
-                                game.currentLevel = 3.4;
+                                game.currentLevel = 1.3;
                                 break;
                         }
                         game.setScreen(new MainMenuScreen(game, mode));
                         dispose();
                     }
                 });
-            } else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
+            }
+            else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
         }
 
-        Group tableGroup = new Group();
-
         //init map
-        linesToDraw = new ArrayList<>();
         for (int i = 0; i < game.vertices; i++) {
             City sourceCity = game.cities.get(i);
             portTable = new Ports(sourceCity, game);
@@ -124,9 +122,7 @@ public class GameScreen_Level3 implements Screen {
 
                 Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
                 Vector2 end = new Vector2(destCity.x, destCity.y);
-
                 connectionArea = new ConnectionAreaImage(sourceCity, destCity);
-                Image connectionArea2 = new ConnectionAreaImage(destCity, sourceCity);
 
                 InfoCardActor card = new InfoCardActor(game, (float) (destCity.x + sourceCity.x) / 2,
                         (float) (destCity.y + sourceCity.y) / 2, 150, 60, sourceCity.name, destCity.name, weight, false);
@@ -143,25 +139,13 @@ public class GameScreen_Level3 implements Screen {
                         cardTableFinal.remove();
                     }
                 });
-                connectionArea2.addListener(new InputListener() {
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        stage.addActor(cardTableFinal);
-                    }
 
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        cardTableFinal.remove();
-                    }
-                });
-
-                LineData lineData = new LineData(start, end, Color.DARK_GRAY);
-                linesToDraw.add(lineData);
-                tableGroup.addActor(connectionArea);
-                tableGroup.addActor(connectionArea2);
+                linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
+                stage.addActor(connectionArea);
             }
         }
 
+        //init table
         algorithmTable = new Table(game.fontSkin);
         algorithmTable.setBackground(game.fontSkin.getDrawable("color"));
 
@@ -169,38 +153,38 @@ public class GameScreen_Level3 implements Screen {
         dijkstra();
         createTable();
 
+        //init ScrollPane
+        scrollPaneStyle = new ScrollPane.ScrollPaneStyle();
+        scrollPaneStyle.background = game.fontSkin.getDrawable("window-c");
         dropBox = new ScrollPane(algorithmTable, scrollPaneStyle);
         dropBox.setWidth(camera.viewportWidth + 20);
         dropBox.setHeight((float) (camera.viewportHeight * 0.33) + 25);
         dropBox.setPosition(-10, -10);
 
+        //init code
         for (int i = 0; i < distances.length; i++) {
             if (distances[i] == Integer.MAX_VALUE) distances[i] = 0;
             code += distances[i];
         }
         System.out.println(code);
 
-        int row_height = game.offset;
-        int col_width = 2 * game.offset;
-
         //check if dijkstra is correct
-        checkCode = new checkCode((float) camera.viewportWidth / 4, (float) camera.viewportHeight / 2,
-                (float) camera.viewportWidth / 2, 150, code, game, mode);
+        checkCode = new checkCode(camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, code, game, mode);
         doneButton = new TextButton("Done", game.mySkin, "default");
         doneButton.setSize((float) (2 * col_width), (float) (1.5 * row_height));
         doneButton.setPosition(3 * game.space, (float) (camera.viewportHeight - (1.5 * row_height) - mainMenuButton.getHeight() - 3 * game.space));
-        stage.addActor(doneButton);
         doneButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 stage.addActor(checkCode);
             }
         });
+        stage.addActor(doneButton);
 
         String text = "";
         switch (mode) {
             case 1:
-                text = "Servus Captain, \n\nWe need to deliver now! Cause these damn mangooos are hard to get. :D Let`s see if we are able to find " +
+                text = "Servus Captain,\n\nWe need to deliver now! Cause these damn mangooos are hard to get. :D Let`s see if we are able to find " +
                         "the shortest paths to each city from our hometown! Fill out the table below, I will help you! " +
                         "In the end we will know how long it takes us to travel to each city and the fastest path! I am " +
                         "sure you will find out how it works!\n\nOh, you will need to find the code to unlock this treasure I have found!\n\n" +
@@ -234,31 +218,31 @@ public class GameScreen_Level3 implements Screen {
                         "to the city. For INFINITY it was a ...... 0";
                 break;
         }
-
         infotext = new InfoTextGroup(game, text, camera);
+
+        //listener to close infotext
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 infotext.remove();
                 int parrottWidth = (int) (camera.viewportWidth * 0.1);
-                final Image image = new Image(game.assetManager.get("parrott.png", Texture.class));
-                image.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                image.setPosition((float) (camera.viewportWidth * 0.85), (float) (camera.viewportHeight * 0.32));
-                image.addListener(new ClickListener() {
+                parrottimage = new Image(game.assetManager.get("parrott.png", Texture.class));
+                parrottimage.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
+                parrottimage.setPosition((float) (camera.viewportWidth * 0.85), (float) (camera.viewportHeight * 0.32));
+                parrottimage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         stage.addActor(infotext);
-                        image.remove();
+                        parrottimage.remove();
                     }
                 });
-                stage.addActor(image);
+                stage.addActor(parrottimage);
             }
         });
 
-        // Add the tableGroup to the stage after the cockpit, ensuring that the cockpit is rendered on top
-        tableGroup.addActor(dropBox);
-        stage.addActor(tableGroup);
+        // Add remaining actors to stage
+        stage.addActor(dropBox);
         stage.addActor(mainMenuButton);
         stage.addActor(boatImage);
         stage.addActor(infotext);
@@ -270,6 +254,7 @@ public class GameScreen_Level3 implements Screen {
         camera.update();
         game.batch.setProjectionMatrix(camera.combined);
 
+        //clear with background color
         Gdx.gl.glClearColor(0.95f, 0.871f, 0.726f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
@@ -298,13 +283,14 @@ public class GameScreen_Level3 implements Screen {
         //got the priorityQueue idea from chatgpt conversation on the 13th of July 3.32
         Comparator<Node> nodeComparator = new Comparator<Node>() {
             @Override
-            public int compare(Node node1, Node node2) {
-                return Integer.compare(node1.distance, node2.distance);
+            public int compare(Node node1, Node node2) {return Integer.compare(node1.distance, node2.distance);
             }
         };
         PriorityQueue<Node> minHeap = new PriorityQueue<>(nodeComparator);
         precursor = new int[game.vertices][game.vertices];
         minHeap.add(new Node(source, 0));
+
+        //loop until all connections are found
         while (!minHeap.isEmpty()) {
             //get the node with the lowest distances + current node
             Node currentNode = minHeap.poll();
@@ -342,7 +328,7 @@ public class GameScreen_Level3 implements Screen {
     }
 
     private void createTable() {
-        cellMap = new LinkedHashMap<>(); // LinkedHashMap from ChatGPT on July 14th at 10.09am
+        Map<String, TextField> cellMap = new LinkedHashMap<>(); // LinkedHashMap from ChatGPT on July 14th at 10.09am
 
         // Create a nested table for the top row labels
         Table topLabelsTable = new Table(game.fontSkin);
@@ -380,76 +366,78 @@ public class GameScreen_Level3 implements Screen {
         //init first col
         final TextField textField0 = new TextField(" ", game.fontSkin);
         textField0.setColor(0, 0, 0, 1);
-        textField0.setText("Costs - Precursor");
+        textField0.setText("Precursor - Costs");
         newRow.add(textField0).expandX().fillX();
 
         //fill rest of cols
         for (int col = 0; col < game.vertices; col++) {
             TextField textField = new TextField(" ", game.fontSkin);
             textField.setColor(0, 0, 0, 1);
-            //fill table for help if level is below 3.4
-            if (mode < 4) {
-                int costs = iterations[iteration][col];
-                String precursorString = game.cities.get(precursor[iteration][col]).shortName;
-                String correctValue = buildCorrectValue(costs, precursorString);
-                final int sourceCityIndex = dijkstraConnections.get(iteration);
-                final City sourceCity = game.cities.get(sourceCityIndex);
-                final City destCity = game.cities.get(col);
-                final Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
-                final Vector2 end = new Vector2(destCity.x, destCity.y);
-                boolean filled = false;
-                //define level of help per mode
-                switch (mode) {
-                    case 1:
-                        if (costs == Integer.MAX_VALUE || costs == 0 || correctNodes.contains(col)) {
-                            correctlyFilledTextFieldsInCurrentRow++;
-                            textField.setText(correctValue);
-                            textField.setColor(Color.GREEN);
-                        }
-                        break;
-                    case 2:
-                        if (costs == Integer.MAX_VALUE || costs == 0) {
-                            correctlyFilledTextFieldsInCurrentRow++;
-                            textField.setText(correctValue);
-                            textField.setColor(Color.GREEN);
-                        }
-                        break;
-                }
-                //add listeners
-                for (Edge edge : neighbors) {
-                    if (edge.getDestination() == col) {
-                        filled = true;
-                        textField = addNeighborListener(textField, start, end, correctValue, iteration, true);
+            int costs = iterations[iteration][col];
+            String precursorString = game.cities.get(precursor[iteration][col]).shortName;
+            String correctValue = buildCorrectValue(costs, precursorString);
+            final int sourceCityIndex = dijkstraConnections.get(iteration);
+            final City sourceCity = game.cities.get(sourceCityIndex);
+            final City destCity = game.cities.get(col);
+            boolean filled = false;
+
+            //define level of help per mode
+            switch (mode) {
+                case 1:
+                    textField0.setText("Costs");
+                    correctValue = String.valueOf(costs);
+                    if (costs == Integer.MAX_VALUE) correctValue = "INFINITY";
+                case 2:
+                    if (costs == Integer.MAX_VALUE || costs == 0 || correctNodes.contains(col)) {
+                        correctlyFilledTextFieldsInCurrentRow++;
+                        textField.setText(correctValue);
+                        textField.setColor(Color.GREEN);
                     }
-                }
-                if (!filled) textField = addNeighborListener(textField, start, end, correctValue, iteration, false);
+                    break;
+                case 3:
+                    if (costs == Integer.MAX_VALUE || costs == 0) {
+                        correctlyFilledTextFieldsInCurrentRow++;
+                        textField.setText(correctValue);
+                        textField.setColor(Color.GREEN);
+                    }
+                    break;
             }
-            //if mode is 4 only count filled textFields and generate new row if all are filled
-            else textField.setTextFieldListener(new TextField.TextFieldListener() {
-                @Override
-                public void keyTyped(TextField textField, char key) {
-                    correctlyFilledTextFieldsInCurrentRow++;
-                    if (correctlyFilledTextFieldsInCurrentRow == game.vertices) {
-                        if (iteration + 1 < dijkstraConnections.size()) {
-                            addNewRow(iteration + 1);
-                        } else {
-                            stage.addActor(checkCode);
-                        }
-                    }
+
+            //add listeners if city is a neighbor
+            for (Edge edge : neighbors) {
+                if (edge.getDestination() == col) {
+                    filled = true;
+                    textField = addNeighborListener(textField, sourceCity, destCity, correctValue, iteration, true);
                 }
-            });
+            }
+            //add Listener if City isn`t a neighbor
+            if (!filled) textField = addNeighborListener(textField, sourceCity, destCity, correctValue, iteration, false);
             newRow.add(textField).expandX().fillX();
         }
         algorithmTable.row();
         algorithmTable.add(newRow).colspan(game.vertices + 1).padRight(5);
     }
 
-    private TextField addNeighborListener(final TextField textField, final Vector2 start, final Vector2 end, final String finalCorrectValue, final int iteration, final boolean neighbor) {
+    private TextField addNeighborListener(final TextField textField, final City sourceCity, City destCity,
+                                          final String finalCorrectValue, final int i, final boolean neighbor) {
+
+        final Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
+        final Vector2 end = new Vector2(destCity.x, destCity.y);
+
         textField.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                if (neighbor) linesToDraw.add(new LineData(start, end, Color.RED));
-                textField.setColor(Color.RED);
+                if (neighbor) {
+                    if (finalCorrectValue.contains(game.cities.get(0).shortName))
+                        linesToDraw.add(new LineData(start, end, Color.RED));
+                    else {
+                        linesToDraw.add(new LineData(start, end, Color.RED));
+                        lookForPrecursors(i, start, sourceCity, Color.RED);
+                    }
+                    textField.setColor(Color.RED);
+                } else {
+                    lookForPrecursors(i, end, sourceCity, Color.RED);
+                }
                 return true;
             }
         });
@@ -457,15 +445,69 @@ public class GameScreen_Level3 implements Screen {
             @Override
             public void keyTyped(TextField textField, char key) {
                 String userInput = textField.getText();
-                boolean isCorrect = userInput.equals(" " + finalCorrectValue);
+                boolean isCorrect = userInput.trim().equals(finalCorrectValue);
                 if (isCorrect) {
                     textField.setColor(Color.GREEN);
-                    if (neighbor) linesToDraw.add(new LineData(start, end, Color.GREEN));
-                    checkIfNewRow(iteration);
+                    if (neighbor) {
+                        if (finalCorrectValue.contains(game.cities.get(0).shortName))
+                            linesToDraw.add(new LineData(start, end, Color.GREEN));
+                        else {
+                            linesToDraw.add(new LineData(start, end, Color.GREEN));
+                            lookForPrecursors(i, start, sourceCity, Color.GREEN);
+                        }
+                    } else {
+                        lookForPrecursors(i, end, sourceCity, Color.GREEN);
+                    }
+                    checkIfNewRow(i);
+                }
+                else{
+                    String text = "";
+                    switch(mode){
+                        case 1:
+                            text = "Did you get the correct cost for the connection?" +
+                                    "\n\nHint: We are always looking for the shortest\npath from our treasury!";
+                            break;
+                        case 3: case 4: case 2:
+                            text = "Hint: We are always looking for the shortest\npath from our treasury!\n\n" +
+                                    "Correct Value: Shortage of precursor - Added costs";
+                            break;
+                    }
+                    Table textBoxTable = new Table(game.fontSkin);
+                    textBoxTable.setSize(camera.viewportWidth/4, camera.viewportHeight/10);
+                    textBoxTable.setPosition(parrottimage.getX() - textBoxTable.getWidth(),
+                            parrottimage.getY() + parrottimage.getHeight() , left);
+                    Label textBox = new Label(text, game.fontSkin);
+                    textBox.setFontScale(0.7f);
+                    textBoxTable.add(textBox);
+                    Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
+                    textBoxTable.setBackground(backgroundDrawable);
+                    stage.addActor(textBoxTable);
+                    // Make the textbox disappear after 5 seconds
+                    textBoxTable.addAction(Actions.sequence(
+                            Actions.delay(5f),
+                            Actions.fadeOut(1f),
+                            Actions.removeActor()
+                    ));
                 }
             }
         });
         return textField;
+    }
+
+    private void lookForPrecursors(int i, Vector2 start, City sourceCity, Color color) {
+        if (i - 1 >= 0) {
+            int precursorIndex = 1000;
+            int i1 = i;
+            Vector2 start1 = start;
+            while (precursorIndex != 0) {
+                precursorIndex = precursor[i1 - 1][game.cities.indexOf(sourceCity)];
+                City precursorCity = game.cities.get(precursorIndex);
+                Vector2 precursor = new Vector2(precursorCity.x, precursorCity.y);
+                linesToDraw.add(new LineData(precursor, start1, color));
+                start1 = precursor;
+                i1--;
+            }
+        }
     }
 
     private void checkIfNewRow(int iteration) {
@@ -473,10 +515,15 @@ public class GameScreen_Level3 implements Screen {
         if (correctlyFilledTextFieldsInCurrentRow == game.vertices) {
             if (iteration + 1 < dijkstraConnections.size() - 1) {
                 City nextCity = game.cities.get(dijkstraConnections.get(iteration + 1));
-                if (mode < 4)
-                    boatImage.addAction(Actions.moveTo(nextCity.x - boatImage.getHeight() / 2, nextCity.y + 10, 1f));
+                if (mode < 4) boatImage.addAction(Actions.moveTo(nextCity.x - boatImage.getHeight() / 2,
+                        nextCity.y - boatImage.getHeight() / 2 + game.offset, 1f));
                 correctNodes.add(dijkstraConnections.get(iteration + 1));
                 addNewRow(iteration + 1);
+            } else {
+                for (LineData line : linesToDraw) {
+                    line.setColor(Color.GREEN);
+                }
+                stage.addActor(checkCode);
             }
         }
     }

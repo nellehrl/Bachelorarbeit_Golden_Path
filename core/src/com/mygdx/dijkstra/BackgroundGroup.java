@@ -17,7 +17,7 @@ public class BackgroundGroup extends Group {
     Button mainMenuButton;
     Table mangoCounter;
 
-    public BackgroundGroup(final DijkstraAlgorithm game, int level) {
+    public BackgroundGroup(final DijkstraAlgorithm game) {
         this.game = game;
         int row_height = offset;
         int col_width = 2 * offset;
