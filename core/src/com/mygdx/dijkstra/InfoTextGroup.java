@@ -14,7 +14,7 @@ public class InfoTextGroup extends Group {
     Image parrottImage, shadowImage;
     Button closeButton;
     final DijkstraAlgorithm game;
-    public InfoTextGroup(final DijkstraAlgorithm game, String text, OrthographicCamera camera){
+    public InfoTextGroup(final DijkstraAlgorithm game, String text){
 
         this.game = game;
 
@@ -22,12 +22,12 @@ public class InfoTextGroup extends Group {
         int col_width = 50;
 
         GlyphLayout layout = new GlyphLayout();
-        layout.setText(game.fontSkin.getFont("font"), text, Color.BLACK, (float) (camera.viewportWidth*0.62), left, true);
+        layout.setText(game.fontSkin.getFont("font"), text, Color.BLACK, (float) (game.camera.viewportWidth*0.62), left, true);
 
         Table table = new Table();
         table.setBackground(game.fontSkin.getDrawable("color"));
         table.setSize(layout.width , (float) (layout.height + row_height*1.5 + 100));
-        table.setPosition(camera.viewportWidth/2 - table.getWidth()/2,camera.viewportHeight/2 - table.getHeight()/2);
+        table.setPosition(game.camera.viewportWidth/2 - table.getWidth()/2,game.camera.viewportHeight/2 - table.getHeight()/2);
 
         Label codeLabel = new Label(text, game.fontSkin);
         codeLabel.setAlignment(left);
@@ -39,11 +39,11 @@ public class InfoTextGroup extends Group {
         table.setName("table");
 
         //parrott
-        int parrottWidth = (int) (camera.viewportWidth * 0.1);
+        int parrottWidth = (int) (game.camera.viewportWidth * 0.1);
         parrottImage = createActor(parrottWidth, (float) (parrottWidth * 1.25), table.getX() + table.getWidth() - parrottWidth,
                 table.getY() + table.getHeight() - 18, game.assetManager.get("parrott.png", Texture.class));
 
-        shadowImage = createActor((int) (table.getWidth()*1.25), (float) (table.getHeight()*1.2), table.getX() - 100, table.getY()-30, game.assetManager.get("shadow.png", Texture.class));
+        shadowImage = createActor((int) (table.getWidth()*1.25), (float) (table.getHeight()*1.2), table.getX() - 90, table.getY()-30, game.assetManager.get("shadow.png", Texture.class));
         addActor(shadowImage);
         shadowImage.toBack();
         shadowImage.setName("shadowImage");

@@ -7,6 +7,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
@@ -18,7 +20,7 @@ public class checkCode extends Group {
     private String input = "";
     final DijkstraAlgorithm game;
 
-    public checkCode(final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final int mode) {
+    public checkCode(final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final int mode, final Stage stage, final OrthographicCamera camera) {
         this.game = game;
 
         codeTable = new Table(game.fontSkin);
@@ -57,14 +59,22 @@ public class checkCode extends Group {
                 if (key == '\r' || key == '\n') {
                     if (input.trim().equals(code.trim())) {
                         mangoCounterLabel.setText(game.mangos);
+                        if(game.mangos < 30) game.mangos = 30;
+                        game.dropSound.play();
                         game.setScreen(new LevelWonScreen(game, game.currentLevel));
                         isCorrect = true;
                     } else {
                         game.mangos -= 10;
                         mangoCounterLabel.setText(game.mangos);
-
-                        Sound battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
-                        battle.play();
+                        game.battle.play();
+                        game.blood.setSize(camera.viewportWidth, camera.viewportHeight);
+                        game.blood.setPosition(0, 0);
+                        stage.addActor(game.blood);
+                        game.blood.addAction(Actions.sequence(
+                                Actions.delay(1f),
+                                Actions.fadeOut(1f),
+                                Actions.removeActor()
+                        ));
                         if (game.mangos > 0) mangoCounterLabel.setText(game.mangos);
                         else {
                             final LevelLostGroup lost = new LevelLostGroup(game, new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));

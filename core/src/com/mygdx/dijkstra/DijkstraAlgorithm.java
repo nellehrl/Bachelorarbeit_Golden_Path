@@ -4,11 +4,14 @@ import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.audio.Sound;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.assets.AssetManager;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import java.util.ArrayList;
 
@@ -29,11 +32,15 @@ public class DijkstraAlgorithm extends Game {
 	public ArrayList<City> southEast = new ArrayList<>();
 	public ArrayList<City> cities = new ArrayList<>();
 	public double currentLevel;
+	Image blood;
 	int city;
 	public Music backGroundMusic;
 	AssetManager assetManager;
-
+	Sound dropSound;
+	OrthographicCamera camera;
 	boolean firstOpened = true;
+	public FitViewport fitViewport;
+	Sound battle;
 
 	public void create() {
 
@@ -56,12 +63,18 @@ public class DijkstraAlgorithm extends Game {
 		assetManager.load("levelWon.png", Texture.class);
 		assetManager.load("gameWon.png", Texture.class);
 		assetManager.load("worldMap 1.png", Texture.class);
+		assetManager.load("Blood.png", Texture.class);
 		assetManager.load("box.png", Texture.class);
 		assetManager.load("battle.wav", Sound.class);
-		assetManager.load("yesss.wav", Sound.class);
+		assetManager.load("drop.wav", Sound.class);
 		assetManager.load("ambiente.wav", Sound.class);
 		assetManager.load("pirates.mp3", Music.class);
 		assetManager.finishLoading();
+
+		dropSound = assetManager.get("drop.wav", Sound.class);
+		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
+		fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
 
 		createCities(allCities);
 		currentLevel = 1.1;
@@ -74,6 +87,9 @@ public class DijkstraAlgorithm extends Game {
 		backGroundMusic = assetManager.get("pirates.mp3", Music.class);
 		backGroundMusic.setLooping(true);
 		backGroundMusic.play();
+
+		battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
+		blood = new Image(assetManager.get("Blood.png", Texture.class));
 
 		int widthWorld = (int) (Gdx.graphics.getWidth() * 0.725);
 		int heightWorld = Gdx.graphics.getHeight() + Gdx.graphics.getHeight()/3;
@@ -154,14 +170,14 @@ public class DijkstraAlgorithm extends Game {
 		cities.add(new City("Los Angeles", (int) (110*1.5), (int) (350*1.5), "LA"));
 		cities.add(new City("New York", (int) (184*1.5), (int) (360*1.5),"NY"));
 		cities.add(new City("Colombo", (int) (395*1.5), (int) (290*1.5),"CB"));
-		cities.add(new City("Colon", (int) (160*1.5), (int) (295*1.5),"CL"));
-		cities.add(new City("Santos", (int) (225*1.5), (int) (250*1.5),"ST"));
+		cities.add(new City("Colon", (int) (160*1.5), (int) (275*1.5),"CL"));
+		cities.add(new City("Santos", (int) (215*1.5), (int) (240*1.5),"ST"));
 		cities.add(new City("Buenos Aires", (int) (180*1.5), (int) (200*1.5),"BA"));
 		cities.add(new City("Antisarana", (int) (351*1.5), (int) (255*1.5),"AS"));
 		cities.add(new City("Banjul", (int) (261*1.5), (int) (305*1.5),"BJ"));
 		cities.add(new City("Portland", (int) (482*1.5), (int) (210*1.5),"PL"));
 		cities.add(new City("Wyndham", (int) (453*1.5), (int) (250*1.5),"WH"));
-		cities.add(new City("Lima", (int) (167*1.5), (int) (250*1.5),"LM"));
+		cities.add(new City("Lima", (int) (167*1.5), (int) (270*1.5),"LM"));
 	}
 
 }

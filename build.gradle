@@ -41,7 +41,15 @@ allprojects {
 
 project(":desktop") {
     apply plugin: "java-library"
+    apply plugin: "application"
 
+    mainClassName = "com.mygdx.dijkstra.desktop.DesktopLauncher"
+
+    jar {
+        from {
+            configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+        }
+    }
 
     dependencies {
         implementation project(":core")

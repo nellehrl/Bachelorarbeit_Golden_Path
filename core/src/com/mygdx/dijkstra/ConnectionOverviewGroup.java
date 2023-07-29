@@ -25,13 +25,13 @@ public class ConnectionOverviewGroup extends Group {
 
                 switch(mode){
                     case 1:
-                        boxText = sourceCity + " -- " + destCity;
+                        boxText = sourceCity + " - " + destCity;
                         break;
                     case 2:
-                        boxText = sourceCity + " --> " + destCity;
+                        boxText = sourceCity + " > " + destCity;
                         break;
                     case 3:
-                        boxText = sourceCity + " --> " + destCity + ": " + weight;
+                        boxText = sourceCity + " > " + destCity + ": " + weight;
 
                 }
 

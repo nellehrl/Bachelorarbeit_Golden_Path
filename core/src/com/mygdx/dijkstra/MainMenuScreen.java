@@ -36,7 +36,7 @@ public class MainMenuScreen implements Screen {
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
         camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
-        stage = new Stage();
+        stage = new Stage(fitViewport);
 
         row_height = 25;
         col_width = 75;
@@ -46,7 +46,7 @@ public class MainMenuScreen implements Screen {
                 "\n\nIf you are new here start with level 1.1. If you are already familiar with Graphs you can start with " +
                 "level 1.3. If you are pro go to level 3 than we can get to the treasures even faster and I will finally get my mangooooooos.";
 
-        infotext = new InfoTextGroup(game, text, camera);
+        infotext = new InfoTextGroup(game, text);
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
@@ -159,9 +159,7 @@ public class MainMenuScreen implements Screen {
                 float duration = 1f; // Duration of the movement action
                 float targetX = button.getX();
                 float targetY = button.getY();
-
                 Action moveToAction = Actions.moveTo(targetX, targetY, duration);
-
                 // Add a runnable action to set the new screen after the moveTo action is completed
                 Action setScreenAction = Actions.run(new Runnable() {
                     @Override
@@ -170,7 +168,6 @@ public class MainMenuScreen implements Screen {
                         dispose();
                     }
                 });
-
                 // Chain the actions using ActionSequence
                 SequenceAction sequenceAction = Actions.sequence(moveToAction, setScreenAction);
 

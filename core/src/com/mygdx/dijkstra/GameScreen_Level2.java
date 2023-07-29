@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
@@ -21,7 +22,6 @@ import static com.badlogic.gdx.utils.Align.left;
 public class GameScreen_Level2 implements Screen {
     final DijkstraAlgorithm game;
     Image boatImage, connectionArea, parrotImage;
-    Sound battle;
     Table portTable, mangoCounter;
     Label mangoCounterLabel;
     OrthographicCamera camera;
@@ -41,14 +41,11 @@ public class GameScreen_Level2 implements Screen {
 
         this.game = game;
 
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
-        fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+        camera = game.camera;
+        fitViewport = game.fitViewport;
         stage = new Stage(fitViewport);
         //init cities and starting point
         currentConnection.add(game.cities.get(0));
-        battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
-
         connections = new Graph(game.vertices, 1);
 
         background = new BackgroundGroup(game);
@@ -135,7 +132,7 @@ public class GameScreen_Level2 implements Screen {
                 "We must to understand how these graphs work to get ahead of the other crews. Like that, we can generate " +
                 "much more loooooooooooooooot!\n\nRemember to ENTER to check if you got the costs correct!";
 
-        infotext = new InfoTextGroup(game, text, camera);
+        infotext = new InfoTextGroup(game, text);
         closeButton = infotext.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
@@ -237,15 +234,14 @@ public class GameScreen_Level2 implements Screen {
                             boolean isCorrect = userInput.equals(fieldText + weight);
                             if (key == '\r' || key == '\n') {
                                 if (isCorrect && !edgeAdded[0]) {
+                                    game.dropSound.play();
                                     numOfEdges[0]++;
                                     edgeAdded[0] = true;
                                     textField.setColor(Color.GREEN);
                                     linesToDraw.add(new LineData(start, end, Color.GREEN));
-                                    System.out.println(numOfEdges[0]);
                                 }
                                 else {
-                                    battle.play();
-                                    final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
+                                    int newValue = calcNewValue(game, camera, stage, mangoCounterLabel);
                                     if (newValue > 0) mangoCounterLabel.setText(newValue);
                                     else {
                                         parrotImage.remove();
@@ -279,6 +275,11 @@ public class GameScreen_Level2 implements Screen {
         }
     }
 
+    static int calcNewValue(DijkstraAlgorithm game, OrthographicCamera camera, Stage stage, Label mangoCounterLabel) {
+        GameScreen_Level1.negativeFeedbackLoop(game, camera, stage);
+        return Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
+    }
+
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
@@ -307,6 +308,5 @@ public class GameScreen_Level2 implements Screen {
     @Override
     public void dispose() {
         stage.dispose();
-        battle.dispose();
     }
 }

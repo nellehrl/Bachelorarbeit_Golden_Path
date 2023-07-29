@@ -2,6 +2,7 @@ package com.mygdx.dijkstra;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -62,11 +63,11 @@ public class GameScreen_Level3 implements Screen {
         int row_height = game.offset;
         int col_width = 2 * game.offset;
 
+
         //init camera
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
-        fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-        stage = new Stage();
+        camera = game.camera;
+        fitViewport = game.fitViewport;
+        stage = new Stage(fitViewport);
 
         //init Arrays
         distances = new int[game.vertices];
@@ -166,10 +167,9 @@ public class GameScreen_Level3 implements Screen {
             if (distances[i] == Integer.MAX_VALUE) distances[i] = 0;
             code += distances[i];
         }
-        System.out.println(code);
 
         //check if dijkstra is correct
-        checkCode = new checkCode(camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, code, game, mode);
+        checkCode = new checkCode(camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, code, game, mode, stage, camera);
         doneButton = new TextButton("Done", game.mySkin, "default");
         doneButton.setSize((float) (2 * col_width), (float) (1.5 * row_height));
         doneButton.setPosition(3 * game.space, (float) (camera.viewportHeight - (1.5 * row_height) - mainMenuButton.getHeight() - 3 * game.space));
@@ -184,41 +184,38 @@ public class GameScreen_Level3 implements Screen {
         String text = "";
         switch (mode) {
             case 1:
-                text = "Servus Captain,\n\nWe need to deliver now! Cause these damn mangooos are hard to get. :D Let`s see if we are able to find " +
-                        "the shortest paths to each city from our hometown! Fill out the table below, I will help you! " +
-                        "In the end we will know how long it takes us to travel to each city and the fastest path! I am " +
-                        "sure you will find out how it works!\n\nOh, you will need to find the code to unlock this treasure I have found!\n\n" +
-                        "TIP: Remember that we seek for the shortest connection from our start city." +
-                        " Our ship shows you where we are currently and the available connections." +
-                        "\n\nCode: The code is built by the distance of the" +
-                        " connection to the city. For INFINITY, it was a ...... 0";
+                text = "Servus Captain,\n\nThese damn mangooos are hard to get. :D To get them before the other crews we need to find " +
+                        "the shortest paths to each city from our hometown! \n\nFill out the table below, I will help you! " +
+                        "In the end we will know how long it takes us to travel to each city from our treasury and the fastest path!\nI am " +
+                        "sure you will find out how it works!\n\nWe will need to find the code to unlock this treasure I have found!\n\n" +
+                        "\n\nCode: The code is built by the distance of the connection to the city. For INFINITY, it was a ...... 0";
                 break;
             case 2:
                 text = "Hola Captain, \n\nYou are getting on it! We are surely becoming the pirates of the golden paths! Everyone will pay" +
                         " millions to know our secret - but first: Let`s get back to work\n\n" +
                         "I guess you know what to do? If not I am here to help. Cause you know - I am the endless source " +
                         "of wisdom.\n And don`t forget about the code so we can get an endless amount of mangooos!\n\n" +
-                        "TIP: Remember that we seek for the shortest connection from our start city." +
-                        " Our ship shows you where we are currently and the available connections." +
+                        "Oh and I have realized that it would be good to note down where we are always coming from...the precursors you know?" +
+                        " Like that it is easier for us to find the correct route afterwards. Our ship will show you where we currently are." +
                         "\n\nCode: Remember the code is built by the distance of the connection to the city. For INFINITY, " +
                         "it was a ...... 0";
                 break;
             case 3:
                 text = "Hello and welcome on board again Captain, \n\nThere are still some routes to calculate but we " +
                         "are getting better. So I am sure we will find the solution this time to!\n\nTIP: Remember that we seek " +
-                        "for the shortest connection from our start city. Our ship shows you where we are currently and" +
-                        " the available connections.\n\nCode: Remember the code is built by distance of the connection " +
+                        "for the shortest connection from our start city. We are always moving to the shortest available connection to discover new ones." +
+                        " Like that we will always find the shortest path.\n\nCode: Remember the code is built by distance of the connection " +
                         "to the city. For INFINITY, it was a ...... 0";
                 break;
             case 4:
-                text = "Ay Ay Captain, \n\nFinally! I think all our hard work pais off if we can open this last treasure we can finally retire. \n" +
-                        "\n Find the last code to unlock the last treasure.\n\nTIP: Remember that we seek " +
-                        "for the shortest connection from our start city. Our ship shows you where we are currently and" +
-                        " the available connections.\n\nCode: Remember the code is built by the distance of the connection " +
+                text = "Ay Ay Captain, \n\nFinally! I think all our hard work pais off if we can open this last treasure we can finally retire.\n" +
+                        "\nFind the last code to unlock the treasure.\n\nTIP: Remember that we seek " +
+                        "for the shortest connection from our start city. You can click on the ports and our ship will move there." +
+                        " Like that you always know where we currently are!\n\nCode: Remember the code is built by the distance of the connection " +
                         "to the city. For INFINITY it was a ...... 0";
                 break;
         }
-        infotext = new InfoTextGroup(game, text, camera);
+        infotext = new InfoTextGroup(game, text);
 
         //listener to close infotext
         closeButton = infotext.closeButton;
@@ -446,48 +443,52 @@ public class GameScreen_Level3 implements Screen {
             public void keyTyped(TextField textField, char key) {
                 String userInput = textField.getText();
                 boolean isCorrect = userInput.trim().equals(finalCorrectValue);
-                if (isCorrect) {
-                    textField.setColor(Color.GREEN);
-                    if (neighbor) {
-                        if (finalCorrectValue.contains(game.cities.get(0).shortName))
-                            linesToDraw.add(new LineData(start, end, Color.GREEN));
-                        else {
-                            linesToDraw.add(new LineData(start, end, Color.GREEN));
-                            lookForPrecursors(i, start, sourceCity, Color.GREEN);
+                if (key == '\r' || key == '\n') {
+                    if (isCorrect) {
+                        game.dropSound.play();
+                        textField.setColor(Color.GREEN);
+                        if (neighbor) {
+                            if (finalCorrectValue.contains(game.cities.get(0).shortName))
+                                linesToDraw.add(new LineData(start, end, Color.GREEN));
+                            else {
+                                linesToDraw.add(new LineData(start, end, Color.GREEN));
+                                lookForPrecursors(i, start, sourceCity, Color.GREEN);
+                            }
+                        } else {
+                            lookForPrecursors(i, end, sourceCity, Color.GREEN);
                         }
+                        checkIfNewRow(i);
                     } else {
-                        lookForPrecursors(i, end, sourceCity, Color.GREEN);
+                        String text = "";
+                        switch (mode) {
+                            case 1:
+                                text = "Did you get the correct cost for the connection?" +
+                                        "\n\nHint: We are always looking for the shortest\npath from our treasury!";
+                                break;
+                            case 3:
+                            case 4:
+                            case 2:
+                                text = "Hint: We are always looking for the shortest\npath from our treasury!\n\n" +
+                                        "Correct Value: Shortage of precursor - Added costs";
+                                break;
+                        }
+                        Table textBoxTable = new Table(game.fontSkin);
+                        textBoxTable.setSize(camera.viewportWidth / 4, camera.viewportHeight / 10);
+                        textBoxTable.setPosition(parrottimage.getX() - textBoxTable.getWidth(),
+                                parrottimage.getY() + parrottimage.getHeight(), left);
+                        Label textBox = new Label(text, game.fontSkin);
+                        textBox.setFontScale(0.7f);
+                        textBoxTable.add(textBox);
+                        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
+                        textBoxTable.setBackground(backgroundDrawable);
+                        stage.addActor(textBoxTable);
+                        // Make the textbox disappear after 5 seconds
+                        textBoxTable.addAction(Actions.sequence(
+                                Actions.delay(5f),
+                                Actions.fadeOut(1f),
+                                Actions.removeActor()
+                        ));
                     }
-                    checkIfNewRow(i);
-                }
-                else{
-                    String text = "";
-                    switch(mode){
-                        case 1:
-                            text = "Did you get the correct cost for the connection?" +
-                                    "\n\nHint: We are always looking for the shortest\npath from our treasury!";
-                            break;
-                        case 3: case 4: case 2:
-                            text = "Hint: We are always looking for the shortest\npath from our treasury!\n\n" +
-                                    "Correct Value: Shortage of precursor - Added costs";
-                            break;
-                    }
-                    Table textBoxTable = new Table(game.fontSkin);
-                    textBoxTable.setSize(camera.viewportWidth/4, camera.viewportHeight/10);
-                    textBoxTable.setPosition(parrottimage.getX() - textBoxTable.getWidth(),
-                            parrottimage.getY() + parrottimage.getHeight() , left);
-                    Label textBox = new Label(text, game.fontSkin);
-                    textBox.setFontScale(0.7f);
-                    textBoxTable.add(textBox);
-                    Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
-                    textBoxTable.setBackground(backgroundDrawable);
-                    stage.addActor(textBoxTable);
-                    // Make the textbox disappear after 5 seconds
-                    textBoxTable.addAction(Actions.sequence(
-                            Actions.delay(5f),
-                            Actions.fadeOut(1f),
-                            Actions.removeActor()
-                    ));
                 }
             }
         });

@@ -52,7 +52,7 @@ public class LevelWonScreen implements Screen {
         levelWonImage = game.assetManager.get("levelWon.png", Texture.class);
         bucketImage = game.assetManager.get("bucket.png", Texture.class);
 
-        dropSound = game.assetManager.get("yesss.wav", Sound.class);
+        dropSound = game.dropSound;
 
         // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
@@ -174,7 +174,6 @@ public class LevelWonScreen implements Screen {
 
     @Override
     public void dispose() {
-        mangoImage.dispose();
         batch.dispose();
         stage.dispose();
     }
