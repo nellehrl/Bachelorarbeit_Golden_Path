@@ -66,6 +66,13 @@ public class BackgroundGroup extends Group {
         mainMenuButton.setPosition(3 * space, (float) (camera.viewportHeight - (1.5 * row_height) - 3 * space));
         addActor(mainMenuButton);
         mainMenuButton.setName("mainMenuButton");
+
+        //init box
+        Image box = new Image(game.assetManager.get("box.png", Texture.class));
+        box.setSize(camera.viewportWidth - 2, camera.viewportHeight / 3 - 2);
+        box.setPosition(1, 1);
+        addActor(box);
+        box.setName("box");
     }
 
     public Image createActor(int width, float height, float x, float y, Texture texture) {

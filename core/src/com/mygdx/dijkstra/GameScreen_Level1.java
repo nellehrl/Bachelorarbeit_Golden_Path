@@ -102,24 +102,18 @@ public class GameScreen_Level1 implements Screen {
             }
         });
 
+        //init connectionOverview
         int width = (int) (camera.viewportWidth / game.vertices);
         int height = (int) (camera.viewportHeight / 6 - game.space);
         int x = 3 * game.offset;
         int y = (int) (camera.viewportHeight * 0.28 - game.space);
         if (mode == 3) y = (int) (camera.viewportHeight * 0.225 - 2 * game.space);
-
-        //init box with connectionOverview
-        Image box = new Image(game.assetManager.get("box.png", Texture.class));
-        box.setSize(camera.viewportWidth - 2, camera.viewportHeight / 3 - 2);
-        box.setPosition(1, 1);
-        stage.addActor(box);
         stage.addActor(new ConnectionOverviewGroup(game.vertices, game.cities, game, (int) (width * 0.8), height, x, y, connections, mode));
 
         //add rest of actors
         stage.addActor(boatImage);
         stage.addActor(mainMenuButton);
         stage.addActor(infotext);
-        box.toBack();
     }
 
     @Override
@@ -457,7 +451,7 @@ public class GameScreen_Level1 implements Screen {
         return true;
     }
 
-    private void levelLost() {
+    public void levelLost() {
         negativeFeedbackLoop(game, camera, stage);
         final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
         if (newValue > 0) mangoCounterLabel.setText(newValue);
