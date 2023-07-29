@@ -21,8 +21,9 @@ import java.util.ArrayList;
 
 public class MainMenuScreen implements Screen {
     final DijkstraAlgorithm game;
+    Texture backGroundTexture, mainMenuTexture;
     InfoTextGroup infotext;
-    Image boatImage;
+    Image boatImage, mainMenuScreen, background;
     private Stage stage;
     OrthographicCamera camera;
     Button closeButton;
@@ -55,15 +56,17 @@ public class MainMenuScreen implements Screen {
             }
         });
 
-        Image background = new Image(game.assetManager.get("background.png", Texture.class));
+        backGroundTexture = game.assetManager.get("background.png", Texture.class);
+        background = new Image(backGroundTexture);
         background.setSize((float) (camera.viewportWidth * 1.1), (float) (camera.viewportHeight * 1.1));
         background.setPosition(-52, -45);
         stage.addActor(background);
 
-        final Image image = new Image(game.assetManager.get("mainMenuScreen.png", Texture.class));
-        image.setSize(camera.viewportWidth, camera.viewportHeight);
-        image.setPosition(0, 0);
-        stage.addActor(image);
+        mainMenuTexture = game.assetManager.get("mainMenuScreen.png", Texture.class);
+        mainMenuScreen = new Image(mainMenuTexture);
+        mainMenuScreen.setSize(camera.viewportWidth, camera.viewportHeight);
+        mainMenuScreen.setPosition(0, 0);
+        stage.addActor(mainMenuScreen);
 
         Label.LabelStyle titleStyle = new Label.LabelStyle(game.mySkin.getFont("title"), game.mySkin.getColor("color"));  // Replace 'otherStyle' with the desired style
 

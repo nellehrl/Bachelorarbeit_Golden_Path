@@ -6,49 +6,51 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
-public class DrawLineOrArrow extends ShapeRenderer {
-    public DrawLineOrArrow(int lineWidth, Matrix4 projectionMatrix, Color color, Vector2 start, Vector2 end , int mode){
-        this.setProjectionMatrix(projectionMatrix);
-        Gdx.gl.glLineWidth(lineWidth);
-        if(mode == 1) {
-            this.begin(ShapeRenderer.ShapeType.Line);
-            this.setColor(color);
-            this.line(start, end);
-        }
+public class DrawLineOrArrow {
 
-        else{
-            this.begin(ShapeRenderer.ShapeType.Filled);
-            this.setColor(color); // Set the color of the arrow
+    public void drawLine(ShapeRenderer shapeRenderer, int lineWidth, Color color, Vector2 start, Vector2 end) {
+        drawLine(shapeRenderer,color, lineWidth, start, end);
+    }
 
-            float startX = start.x;
-            float startY = start.y;
-            float endX = end.x;
-            float endY = end.y;
-            float arrowSize = 8;
+    public void drawArrow(ShapeRenderer shapeRenderer,int lineWidth, Color color, Vector2 start, Vector2 end) {
+        drawArrow(shapeRenderer,color, lineWidth, start, end);
+    }
 
-            float directionX = endX - startX;
-            float directionY = endY - startY;
+    private static void drawLine(ShapeRenderer shapeRenderer, Color color, int lineWidth, Vector2 start, Vector2 end) {
+        shapeRenderer.setColor(color);
+        shapeRenderer.rectLine(start.x, start.y, end.x, end.y, lineWidth);
+    }
 
-            float length = (float) Math.sqrt(directionX * directionX + directionY * directionY);
+    private static void drawArrow(ShapeRenderer shapeRenderer, Color color, int lineWidth, Vector2 start, Vector2 end) {
+        shapeRenderer.setColor(color); // Set the color of the arrow
 
-            directionX /= length;
-            directionY /= length;
+        float startX = start.x;
+        float startY = start.y;
+        float endX = end.x;
+        float endY = end.y;
+        float arrowSize = 8;
 
-            // Shorten the arrow
-            float shortenBy = 15;
-            endX = startX + directionX * (length - shortenBy);
-            endY = startY + directionY * (length - shortenBy);
+        float directionX = endX - startX;
+        float directionY = endY - startY;
 
-            // Draw the main line of the shortened arrow
-            this.rectLine(startX, startY, endX, endY, arrowSize/4);
+        float length = (float) Math.sqrt(directionX * directionX + directionY * directionY);
 
-            // Draw & Calculate the arrow wings
-            float wingX = -directionY;
-            float wingY = directionX;
+        directionX /= length;
+        directionY /= length;
 
-            this.triangle(endX, endY, endX - arrowSize * (directionX + wingX), endY - arrowSize * (directionY + wingY),
-                    endX - arrowSize * (directionX - wingX), endY - arrowSize * (directionY - wingY));
-        }
-        this.end();
+        // Shorten the arrow
+        float shortenBy = 15;
+        endX = startX + directionX * (length - shortenBy);
+        endY = startY + directionY * (length - shortenBy);
+
+        // Draw the main line of the shortened arrow
+        shapeRenderer.rectLine(startX, startY, endX, endY, arrowSize/4);
+
+        // Draw & Calculate the arrow wings
+        float wingX = -directionY;
+        float wingY = directionX;
+
+        shapeRenderer.triangle(endX, endY, endX - arrowSize * (directionX + wingX), endY - arrowSize * (directionY + wingY),
+                endX - arrowSize * (directionX - wingX), endY - arrowSize * (directionY - wingY));
     }
 }

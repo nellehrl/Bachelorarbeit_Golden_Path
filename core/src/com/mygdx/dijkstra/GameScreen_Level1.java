@@ -6,6 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
@@ -23,7 +24,8 @@ public class GameScreen_Level1 implements Screen {
     private float triangleSize = 40;
     Action move;
     final int mode;
-    Image boatImage, connectionArea, parrotImage;
+    ShapeRenderer shapeRenderer  = new ShapeRenderer();
+    Image boatImage, connectionArea;
     Table portTable, mangoCounter;
     boolean correctDrop, isValidConnection = false;
     OrthographicCamera camera;
@@ -41,6 +43,7 @@ public class GameScreen_Level1 implements Screen {
     InfoTextGroup infotext;
     Label mangoCounterLabel;
     StringBuilder textBuilder;
+    DrawLineOrArrow draw;
 
     public GameScreen_Level1(final DijkstraAlgorithm game, final int mode) {
         //init game and stage
@@ -68,6 +71,7 @@ public class GameScreen_Level1 implements Screen {
         linesToDraw = new ArrayList<>();
         visited = new boolean[game.cities.size()];
         added = new boolean[connections.numOfEdges];
+        draw = new DrawLineOrArrow();
 
         //init cities and starting point
         background = new BackgroundGroup(game);
@@ -88,17 +92,20 @@ public class GameScreen_Level1 implements Screen {
             public void clicked(InputEvent event, float x, float y) {
                 infotext.remove();
                 int parrotWidth = (int) (camera.viewportWidth * 0.1);
-                parrotImage = new Image(game.assetManager.get("parrott.png", Texture.class));
-                parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
-                parrotImage.setPosition((float) (camera.viewportWidth * 0.85), (float) (camera.viewportHeight * 0.31));
-                parrotImage.addListener(new ClickListener() {
+                game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
+                game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
+                game.infoImage.setSize((float) (camera.viewportWidth*0.025), (float) (camera.viewportWidth*0.025));
+                game.infoImage.setPosition(game.parrotImage.getX() - game.space, game.parrotImage.getY() + game.parrotImage.getHeight());
+                game.parrotImage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         stage.addActor(infotext);
-                        parrotImage.remove();
+                        game.parrotImage.remove();
+                        game.infoImage.remove();
                     }
                 });
-                stage.addActor(parrotImage);
+                stage.addActor(game.infoImage);
+                stage.addActor(game.parrotImage);
             }
         });
 
@@ -242,7 +249,8 @@ public class GameScreen_Level1 implements Screen {
                 currentConnection.add(currentCity);
                 visited[game.cities.indexOf(currentCity)] = true; // Mark the city as visited
                 if (checkAllCitiesVisited()) {
-                    game.setScreen(new LevelWonScreen(game, game.currentLevel));
+                    if(mode == 2) game.setScreen(new LevelWonScreen(game, 1.2));
+                    else game.setScreen(new LevelWonScreen(game, 1.1));
                     dispose();
                 }
             }
@@ -277,10 +285,12 @@ public class GameScreen_Level1 implements Screen {
             }
             isValidConnection = checkConnections(currentConnection.size() - 2, mode, true);
             if (isValidConnection) {
+                shapeRenderer.setProjectionMatrix(camera.combined);
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 for (LineData lineData : linesToDraw) {
-                    new DrawLineOrArrow(5, camera.combined, lineData.getColor(), lineData.getStart(), lineData.getEnd(), mode);
-
+                    draw.drawLine(shapeRenderer,3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
                 }
+                shapeRenderer.end();
             } else{
                 currentConnection.remove(currentConnection.size()-1);
                 levelLost();
@@ -289,6 +299,8 @@ public class GameScreen_Level1 implements Screen {
     }
 
     private void renderMode3Connections() {
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (int i = 0; i < game.vertices; i++) {
             java.util.List<Edge> neighbors = connections.getNeighbors(i);
             for (int j = 0; j < neighbors.size(); j++) {
@@ -299,9 +311,10 @@ public class GameScreen_Level1 implements Screen {
                 Vector2 point1 = new Vector2(sourceCity.x, sourceCity.y);
                 Vector2 point2 = new Vector2(destCity.x, destCity.y);
 
-                new DrawLineOrArrow(5, camera.combined, Color.BLACK, point1, point2, 1);
+                draw.drawArrow(shapeRenderer, 3, Color.BLACK, point1, point2);
             }
         }
+        shapeRenderer.end();
     }
 
     private boolean checkConnections(int i, final int mode, boolean lastConnection) {
@@ -456,7 +469,7 @@ public class GameScreen_Level1 implements Screen {
         final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
         if (newValue > 0) mangoCounterLabel.setText(newValue);
         else {
-            parrotImage.remove();
+            game.parrotImage.remove();
 
             final LevelLostGroup lost = new LevelLostGroup(game, camera);
             stage.addActor(lost);
@@ -512,6 +525,7 @@ public class GameScreen_Level1 implements Screen {
 
     @Override
     public void dispose() {
+        shapeRenderer.dispose();
         stage.dispose();
     }
 }

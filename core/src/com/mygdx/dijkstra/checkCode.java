@@ -61,7 +61,20 @@ public class checkCode extends Group {
                         mangoCounterLabel.setText(game.mangos);
                         if(game.mangos < 30) game.mangos = 30;
                         game.dropSound.play();
-                        game.setScreen(new LevelWonScreen(game, game.currentLevel));
+                        switch(mode){
+                            case 1:
+                                game.setScreen(new LevelWonScreen(game, 3.1));
+                                break;
+                            case 2:
+                                game.setScreen(new LevelWonScreen(game, 3.2));
+                                break;
+                            case 3:
+                                game.setScreen(new LevelWonScreen(game, 3.3));
+                                break;
+                            case 4:
+                                game.setScreen(new LevelWonScreen(game, 3.4));
+                                break;
+                        }
                         isCorrect = true;
                     } else {
                         game.mangos -= 10;

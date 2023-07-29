@@ -5,7 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
@@ -19,8 +19,9 @@ import static com.badlogic.gdx.utils.Align.left;
 
 public class GameScreen_Level2 implements Screen {
     final DijkstraAlgorithm game;
-    Image boatImage, connectionArea, parrotImage;
-    Table portTable, mangoCounter;
+    Image boatImage;
+    ShapeRenderer shapeRenderer  = new ShapeRenderer();
+    Table mangoCounter;
     Label mangoCounterLabel;
     OrthographicCamera camera;
     private final FitViewport fitViewport;
@@ -33,10 +34,15 @@ public class GameScreen_Level2 implements Screen {
     Graph connections;
     String text;
     InfoTextGroup infotext;
+    DrawLineOrArrow draw;
 
     public GameScreen_Level2(final DijkstraAlgorithm game) {
         //init game & camera
         this.game = game;
+        game.createCities(game.allCities);
+        game.getCities();
+
+        //init camera
         camera = game.camera;
         fitViewport = game.fitViewport;
         stage = new Stage(fitViewport);
@@ -50,51 +56,10 @@ public class GameScreen_Level2 implements Screen {
         initializeText();
         dropBoxItems();
         linesToDraw = new ArrayList<>();
+        draw = new DrawLineOrArrow();
 
         //init connections&ports
-        for (int i = 0; i < game.vertices; i++) {
-
-            //init variables and ports
-            City sourceCity = game.cities.get(i);
-            portTable = new Ports(sourceCity, game);
-            stage.addActor(portTable);
-            java.util.List<Edge> neighbors = connections.getNeighbors(i);
-
-            //init connections
-            for (int j = 0; j < neighbors.size(); j++) {
-                int destination = neighbors.get(j).destination;
-                City destCity = game.cities.get(destination);
-                int weight = neighbors.get(j).weight;
-
-                Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
-                Vector2 end = new Vector2(destCity.x, destCity.y);
-
-                float x = (float) (destCity.x + sourceCity.x) / 2;
-                float y = (float) (destCity.y + sourceCity.y) / 2;
-                float width = (float) (camera.viewportWidth * 0.2);
-                float height = (float) (camera.viewportHeight * 0.1);
-
-                final InfoCardActor card = new InfoCardActor(game, x, y, width, height, sourceCity.name, destCity.name, weight, false);
-                LineData lineData = new LineData(start, end, Color.BLACK);
-                linesToDraw.add(lineData);
-
-                connectionArea = new ConnectionAreaImage(sourceCity, destCity);
-                stage.addActor(connectionArea);
-                connectionArea.addListener(new InputListener() {
-                    final Table cardTable = card.getTable(); // Use the final variable
-
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        stage.addActor(cardTable);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        cardTable.remove();
-                    }
-                });
-            }
-        }
+        stage.addActor(new MapGroup_Level2_Level3(game, 0, connections, boatImage, linesToDraw));
 
         //init infotext
         infotext = new InfoTextGroup(game, text);
@@ -103,18 +68,21 @@ public class GameScreen_Level2 implements Screen {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 infotext.remove();
-                int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.1);
-                parrotImage = new Image(game.assetManager.get("parrott.png", Texture.class));
-                parrotImage.setSize((float) parrottWidth, (float) (parrottWidth * 1.25));
-                parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrottWidth - game.offset), (camera.viewportHeight / 3 - game.space));
-                parrotImage.addListener(new ClickListener() {
+                int parrotWidth = (int) (camera.viewportWidth * 0.1);
+                game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
+                game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
+                game.infoImage.setSize((float) (camera.viewportWidth*0.025), (float) (camera.viewportWidth*0.025));
+                game.infoImage.setPosition(game.parrotImage.getX() - game.space, game.parrotImage.getY() + game.parrotImage.getHeight());
+                game.parrotImage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
                         stage.addActor(infotext);
-                        parrotImage.remove();
+                        game.parrotImage.remove();
+                        game.infoImage.remove();
                     }
                 });
-                stage.addActor(parrotImage);
+                stage.addActor(game.infoImage);
+                stage.addActor(game.parrotImage);
             }
         });
 
@@ -141,9 +109,12 @@ public class GameScreen_Level2 implements Screen {
         game.batch.end();
 
         // Render the connections (lines)
+        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (LineData lineData : linesToDraw) {
-            new DrawLineOrArrow(5, camera.combined, lineData.getColor(), lineData.getStart(), lineData.getEnd(), 1);
+            draw.drawArrow(shapeRenderer,3,  lineData.getColor(), lineData.getStart(), lineData.getEnd());
         }
+        shapeRenderer.end();
 
         // Draw the stage
         stage.draw();
@@ -267,7 +238,7 @@ public class GameScreen_Level2 implements Screen {
         final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
         if (newValue > 0) mangoCounterLabel.setText(newValue);
         else {
-            parrotImage.remove();
+            game.parrotImage.remove();
 
             final LevelLostGroup lost = new LevelLostGroup(game, camera);
             stage.addActor(lost);
@@ -312,6 +283,7 @@ public class GameScreen_Level2 implements Screen {
 
     @Override
     public void dispose() {
+        shapeRenderer.dispose();
         stage.dispose();
     }
 }

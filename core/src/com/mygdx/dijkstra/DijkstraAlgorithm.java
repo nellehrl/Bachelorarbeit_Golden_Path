@@ -32,7 +32,7 @@ public class DijkstraAlgorithm extends Game {
 	public ArrayList<City> southEast = new ArrayList<>();
 	public ArrayList<City> cities = new ArrayList<>();
 	public double currentLevel;
-	Image blood;
+	Image blood, parrotImage, infoImage;
 	int city;
 	public Music backGroundMusic;
 	AssetManager assetManager;
@@ -53,6 +53,7 @@ public class DijkstraAlgorithm extends Game {
 		assetManager.load("map.png", Texture.class);
 		assetManager.load("parrott.png", Texture.class);
 		assetManager.load("port.png", Texture.class);
+		assetManager.load("info.png", Texture.class);
 		assetManager.load("shadow.png", Texture.class);
 		assetManager.load("ship.png", Texture.class);
 		assetManager.load("shipWreck.png", Texture.class);
@@ -75,8 +76,6 @@ public class DijkstraAlgorithm extends Game {
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
 		fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-
-		createCities(allCities);
 		currentLevel = 1.1;
 
 		batch = new SpriteBatch();
@@ -90,12 +89,36 @@ public class DijkstraAlgorithm extends Game {
 
 		battle = Gdx.audio.newSound(Gdx.files.internal("battle.wav"));
 		blood = new Image(assetManager.get("Blood.png", Texture.class));
+		parrotImage = new Image(assetManager.get("parrott.png", Texture.class));
+		infoImage = new Image(assetManager.get("info.png", Texture.class));
 
+		createCities(allCities);
+		getCities();
+		for(int i = 0; i < cities.size(); i++){
+			City city = cities.get(i);
+			city.setX((int) (city.x*1.3) + 50);
+		}
+		vertices = cities.size();
+
+		this.setScreen(new MainMenuScreen(this, currentLevel));
+	}
+
+	public void render() {
+		assetManager.update();
+		super.render(); // important!
+	}
+
+	public void dispose() {
+		batch.dispose();
+		font.dispose();
+	}
+
+	public void getCities(){
 		int widthWorld = (int) (Gdx.graphics.getWidth() * 0.725);
 		int heightWorld = Gdx.graphics.getHeight() + Gdx.graphics.getHeight()/3;
 		for(City city : allCities){
 			if(city.x <= widthWorld/3&& city.y >= heightWorld/2){
-			northWest.add(city);
+				northWest.add(city);
 			}
 			else if(city.x <= widthWorld*0.66 && city.x>widthWorld/3 && city.y >= heightWorld/2){
 				northMid.add(city);
@@ -140,28 +163,9 @@ public class DijkstraAlgorithm extends Game {
 				cities.add(southEast.get(city));
 			}
 		}
-
-		for(int i = 0; i < cities.size(); i++){
-			City city = cities.get(i);
-			city.setX((int) (city.x*1.3) + 50);
-		}
-
-		vertices = cities.size();
-
-		this.setScreen(new MainMenuScreen(this, currentLevel));
 	}
 
-	public void render() {
-		assetManager.update();
-		super.render(); // important!
-	}
-
-	public void dispose() {
-		batch.dispose();
-		font.dispose();
-	}
-
-	static void createCities(ArrayList<City> cities) {
+	public void createCities(ArrayList<City> cities) {
 		cities.add(new City("Shanghai", (int) (467*1.5), (int) (330*1.5),"SH"));
 		cities.add(new City("Singapore", (int) (448*1.5), (int) (290*1.5), "SP"));
 		cities.add(new City("Rotterdam", (int) (280*1.5), (int) (370*1.5), "RD"));

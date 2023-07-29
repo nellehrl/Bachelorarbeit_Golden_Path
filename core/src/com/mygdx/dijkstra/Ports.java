@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 public class Ports extends Table {
     Image portImage;
     public Ports(City value, final DijkstraAlgorithm game){
-        portImage = new Image(game.assetManager.get("port.png", Texture.class));
+        if (game.assetManager.isLoaded("port.png", Texture.class)) portImage = new Image(game.assetManager.get("port.png", Texture.class));
         portImage.setSize(50f, 50f);
 
         Label label = new Label(value.getName(), game.fontSkin);
