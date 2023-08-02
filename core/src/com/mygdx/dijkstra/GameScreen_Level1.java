@@ -74,40 +74,14 @@ public class GameScreen_Level1 implements Screen {
         draw = new DrawLineOrArrow();
 
         //init cities and starting point
-        background = new BackgroundGroup(game);
+        //init Text
+        String text = createTextForMode(mode);
+        textBuilder = new StringBuilder(text);
+        background = new BackgroundGroup(game, stage, text);
         initializeBackground();
         initializeCities();
         currentConnection.add(game.cities.get(0));
         validConnection.add(0);
-
-        //init Text
-        String text = createTextForMode(mode);
-        textBuilder = new StringBuilder(text);
-
-        //init infoText
-        infotext = new InfoTextGroup(game, text);
-        closeButton = infotext.closeButton;
-        closeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                infotext.remove();
-                int parrotWidth = (int) (camera.viewportWidth * 0.1);
-                game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
-                game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
-                game.infoImage.setSize((float) (camera.viewportWidth*0.025), (float) (camera.viewportWidth*0.025));
-                game.infoImage.setPosition(game.parrotImage.getX() - game.space, game.parrotImage.getY() + game.parrotImage.getHeight());
-                game.parrotImage.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        stage.addActor(infotext);
-                        game.parrotImage.remove();
-                        game.infoImage.remove();
-                    }
-                });
-                stage.addActor(game.infoImage);
-                stage.addActor(game.parrotImage);
-            }
-        });
 
         //init connectionOverview
         int width = (int) (camera.viewportWidth / game.vertices);
@@ -216,6 +190,7 @@ public class GameScreen_Level1 implements Screen {
                 });
             } else if (actor.getName().equals("dropBox")) dropBox = (DropBoxWindow) actor;
             else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
+            else if (actor.getName().equals("infotext")) infotext = (InfoTextGroup) actor;
             else if (actor.getName().equals("mangoCounter")) {
                 mangoCounter = (Table) actor;
                 mangoCounterLabel = (Label) mangoCounter.getChild(1);

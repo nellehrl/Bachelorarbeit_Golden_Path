@@ -46,7 +46,7 @@ public class checkCode extends Group {
         codeTable.row();
         codeTable.add(codeInput).width(width / 2).height(height / 6).center().padTop(-60);
 
-        BackgroundGroup background = new BackgroundGroup(game);
+        BackgroundGroup background = new BackgroundGroup(game, stage, text);
         Table mangoCounter = background.mangoCounter;
         final Label mangoCounterLabel = (Label) mangoCounter.getChild(1);
         addActor(mangoCounter);

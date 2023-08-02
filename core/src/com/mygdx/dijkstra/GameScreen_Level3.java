@@ -10,6 +10,7 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.ui.Button;
@@ -119,32 +120,6 @@ public class GameScreen_Level3 implements Screen {
         });
         stage.addActor(doneButton);
 
-        infotext = new InfoTextGroup(game, text);
-
-        //listener to close infotext
-        closeButton = infotext.closeButton;
-        closeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                infotext.remove();
-                int parrotWidth = (int) (camera.viewportWidth * 0.1);
-                game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
-                game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
-                game.infoImage.setSize((float) (camera.viewportWidth*0.025), (float) (camera.viewportWidth*0.025));
-                game.infoImage.setPosition(game.parrotImage.getX() - game.space, game.parrotImage.getY() + game.parrotImage.getHeight());
-                game.parrotImage.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        stage.addActor(infotext);
-                        game.parrotImage.remove();
-                        game.infoImage.remove();
-                    }
-                });
-                stage.addActor(game.infoImage);
-                stage.addActor(game.parrotImage);
-            }
-        });
-
         // Add remaining actors to stage
         stage.addActor(dropBox);
         stage.addActor(mainMenuButton);
@@ -224,7 +199,7 @@ public class GameScreen_Level3 implements Screen {
 
     }
     private void initializeBackground(){
-        background = new BackgroundGroup(game);
+        background = new BackgroundGroup(game, stage, text);
         for (Actor actor : background.getChildren()) {
             if (actor.getName().equals("mainMenuButton")) {
                 mainMenuButton = (Button) actor;
@@ -245,12 +220,13 @@ public class GameScreen_Level3 implements Screen {
                                 game.currentLevel = 3.4;
                                 break;
                         }
-                        game.setScreen(new MainMenuScreen(game, mode));
+                        game.setScreen(new MainMenuScreen(game, game.currentLevel));
                         dispose();
                     }
                 });
             }
             else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
+            else if (actor.getName().equals("infotext")) infotext = (InfoTextGroup) actor;
         }
     }
     public void dijkstra() {
@@ -365,14 +341,19 @@ public class GameScreen_Level3 implements Screen {
             //define level of help per mode
             switch (mode) {
                 case 1:
-                    textField0.setText("Costs");
+                    textField0.setText("Lowest costs");
                     correctValue = String.valueOf(costs);
                     if (costs == Integer.MAX_VALUE) correctValue = "INFINITY";
+                    textField0.setDisabled(true);
                 case 2:
                     if (costs == Integer.MAX_VALUE || costs == 0 || correctNodes.contains(col)) {
                         correctlyFilledTextFieldsInCurrentRow++;
                         textField.setText(correctValue);
                         textField.setColor(Color.GREEN);
+                        textField.setDisabled(true);
+                        for (EventListener listener : textField.getListeners()) {
+                            textField.removeListener(listener);
+                        }
                     }
                     break;
             }
@@ -411,8 +392,8 @@ public class GameScreen_Level3 implements Screen {
                         }
                         textField.setColor(Color.RED);
                     } else {
-                        String hintText = "There is no new connection available to this city from\n " + sourceCity.name + ". We" +
-                                " may find another one but lets stick\n to the one we know.";
+                        String hintText = "There is no new connection available to this city from " + sourceCity.name + ". We" +
+                                " may find another one but lets stick to the one we know.";
                         displayHint(hintText);
                     }
                     return true;
@@ -423,7 +404,7 @@ public class GameScreen_Level3 implements Screen {
             @Override
             public void keyTyped(TextField textField, char key) {
                 String userInput = textField.getText();
-                boolean isCorrect = userInput.trim().equals(finalCorrectValue);
+                boolean isCorrect = userInput.trim().equals(finalCorrectValue.trim());
                 if (key == '\r' || key == '\n') {
                     // Handle correct input
                     if(mode < 4) {
@@ -440,6 +421,10 @@ public class GameScreen_Level3 implements Screen {
                             } else {
                                 lookForPrecursors(i, end, sourceCity, Color.GREEN);
                             }
+                            textField.setDisabled(true);
+                            for (EventListener listener : textField.getListeners()) {
+                                textField.removeListener(listener);
+                            }
                             checkIfNewRow(i);
                         }
                         //handle incorrect input && display hint box
@@ -450,11 +435,11 @@ public class GameScreen_Level3 implements Screen {
                                     hintText = "Hint: We are always looking for the shortest\npath from our treasury!";
                                     break;
                                 case 2:
-                                    hintText = "This is how you build the value: Shortage of precursor - Added costs";
+                                    hintText = "This is how you build the value:\n Shortage of precursor - Added costs";
                                     break;
                                 case 3:
                                     hintText = "To our treasury(starting point) we need 0 costs. \n\n" +
-                                            "This is how you build the value: Shortage of precursor - Added costs";
+                                            "This is how you build the value:\n Shortage of precursor - Added costs";
                                     break;
                             }
                             displayHint(hintText);
@@ -468,21 +453,30 @@ public class GameScreen_Level3 implements Screen {
     private void displayHint(String hintText){
         //create Table for organization
         Table textBoxTable = new Table(game.fontSkin);
-        textBoxTable.setSize(camera.viewportWidth / 4, camera.viewportHeight / 10);
-        textBoxTable.setPosition(game.parrotImage.getX() - textBoxTable.getWidth(),
+        textBoxTable.setSize(camera.viewportWidth/4 + 2*game.space, camera.viewportHeight / 10);
+        textBoxTable.setPosition(game.parrotImage.getX() - textBoxTable.getWidth() - game.space,
                 game.parrotImage.getY() + game.parrotImage.getHeight(), left);
         Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.assetManager.get("white 1.png", Texture.class)));
         textBoxTable.setBackground(backgroundDrawable);
 
         //create label
         Label textBox = new Label(hintText, game.fontSkin);
+        textBox.setPosition(game.parrotImage.getX() - textBoxTable.getWidth(),
+                game.parrotImage.getY() + game.parrotImage.getHeight(), left);
         textBox.setFontScale(0.7f);
         textBox.setAlignment(left);
-        textBoxTable.add(textBox);
+        textBox.setWrap(true);
+        textBox.setWidth(camera.viewportWidth/4);
         stage.addActor(textBoxTable);
+        stage.addActor(textBox);
 
         //Let textbox disappear after 5 seconds
         textBoxTable.addAction(Actions.sequence(
+                Actions.delay(5f),
+                Actions.fadeOut(1f),
+                Actions.removeActor()
+        ));
+        textBox.addAction(Actions.sequence(
                 Actions.delay(5f),
                 Actions.fadeOut(1f),
                 Actions.removeActor()

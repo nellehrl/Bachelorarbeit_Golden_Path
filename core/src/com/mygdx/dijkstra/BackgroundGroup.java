@@ -4,7 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class BackgroundGroup extends Group {
@@ -17,7 +20,7 @@ public class BackgroundGroup extends Group {
     Button mainMenuButton;
     Table mangoCounter;
 
-    public BackgroundGroup(final DijkstraAlgorithm game) {
+    public BackgroundGroup(final DijkstraAlgorithm game, final Stage stage, String text) {
         this.game = game;
         int row_height = offset;
         int col_width = 2 * offset;
@@ -73,6 +76,32 @@ public class BackgroundGroup extends Group {
         box.setPosition(1, 1);
         addActor(box);
         box.setName("box");
+
+        final InfoTextGroup infotext = new InfoTextGroup(game, text);
+        Button closeButton = infotext.closeButton;
+        closeButton.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                infotext.remove();
+                int parrotWidth = (int) (camera.viewportWidth * 0.1);
+                game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
+                game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
+                game.infoImage.setSize((float) (camera.viewportWidth*0.025), (float) (camera.viewportWidth*0.025));
+                game.infoImage.setPosition(game.parrotImage.getX() - game.space, game.parrotImage.getY() + game.parrotImage.getHeight());
+                game.parrotImage.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        stage.addActor(infotext);
+                        game.parrotImage.remove();
+                        game.infoImage.remove();
+                    }
+                });
+                stage.addActor(game.infoImage);
+                stage.addActor(game.parrotImage);
+            }
+        });
+        addActor(infotext);
+        infotext.setName("infotext");
     }
 
     public Image createActor(int width, float height, float x, float y, Texture texture) {

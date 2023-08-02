@@ -52,39 +52,14 @@ public class GameScreen_Level2 implements Screen {
         connections = new Graph(game.vertices, 1);
 
         //init Background & text
-        initializeBackground();
         initializeText();
+        initializeBackground();
         dropBoxItems();
         linesToDraw = new ArrayList<>();
         draw = new DrawLineOrArrow();
 
         //init connections&ports
         stage.addActor(new MapGroup_Level2_Level3(game, 0, connections, boatImage, linesToDraw));
-
-        //init infotext
-        infotext = new InfoTextGroup(game, text);
-        closeButton = infotext.closeButton;
-        closeButton.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                infotext.remove();
-                int parrotWidth = (int) (camera.viewportWidth * 0.1);
-                game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
-                game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
-                game.infoImage.setSize((float) (camera.viewportWidth*0.025), (float) (camera.viewportWidth*0.025));
-                game.infoImage.setPosition(game.parrotImage.getX() - game.space, game.parrotImage.getY() + game.parrotImage.getHeight());
-                game.parrotImage.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        stage.addActor(infotext);
-                        game.parrotImage.remove();
-                        game.infoImage.remove();
-                    }
-                });
-                stage.addActor(game.infoImage);
-                stage.addActor(game.parrotImage);
-            }
-        });
 
         //add remaining actors
         stage.addActor(boatImage);
@@ -121,7 +96,7 @@ public class GameScreen_Level2 implements Screen {
     }
 
     public void initializeBackground() {
-        background = new BackgroundGroup(game);
+        background = new BackgroundGroup(game, stage, text);
         for (Actor actor : background.getChildren()) {
             if (actor.getName().equals("mainMenuButton")) {
                 mainMenuButton = (Button) actor;
@@ -136,6 +111,7 @@ public class GameScreen_Level2 implements Screen {
             } else if (actor.getName().equals("dropBox")) dropBox = (DropBoxWindow) actor;
             else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
             else if (actor.getName().equals("mangoCounter")) mangoCounter = (Table) actor;
+            else if (actor.getName().equals("infotext")) infotext = (InfoTextGroup) actor;
         }
         mangoCounterLabel = (Label) mangoCounter.getChild(1);
     }
@@ -211,7 +187,8 @@ public class GameScreen_Level2 implements Screen {
             @Override
             public void keyTyped(TextField textField, char key) {
                 String userInput = textField.getText();
-                boolean isCorrect = userInput.equals(fieldText + neighbor.weight);
+                String userInputSubstring = userInput.substring(userInput.length() - 2).trim();
+                boolean isCorrect = userInputSubstring.equals(String.valueOf(neighbor.weight));
                 //set connection green if correct
                 if (key == '\r' || key == '\n') {
                     if (isCorrect && !neighbor.isEdgeAdded()) {
@@ -220,6 +197,10 @@ public class GameScreen_Level2 implements Screen {
                         neighbor.setEdgeAdded(true);
                         textField.setColor(Color.GREEN);
                         linesToDraw.add(new LineData(start, end, Color.GREEN));
+                        textField.setDisabled(true);
+                        for (EventListener listener : textField.getListeners()) {
+                            textField.removeListener(listener);
+                        }
                     } else {
                         levelLost();
                     }
