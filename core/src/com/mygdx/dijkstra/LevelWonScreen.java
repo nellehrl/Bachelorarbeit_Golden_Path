@@ -31,13 +31,13 @@ public class LevelWonScreen implements Screen {
     private OrthographicCamera camera;
     private Rectangle background, bucket;
     private Array<Rectangle> mangos;
-    double nextLevel;
+    int nextLevel;
     private float elapsedTime = 0f;
     private long lastDropTime;
     Music music;
     Sound sound;
 
-    public LevelWonScreen(final DijkstraAlgorithm game, double nextLevel) {
+    public LevelWonScreen(final DijkstraAlgorithm game, int nextLevel) {
 
         stage = new Stage();
         this.game = game;

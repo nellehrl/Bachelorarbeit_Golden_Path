@@ -25,6 +25,7 @@ public class GameScreen_Level2 implements Screen {
     Label mangoCounterLabel;
     OrthographicCamera camera;
     private final FitViewport fitViewport;
+    private CheckCode checkCode;
     ArrayList<City> currentConnection = new ArrayList<>();
     private Stage stage;
     Button mainMenuButton, closeButton;
@@ -39,8 +40,6 @@ public class GameScreen_Level2 implements Screen {
     public GameScreen_Level2(final DijkstraAlgorithm game) {
         //init game & camera
         this.game = game;
-        game.createCities(game.allCities);
-        game.getCities();
 
         //init camera
         camera = game.camera;
@@ -59,7 +58,8 @@ public class GameScreen_Level2 implements Screen {
         draw = new DrawLineOrArrow();
 
         //init connections&ports
-        stage.addActor(new MapGroup_Level2_Level3(game, 0, connections, boatImage, linesToDraw));
+        stage.addActor(new MapGroup_Level2_3(game, 0, connections, boatImage, linesToDraw));
+        checkCode = new CheckCode(camera.viewportWidth / 3, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, "code", game, stage, camera, 4);
 
         //add remaining actors
         stage.addActor(boatImage);
@@ -206,8 +206,7 @@ public class GameScreen_Level2 implements Screen {
                     }
                 }
                 if (numOfEdges[0] == connections.numOfEdges) {
-                    game.setScreen(new LevelWonScreen(game, 2));
-                    dispose();
+                    stage.addActor(checkCode);
                 }
             }
         });

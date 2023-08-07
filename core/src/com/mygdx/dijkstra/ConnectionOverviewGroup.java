@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import static com.badlogic.gdx.utils.Align.left;
 
 public class ConnectionOverviewGroup extends Group {
-    public ConnectionOverviewGroup(int vertices, ArrayList<City> cities, final DijkstraAlgorithm game, int width, int height, int x, int y, Graph connections, int mode) {
+    public ConnectionOverviewGroup(int vertices, ArrayList<City> cities, final DijkstraAlgorithm game, int width, int height, int x, int y, Graph connections, int level) {
         for (int i = 0; i < vertices; i++) {
             java.util.List<Edge> neighbors = connections.getNeighbors(i);
             for (int j = 0; j < neighbors.size(); j++) {
@@ -23,7 +23,7 @@ public class ConnectionOverviewGroup extends Group {
                 int weight = neighbors.get(j).weight;
                 String boxText = "";
 
-                switch(mode){
+                switch(level){
                     case 1:
                         boxText = sourceCity + " - " + destCity;
                         break;

@@ -13,18 +13,18 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import java.util.List;
 
-public class MapGroup_Level2_Level3 extends Group {
+public class MapGroup_Level2_3 extends Group {
     final DijkstraAlgorithm game;
-    public MapGroup_Level2_Level3(final DijkstraAlgorithm game, int mode, Graph connections, final Image boatImage, List<LineData> linesToDraw){
+    public MapGroup_Level2_3(final DijkstraAlgorithm game, int mode, Graph connections, final Image boatImage, List<LineData> linesToDraw){
         this.game = game;
         for (int i = 0; i < game.vertices; i++) {
-            City sourceCity = game.cities.get(i);
+            final City sourceCity = game.cities.get(i);
             Table portTable = new Ports(sourceCity, game);
-            if (mode == 4) {
+            if (mode == 4 || mode == 8) {
                 portTable.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        boatImage.addAction(Actions.moveTo(x - boatImage.getHeight() / 2, y - boatImage.getHeight() / 2));
+                        boatImage.addAction(Actions.moveTo(sourceCity.getX() - boatImage.getHeight() / 2, sourceCity.getY() - boatImage.getHeight() / 2, 1.5f));
                     }
                 });
             }
@@ -40,7 +40,7 @@ public class MapGroup_Level2_Level3 extends Group {
                 Vector2 end = new Vector2(destCity.x, destCity.y);
                 Image connectionArea = new ConnectionAreaImage(sourceCity, destCity);
 
-                InfoCardActor card = new InfoCardActor(game, (float) (destCity.x + sourceCity.x) / 2,
+                ConnectionHoverActor card = new ConnectionHoverActor(game, (float) (destCity.x + sourceCity.x) / 2,
                         (float) (destCity.y + sourceCity.y) / 2, 150, 60, sourceCity.name, destCity.name, weight, false);
                 final Table cardTableFinal = card.getTable();
 

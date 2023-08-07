@@ -245,7 +245,7 @@ com.badlogic.gdx.scenes.scene2d.ui.CheckBox$CheckBoxStyle: {
 		checkboxOff: checkbox-c
 		checkboxOver: checkbox-over-c
 		font: font
-		fontColor: text
+		fontColor: color
 		downFontColor: text-selected
 		checkedFontColor: text-selected
 	}
@@ -379,12 +379,12 @@ com.badlogic.gdx.scenes.scene2d.ui.SplitPane$SplitPaneStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.TextButton$TextButtonStyle: {
 	default: {
 		font: font
-		fontColor: text
-		downFontColor: text-selected
-		up: button-c
-		down: button-pressed-c
-		over: button-over-c
-	}
+		fontColor: color
+		downFontColor: white
+		up: checkbox-c
+		down: checkbox-pressed-c
+		over: checkbox-over-c
+	},
 }
 com.badlogic.gdx.scenes.scene2d.ui.TextField$TextFieldStyle: {
 	default: {

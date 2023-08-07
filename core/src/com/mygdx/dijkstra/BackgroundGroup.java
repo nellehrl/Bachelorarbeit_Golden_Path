@@ -77,12 +77,12 @@ public class BackgroundGroup extends Group {
         addActor(box);
         box.setName("box");
 
-        final InfoTextGroup infotext = new InfoTextGroup(game, text);
-        Button closeButton = infotext.closeButton;
+        final InfoTextGroup infoText = new InfoTextGroup(game, text);
+        Button closeButton = infoText.closeButton;
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                infotext.remove();
+                infoText.remove();
                 int parrotWidth = (int) (camera.viewportWidth * 0.1);
                 game.parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
                 game.parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - game.offset), (camera.viewportHeight / 3 - game.space));
@@ -91,7 +91,7 @@ public class BackgroundGroup extends Group {
                 game.parrotImage.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        stage.addActor(infotext);
+                        stage.addActor(infoText);
                         game.parrotImage.remove();
                         game.infoImage.remove();
                     }
@@ -100,8 +100,8 @@ public class BackgroundGroup extends Group {
                 stage.addActor(game.parrotImage);
             }
         });
-        addActor(infotext);
-        infotext.setName("infotext");
+        addActor(infoText);
+        infoText.setName("infotext");
     }
 
     public Image createActor(int width, float height, float x, float y, Texture texture) {

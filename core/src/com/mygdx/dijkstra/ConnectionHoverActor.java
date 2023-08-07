@@ -10,9 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import static com.badlogic.gdx.utils.Align.left;
 
-public class InfoCardActor extends Actor {
+public class ConnectionHoverActor extends Actor {
     private Table cardTable;
-    public InfoCardActor(final DijkstraAlgorithm game, float x, float y, float width, float height, String source, String destination, int weight, boolean visible) {
+    public ConnectionHoverActor(final DijkstraAlgorithm game, float x, float y, float width, float height, String source, String destination, int weight, boolean visible) {
         String text = "Connection\n From: " + source + "\n To: " + destination + "\n Costs: " + weight;
 
         cardTable = new Table(game.fontSkin);

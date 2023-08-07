@@ -22,8 +22,9 @@ import java.util.Set;
 public class GameScreen_Level1 implements Screen {
     final DijkstraAlgorithm game;
     private float triangleSize = 40;
+    private CheckCode checkCode;
     Action move;
-    final int mode;
+    final int level;
     ShapeRenderer shapeRenderer  = new ShapeRenderer();
     Image boatImage, connectionArea;
     Table portTable, mangoCounter;
@@ -45,9 +46,9 @@ public class GameScreen_Level1 implements Screen {
     StringBuilder textBuilder;
     DrawLineOrArrow draw;
 
-    public GameScreen_Level1(final DijkstraAlgorithm game, final int mode) {
+    public GameScreen_Level1(final DijkstraAlgorithm game, final int level) {
         //init game and stage
-        this.mode = mode;
+        this.level = level;
         this.game = game;
 
         //init camera
@@ -56,7 +57,7 @@ public class GameScreen_Level1 implements Screen {
         stage = new Stage(fitViewport);
 
         //define Graph
-        switch (mode) {
+        switch (level) {
             case 1: case 2:
                 connections = new Graph(game.vertices, 2);
                 connections = new Graph(game.vertices, 2);
@@ -75,7 +76,7 @@ public class GameScreen_Level1 implements Screen {
 
         //init cities and starting point
         //init Text
-        String text = createTextForMode(mode);
+        String text = createTextForMode();
         textBuilder = new StringBuilder(text);
         background = new BackgroundGroup(game, stage, text);
         initializeBackground();
@@ -83,13 +84,15 @@ public class GameScreen_Level1 implements Screen {
         currentConnection.add(game.cities.get(0));
         validConnection.add(0);
 
+        checkCode = new CheckCode(camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, "code", game, stage, camera, level);
+
         //init connectionOverview
         int width = (int) (camera.viewportWidth / game.vertices);
         int height = (int) (camera.viewportHeight / 6 - game.space);
         int x = 3 * game.offset;
         int y = (int) (camera.viewportHeight * 0.28 - game.space);
-        if (mode == 3) y = (int) (camera.viewportHeight * 0.225 - 2 * game.space);
-        stage.addActor(new ConnectionOverviewGroup(game.vertices, game.cities, game, (int) (width * 0.8), height, x, y, connections, mode));
+        if (level == 3) y = (int) (camera.viewportHeight * 0.225 - 2 * game.space);
+        stage.addActor(new ConnectionOverviewGroup(game.vertices, game.cities, game, (int) (width * 0.8), height, x, y, connections, level));
 
         //add rest of actors
         stage.addActor(boatImage);
@@ -111,12 +114,9 @@ public class GameScreen_Level1 implements Screen {
         // Render background
         background.draw(game.batch, 1.0f);
 
-        switch (mode) {
-            case 1:
-                renderConnections(1);
-                break;
-            case 2:
-                renderConnections(2);
+        switch (level) {
+            case 1: case 2:
+                renderConnections();
                 break;
             case 3:
                 renderMode3Connections();
@@ -129,10 +129,10 @@ public class GameScreen_Level1 implements Screen {
         stage.draw();
     }
 
-    private String createTextForMode(int mode) {
+    private String createTextForMode() {
         StringBuilder textBuilder = new StringBuilder();
 
-        switch (mode) {
+        switch (level) {
             case 1:
                 textBuilder.append("Howdy Captain,\n\n");
                 textBuilder.append("Let's see what we got here….We want to visit all cities and then come back to bring");
@@ -173,15 +173,15 @@ public class GameScreen_Level1 implements Screen {
                 mainMenuButton.addListener(new ClickListener() {
                     @Override
                     public void clicked(InputEvent event, float x, float y) {
-                        switch (mode) {
+                        switch (level) {
                             case 1:
-                                game.currentLevel = 1.1;
+                                game.currentLevel = 1;
                                 break;
                             case 2:
-                                game.currentLevel = 1.2;
+                                game.currentLevel = 2;
                                 break;
                             case 3:
-                                game.currentLevel = 1.3;
+                                game.currentLevel = 3;
                                 break;
                         }
                         game.setScreen(new MainMenuScreen(game, game.currentLevel));
@@ -203,7 +203,7 @@ public class GameScreen_Level1 implements Screen {
         for (int i = 0; i < game.vertices; i++) {
             final City value = game.cities.get(i);
             portTable = new Ports(value, game);
-            switch (mode) {
+            switch (level) {
                 case 1:
                 case 2:
                     initializeCityForMode1And2(value);
@@ -224,9 +224,7 @@ public class GameScreen_Level1 implements Screen {
                 currentConnection.add(currentCity);
                 visited[game.cities.indexOf(currentCity)] = true; // Mark the city as visited
                 if (checkAllCitiesVisited()) {
-                    if(mode == 2) game.setScreen(new LevelWonScreen(game, 1.2));
-                    else game.setScreen(new LevelWonScreen(game, 1.1));
-                    dispose();
+                    stage.addActor(checkCode);
                 }
             }
         });
@@ -252,18 +250,19 @@ public class GameScreen_Level1 implements Screen {
         return count;
     }
 
-    private void renderConnections(final int mode) {
+    private void renderConnections() {
         if (currentConnection.size() >= 2) {
             for (int i = 0; i < currentConnection.size() - 3; i++) {
-                isValidConnection = checkConnections(i, mode, false);
+                isValidConnection = checkConnections(i, false);
                 if (!isValidConnection) break;
             }
-            isValidConnection = checkConnections(currentConnection.size() - 2, mode, true);
+            isValidConnection = checkConnections(currentConnection.size() - 2, true);
             if (isValidConnection) {
                 shapeRenderer.setProjectionMatrix(camera.combined);
                 shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
                 for (LineData lineData : linesToDraw) {
-                    draw.drawLine(shapeRenderer,3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
+                    if(level == 1) draw.drawLine(shapeRenderer,3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
+                    else draw.drawArrow(shapeRenderer,3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
                 }
                 shapeRenderer.end();
             } else{
@@ -292,7 +291,7 @@ public class GameScreen_Level1 implements Screen {
         shapeRenderer.end();
     }
 
-    private boolean checkConnections(int i, final int mode, boolean lastConnection) {
+    private boolean checkConnections(int i, boolean lastConnection) {
         // Not enough cities or no more connections to check
         if (currentConnection.size() < 2 || i >= currentConnection.size() - 1) {
             return false;
@@ -307,7 +306,7 @@ public class GameScreen_Level1 implements Screen {
         for (Edge edge : connections.getNeighbors(source)) neighborDestinations.add(edge.destination);
         isValidConnection = neighborDestinations.contains(dest);
 
-        if (mode == 1 && !isValidConnection) {
+        if (level == 1 && !isValidConnection) {
             for (Edge edge : connections.getNeighbors(dest)) neighborDestinations.add(edge.destination);
             isValidConnection = neighborDestinations.contains(source);
         }
@@ -380,8 +379,7 @@ public class GameScreen_Level1 implements Screen {
                 added[index] = true; // Mark the edge as added
 
                 if (checkAllEdgesAdded()) {
-                    game.setScreen(new LevelWonScreen(game, 1.3));
-                    dispose();
+                    stage.addActor(checkCode);
                 }
             }
         };
@@ -455,7 +453,7 @@ public class GameScreen_Level1 implements Screen {
                 public void clicked(InputEvent event, float x, float y) {
                     game.mangos = 30;
                     mangoCounterLabel.setText(game.mangos);
-                    game.setScreen(new GameScreen_Level1(game, mode));
+                    game.setScreen(new GameScreen_Level1(game, level));
                     dispose();
                 }
             });

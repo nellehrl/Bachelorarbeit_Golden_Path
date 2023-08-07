@@ -31,7 +31,7 @@ public class DijkstraAlgorithm extends Game {
 	public ArrayList<City> northEast = new ArrayList<>();
 	public ArrayList<City> southEast = new ArrayList<>();
 	public ArrayList<City> cities = new ArrayList<>();
-	public double currentLevel;
+	public int currentLevel;
 	Image blood, parrotImage, infoImage;
 	int city;
 	public Music backGroundMusic;
@@ -66,6 +66,7 @@ public class DijkstraAlgorithm extends Game {
 		assetManager.load("worldMap 1.png", Texture.class);
 		assetManager.load("Blood.png", Texture.class);
 		assetManager.load("box.png", Texture.class);
+		assetManager.load("LevelCard.png", Texture.class);
 		assetManager.load("battle.wav", Sound.class);
 		assetManager.load("drop.wav", Sound.class);
 		assetManager.load("ambiente.wav", Sound.class);
@@ -76,7 +77,7 @@ public class DijkstraAlgorithm extends Game {
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
 		fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-		currentLevel = 1.1;
+		currentLevel = 1;
 
 		batch = new SpriteBatch();
 		font = new BitmapFont(); // use libGDX's default Arial font

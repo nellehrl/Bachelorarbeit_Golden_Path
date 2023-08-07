@@ -5,15 +5,10 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.scenes.scene2d.Action;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
@@ -31,7 +26,7 @@ public class MainMenuScreen implements Screen {
     int row_height, col_width;
     float boatWidth;
 
-    public MainMenuScreen(final DijkstraAlgorithm game, double currentLevel) {
+    public MainMenuScreen(final DijkstraAlgorithm game, int currentLevel) {
         this.game = game;
 
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
@@ -77,44 +72,44 @@ public class MainMenuScreen implements Screen {
 
         ArrayList<TextButton> levelButtons = new ArrayList<>();
 
-        TextButton level11Button = generateButton("1.1", 310 - col_width / 2, 55 - row_height / 2, new GameScreen_Level1(game, 1));
+        TextButton level11Button = generateButton("1.1", 310 - col_width / 2, 55 - row_height / 2, new GameScreen_Level1(game, 1), 1);
         stage.addActor(level11Button);
-        level11Button.setName("1.1");
+        level11Button.setName("1");
         levelButtons.add(level11Button);
 
-        TextButton level12Button = generateButton("1.2", 300 - col_width / 2, 225 - row_height / 2, new GameScreen_Level1(game, 2));
+        TextButton level12Button = generateButton("1.2", 300 - col_width / 2, 225 - row_height / 2, new GameScreen_Level1(game, 2), 2);
         stage.addActor(level12Button);
-        level12Button.setName("1.2");
+        level12Button.setName("2");
         levelButtons.add(level12Button);
 
-        TextButton level13Button = generateButton("1.3", 327 - col_width / 2, 400 - row_height / 2, new GameScreen_Level1(game, 3));
+        TextButton level13Button = generateButton("1.3", 327 - col_width / 2, 400 - row_height / 2, new GameScreen_Level1(game, 3), 3);
         stage.addActor(level13Button);
-        level13Button.setName("1.3");
+        level13Button.setName("3");
         levelButtons.add(level13Button);
 
-        TextButton level21Button = generateButton("2.0", 540 - col_width / 2, 380 - row_height / 2, new GameScreen_Level2(game));
+        TextButton level21Button = generateButton("2.0", 540 - col_width / 2, 380 - row_height / 2, new GameScreen_Level2(game), 4);
         stage.addActor(level21Button);
-        level21Button.setName("2.0");
+        level21Button.setName("4");
         levelButtons.add(level21Button);
 
-        TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 1));
+        TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 5),5);
         stage.addActor(level3Button);
-        level3Button.setName("3.1");
+        level3Button.setName("5");
         levelButtons.add(level3Button);
 
-        TextButton level32Button = generateButton("3.2", 850 - col_width / 2, 160 - row_height / 2, new GameScreen_Level3(game, 2));
+        TextButton level32Button = generateButton("3.2", 850 - col_width / 2, 160 - row_height / 2, new GameScreen_Level3(game, 6), 6);
         stage.addActor(level32Button);
-        level32Button.setName("3.2");
+        level32Button.setName("6");
         levelButtons.add(level32Button);
 
-        TextButton level33Button = generateButton("3.3", 900 - col_width / 2, 300 - row_height / 2, new GameScreen_Level3(game, 3));
+        TextButton level33Button = generateButton("3.3", 900 - col_width / 2, 300 - row_height / 2, new GameScreen_Level3(game, 7), 7);
         stage.addActor(level33Button);
-        level33Button.setName("3.3");
+        level33Button.setName("7");
         levelButtons.add(level33Button);
 
-        TextButton level34Button = generateButton("3.4", 830 - col_width / 2, 440 - row_height / 2, new GameScreen_Level3(game, 4));
+        TextButton level34Button = generateButton("3.4", 800 - col_width / 2, 440 - row_height / 2, new GameScreen_Level3(game, 8), 8);
         stage.addActor(level34Button);
-        level34Button.setName("3.4");
+        level34Button.setName("8");
         levelButtons.add(level34Button);
 
         boatWidth = (float) (camera.viewportWidth * 0.125);
@@ -151,10 +146,12 @@ public class MainMenuScreen implements Screen {
         stage.draw();
     }
 
-    public TextButton generateButton(String name, int x, int y, final Screen screen) {
+    private TextButton generateButton(String name, int x, int y, final Screen screen, int level) {
         final TextButton button = new TextButton(name, game.mySkin, "default");
         button.setSize(col_width, row_height);
         button.setPosition(x, y);
+        LevelDescriptionHoverActor card = new LevelDescriptionHoverActor(game, button.getX(), button.getY() + button.getHeight(), 200, level);
+        final Table cardTableFinal = card.getTable();
         button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -176,6 +173,17 @@ public class MainMenuScreen implements Screen {
 
                 // Apply the sequence action to the boatImage
                 boatImage.addAction(sequenceAction);
+            }
+        });
+        button.addListener(new InputListener(){
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                stage.addActor(cardTableFinal);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                cardTableFinal.remove();
             }
         });
 
