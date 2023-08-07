@@ -17,6 +17,7 @@ public class CheckCode extends Group {
     private Table codeTable;
     public boolean isCorrect = false;
     private String input = "";
+    public Image xCloseImage;
     final DijkstraAlgorithm game;
     String text;
     private CheckBox option1Button;
@@ -31,7 +32,7 @@ public class CheckCode extends Group {
 
         codeTable = new Table(game.fontSkin);
         codeTable.setSize(width, (float) (height * 0.66));
-        codeTable.setPosition(x, y) ;
+        codeTable.setPosition(x, y);
 
         switch (level) {
             case 1:
@@ -135,8 +136,7 @@ public class CheckCode extends Group {
                     return super.keyTyped(event, key);
                 }
             });
-        }
-        else {
+        } else {
             codeTable.add(image).size(parrottWidth, parrottWidth).left().padTop(5f).padLeft(150f);
             codeTable.add(codeLabel).expand().fill().center().padLeft(-150f).padTop(20f);
             codeTable.row().colspan(3);
@@ -288,11 +288,25 @@ public class CheckCode extends Group {
             buttonTable.add(option3Button).padLeft(20f);
             codeTable.add(buttonTable).padBottom(20f);
         }
-        Image shadowImage = new Image(game.assetManager.get("shadow.png", Texture.class));
+        final Image shadowImage = new Image(game.assetManager.get("shadow.png", Texture.class));
         shadowImage.setSize((float) (codeTable.getWidth() * 1.25), (float) (codeTable.getHeight() * 1.15));
         shadowImage.setPosition(codeTable.getX() - 70, codeTable.getY() - 10);
         addActor(shadowImage);
         shadowImage.setName("shadowImage");
         addActor(codeTable);
+
+        xCloseImage = new Image(game.assetManager.get("xClose.png", Texture.class));
+        xCloseImage.setSize(20, 20);
+        xCloseImage.setPosition(codeTable.getX() + xCloseImage.getWidth(),
+                codeTable.getY() + codeTable.getHeight() - xCloseImage.getHeight() - game.space);
+        xCloseImage.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                removeActor(codeTable);
+                removeActor(xCloseImage);
+                removeActor(shadowImage);
+            }
+        });
+        addActor(xCloseImage);
     }
 }

@@ -67,6 +67,7 @@ public class DijkstraAlgorithm extends Game {
 		assetManager.load("Blood.png", Texture.class);
 		assetManager.load("box.png", Texture.class);
 		assetManager.load("LevelCard.png", Texture.class);
+		assetManager.load("xClose.png", Texture.class);
 		assetManager.load("battle.wav", Sound.class);
 		assetManager.load("drop.wav", Sound.class);
 		assetManager.load("ambiente.wav", Sound.class);
