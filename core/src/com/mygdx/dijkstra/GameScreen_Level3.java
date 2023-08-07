@@ -454,13 +454,15 @@ public class GameScreen_Level3 implements Screen {
                     if (level < 8) {
                         if (isCorrect) {
                             game.dropSound.play();
+                            textField.setColor(Color.GREEN);
                             if (neighbor) {
                                 linesToDraw.add(new LineData(start, end, Color.GREEN));
                                 lookForPrecursors(i, start, sourceCity, Color.GREEN);
                             }
-                            textField.setColor(Color.GREEN);
-                            for (EventListener listener : textField.getListeners()) textField.removeListener(listener);
                             textField.setDisabled(true);
+                            for (EventListener listener : textField.getListeners()){
+                                textField.removeListener(listener);
+                            }
                             checkIfNewRow(i);
                         }
                         //handle incorrect input && display hint box
