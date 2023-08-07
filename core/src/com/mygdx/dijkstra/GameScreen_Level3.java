@@ -388,6 +388,7 @@ public class GameScreen_Level3 implements Screen {
                             textField.removeListener(listener);
                         }
                     }
+                    break;
                 case 8:
                     if (costs == 0) {
                         correctlyFilledTextFieldsInCurrentRow++;
@@ -397,6 +398,7 @@ public class GameScreen_Level3 implements Screen {
                             textField.removeListener(listener);
                         }
                     }
+                    break;
             }
 
             //add listeners if city is a neighbor
@@ -452,15 +454,13 @@ public class GameScreen_Level3 implements Screen {
                     if (level < 8) {
                         if (isCorrect) {
                             game.dropSound.play();
-                            textField.setColor(Color.GREEN);
                             if (neighbor) {
                                 linesToDraw.add(new LineData(start, end, Color.GREEN));
                                 lookForPrecursors(i, start, sourceCity, Color.GREEN);
-                            } else lookForPrecursors(i, end, sourceCity, Color.GREEN);
-                            textField.setDisabled(true);
-                            for (EventListener listener : textField.getListeners()) {
-                                textField.removeListener(listener);
                             }
+                            textField.setColor(Color.GREEN);
+                            for (EventListener listener : textField.getListeners()) textField.removeListener(listener);
+                            textField.setDisabled(true);
                             checkIfNewRow(i);
                         }
                         //handle incorrect input && display hint box
@@ -485,7 +485,10 @@ public class GameScreen_Level3 implements Screen {
                             displayHint(hintText);
                         }
                     }
-                    else checkIfNewRow(i);
+                    else{
+                        game.dropSound.play();
+                        checkIfNewRow(i);
+                    }
                 }
             }
         });
