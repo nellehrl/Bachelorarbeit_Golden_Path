@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -11,65 +11,90 @@ import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.mygdx.dijkstra.DijkstraAlgorithm;
+import com.mygdx.dijkstra.views.InfoTextGroup;
+import com.mygdx.dijkstra.views.LevelDescriptionHoverActor;
 
 import java.util.ArrayList;
 
 public class MainMenuScreen implements Screen {
-    final DijkstraAlgorithm game;
-    Texture backGroundTexture, mainMenuTexture;
-    InfoTextGroup infotext;
-    Image boatImage, mainMenuScreen, background;
+    private final DijkstraAlgorithm game;
+    private static final float ANIMATION_DURATION = 1f;
+    private InfoTextGroup infotext;
+    private Image boatImage;
     private Stage stage;
-    OrthographicCamera camera;
-    Button closeButton;
-    private final FitViewport fitViewport;
-    int row_height, col_width;
-    float boatWidth;
+    private OrthographicCamera camera;
+    private FitViewport fitViewport;
+    private final int row_height, col_width;
 
     public MainMenuScreen(final DijkstraAlgorithm game, int currentLevel) {
-        this.game = game;
 
+        this.game = game;
+        int offset = game.getOffset();
+        int space = game.getSpace();
+        Skin mySkin = game.getMySkin();
+        row_height = offset;
+        col_width = offset * 3;
+
+        setupCamera();
+        setupInfoText();
+        setupTextures();
+        setupLabels();
+        setupButtons(currentLevel);
+        if (game.isFirstOpened()) {
+            stage.addActor(infotext);
+            game.setFirstOpened(false);
+        }
+    }
+
+    @Override
+    public void show() {
+        Gdx.input.setInputProcessor(stage);
+    }
+
+    @Override
+    public void render(float delta) {
+        camera.update();
+        game.getBatch().setProjectionMatrix(camera.combined);
+
+        Gdx.gl.glClearColor(0.95f, 0.871f, 0.726f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        stage.act();
+        stage.draw();
+    }
+
+    private void setupCamera() {
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
         camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
         stage = new Stage(fitViewport);
+    }
 
-        row_height = 25;
-        col_width = 75;
-
+    private void setupInfoText() {
         String text = "Hey Captain,\n\nWelcome on board - I am papou. Your help is much needed!\n\nThis crew gets lost " +
                 "on the routes and cant read cards let alone finding fast paths. Let`s get on it and find the hidden treasures." +
                 "\n\nIf you are new here start with level 1.1. If you are already familiar with Graphs you can start with " +
                 "level 1.3. If you are pro go to level 3 than we can get to the treasures even faster and I will finally get my mangooooooos.";
-
-        infotext = new InfoTextGroup(game, text);
-        closeButton = infotext.closeButton;
+        infotext = new InfoTextGroup(game, text, camera);
+        Button closeButton = infotext.getCloseButton();
         closeButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 infotext.remove();
             }
         });
+    }
 
-        backGroundTexture = game.assetManager.get("background.png", Texture.class);
-        background = new Image(backGroundTexture);
-        background.setSize((float) (camera.viewportWidth * 1.1), (float) (camera.viewportHeight * 1.1));
-        background.setPosition(-52, -45);
-        stage.addActor(background);
-
-        mainMenuTexture = game.assetManager.get("mainMenuScreen.png", Texture.class);
-        mainMenuScreen = new Image(mainMenuTexture);
-        mainMenuScreen.setSize(camera.viewportWidth, camera.viewportHeight);
-        mainMenuScreen.setPosition(0, 0);
-        stage.addActor(mainMenuScreen);
-
-        Label.LabelStyle titleStyle = new Label.LabelStyle(game.mySkin.getFont("title"), game.mySkin.getColor("color"));  // Replace 'otherStyle' with the desired style
-
-        Label welcomeLabel = new Label("Welcome to\n     Golden Path ", game.mySkin);
+    private void setupLabels() {
+        Label.LabelStyle titleStyle = new Label.LabelStyle(game.getMySkin().getFont("title"), game.getMySkin().getColor("color"));
+        Label welcomeLabel = new Label("Welcome to\n     Golden Path ", game.getMySkin());
         welcomeLabel.setStyle(titleStyle);
         welcomeLabel.setPosition((float) (camera.viewportWidth * 0.425), 100);
         stage.addActor(welcomeLabel);
+    }
 
+    private void setupButtons(int currentLevel) {
         ArrayList<TextButton> levelButtons = new ArrayList<>();
 
         TextButton level11Button = generateButton("1.1", 310 - col_width / 2, 55 - row_height / 2, new GameScreen_Level1(game, 1), 1);
@@ -92,7 +117,7 @@ public class MainMenuScreen implements Screen {
         level21Button.setName("4");
         levelButtons.add(level21Button);
 
-        TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 5),5);
+        TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 5), 5);
         stage.addActor(level3Button);
         level3Button.setName("5");
         levelButtons.add(level3Button);
@@ -112,42 +137,35 @@ public class MainMenuScreen implements Screen {
         level34Button.setName("8");
         levelButtons.add(level34Button);
 
-        boatWidth = (float) (camera.viewportWidth * 0.125);
-        boatImage = new Image(game.assetManager.get("ship.png", Texture.class));
+        float boatWidth = (float) (camera.viewportWidth * 0.125);
+        boatImage = new Image(game.getAssetManager().get("ship.png", Texture.class));
         boatImage.setSize(boatWidth, boatWidth);
+        boatImage.setName("boatImage");
+        stage.addActor(boatImage);
+
         for (TextButton button : levelButtons) {
             String name = button.getName();
-            if (name.equals(String.valueOf(currentLevel))) {
+            if (name.equals(String.valueOf(currentLevel)))
                 boatImage.setPosition(button.getX() - boatWidth / 2, button.getY() + row_height);
-            }
         }
-        stage.addActor(boatImage);
-        if(game.firstOpened){
-            stage.addActor(infotext);
-            game.firstOpened = false;
-        }
-        boatImage.setName("boatImage");
     }
 
-    @Override
-    public void show() {
-        Gdx.input.setInputProcessor(stage);
-    }
+    private void setupTextures() {
+        Texture backGroundTexture = game.getAssetManager().get("background.png", Texture.class);
+        Image background = new Image(backGroundTexture);
+        background.setSize((float) (camera.viewportWidth * 1.1), (float) (camera.viewportHeight * 1.1));
+        background.setPosition(-52, -45);
+        stage.addActor(background);
 
-    @Override
-    public void render(float delta) {
-        camera.update();
-        game.batch.setProjectionMatrix(camera.combined);
-
-        Gdx.gl.glClearColor(0.95f, 0.871f, 0.726f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-
-        stage.act();
-        stage.draw();
+        Texture mainMenuTexture = game.getAssetManager().get("mainMenuScreen.png", Texture.class);
+        Image mainMenuScreen = new Image(mainMenuTexture);
+        mainMenuScreen.setSize(camera.viewportWidth, camera.viewportHeight);
+        mainMenuScreen.setPosition(0, 0);
+        stage.addActor(mainMenuScreen);
     }
 
     private TextButton generateButton(String name, int x, int y, final Screen screen, int level) {
-        final TextButton button = new TextButton(name, game.mySkin, "default");
+        final TextButton button = new TextButton(name, game.getMySkin(), "default");
         button.setSize(col_width, row_height);
         button.setPosition(x, y);
         LevelDescriptionHoverActor card = new LevelDescriptionHoverActor(game, button.getX(), button.getY() + button.getHeight(), 200, level);
@@ -155,27 +173,10 @@ public class MainMenuScreen implements Screen {
         button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
-                // Create the moveTo action for the boatImage
-                float duration = 1f; // Duration of the movement action
-                float targetX = button.getX();
-                float targetY = button.getY();
-                Action moveToAction = Actions.moveTo(targetX, targetY, duration);
-                // Add a runnable action to set the new screen after the moveTo action is completed
-                Action setScreenAction = Actions.run(new Runnable() {
-                    @Override
-                    public void run() {
-                        game.setScreen(screen);
-                        dispose();
-                    }
-                });
-                // Chain the actions using ActionSequence
-                SequenceAction sequenceAction = Actions.sequence(moveToAction, setScreenAction);
-
-                // Apply the sequence action to the boatImage
-                boatImage.addAction(sequenceAction);
+                moveBoatAndSetScreen(button, screen);
             }
         });
-        button.addListener(new InputListener(){
+        button.addListener(new InputListener() {
             @Override
             public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
                 stage.addActor(cardTableFinal);
@@ -188,6 +189,21 @@ public class MainMenuScreen implements Screen {
         });
 
         return button;
+    }
+
+    private void moveBoatAndSetScreen(TextButton button, final Screen screen) {
+        float targetX = button.getX();
+        float targetY = button.getY();
+        Action moveToAction = Actions.moveTo(targetX, targetY, ANIMATION_DURATION);
+        Action setScreenAction = Actions.run(new Runnable() {
+            @Override
+            public void run() {
+                game.setScreen(screen);
+                MainMenuScreen.this.dispose();
+            }
+        });
+        SequenceAction sequenceAction = Actions.sequence(moveToAction, setScreenAction);
+        boatImage.addAction(sequenceAction);
     }
 
     @Override

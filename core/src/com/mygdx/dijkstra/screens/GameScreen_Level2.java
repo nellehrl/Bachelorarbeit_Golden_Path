@@ -1,70 +1,57 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.mygdx.dijkstra.DijkstraAlgorithm;
+import com.mygdx.dijkstra.models.City;
+import com.mygdx.dijkstra.models.Edge;
+import com.mygdx.dijkstra.models.Graph;
+import com.mygdx.dijkstra.models.LineData;
+import com.mygdx.dijkstra.views.*;
 
-import java.util.ArrayList;;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.badlogic.gdx.utils.Align.left;
 
 public class GameScreen_Level2 implements Screen {
-    final DijkstraAlgorithm game;
-    Image boatImage;
-    ShapeRenderer shapeRenderer  = new ShapeRenderer();
-    Table mangoCounter;
-    Label mangoCounterLabel;
-    OrthographicCamera camera;
-    private final FitViewport fitViewport;
-    private CheckCode checkCode;
-    ArrayList<City> currentConnection = new ArrayList<>();
+    private final DijkstraAlgorithm game;
+    private OrthographicCamera camera;
+    private FitViewport fitViewport;
     private Stage stage;
-    Button mainMenuButton, closeButton;
-    private List<LineData> linesToDraw;
-    DropBoxWindow dropBox;
-    Group background;
-    Graph connections;
-    String text;
-    InfoTextGroup infotext;
-    DrawLineOrArrow draw;
+    private Batch batch;
+    private Skin fontSkin;
+    private Image boatImage;
+    private final ShapeRenderer shapeRenderer = new ShapeRenderer();
+    private Label mangoCounterLabel;
+    private Button mainMenuButton;
+    private Group background;
+    private Group infotext;
+    private final ArrayList<City> currentConnection = new ArrayList<>();
+    private final List<LineData> linesToDraw = new ArrayList<>();
+    private Graph graph;
+    private String text;
+    private DrawLineOrArrow draw;
+    private int vertices, space, offset;
+    private ArrayList<City> cities;
+    private CheckCode checkCode;
 
     public GameScreen_Level2(final DijkstraAlgorithm game) {
-        //init game & camera
         this.game = game;
-
-        //init camera
-        camera = game.camera;
-        fitViewport = game.fitViewport;
-        stage = new Stage(fitViewport);
-
-        //init cities and starting point
-        currentConnection.add(game.cities.get(0));
-        connections = new Graph(game.vertices, 1);
-
-        //init Background & text
-        initializeText();
-        initializeBackground();
-        dropBoxItems();
-        linesToDraw = new ArrayList<>();
-        draw = new DrawLineOrArrow();
-
-        //init connections&ports
-        stage.addActor(new MapGroup_Level2_3(game, 0, connections, boatImage, linesToDraw));
-        checkCode = new CheckCode(camera.viewportWidth / 3, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, "code", game, stage, camera, 4);
-
-        //add remaining actors
-        stage.addActor(boatImage);
-        stage.addActor(mainMenuButton);
-        stage.addActor(infotext);
+        initializeVariables();
+        initializeUIElements();
+        initializeGameComponents();
     }
 
     @Override
@@ -78,16 +65,16 @@ public class GameScreen_Level2 implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Render the background
-        game.batch.setProjectionMatrix(camera.combined);
-        game.batch.begin();
-        background.draw(game.batch, 1.0f);
-        game.batch.end();
+        batch.setProjectionMatrix(camera.combined);
+        batch.begin();
+        background.draw(batch, 1.0f);
+        batch.end();
 
-        // Render the connections (lines)
+        // Render the graph (lines)
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (LineData lineData : linesToDraw) {
-            draw.drawArrow(shapeRenderer,3,  lineData.getColor(), lineData.getStart(), lineData.getEnd());
+            draw.drawArrow(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
         }
         shapeRenderer.end();
 
@@ -95,61 +82,74 @@ public class GameScreen_Level2 implements Screen {
         stage.draw();
     }
 
-    public void initializeBackground() {
-        background = new BackgroundGroup(game, stage, text);
-        for (Actor actor : background.getChildren()) {
-            if (actor.getName().equals("mainMenuButton")) {
-                mainMenuButton = (Button) actor;
-                mainMenuButton.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        game.currentLevel = 2;
-                        game.setScreen(new MainMenuScreen(game, 2));
-                        dispose();
-                    }
-                });
-            } else if (actor.getName().equals("dropBox")) dropBox = (DropBoxWindow) actor;
-            else if (actor.getName().equals("boatImage")) boatImage = (Image) actor;
-            else if (actor.getName().equals("mangoCounter")) mangoCounter = (Table) actor;
-            else if (actor.getName().equals("infotext")) infotext = (InfoTextGroup) actor;
-        }
+    private void initializeVariables() {
+        camera = game.getCamera();
+        fitViewport = game.getFitViewport();
+        stage = new Stage(fitViewport);
+        cities = game.getCities();
+        vertices = game.getVertices();
+        space = game.getSpace();
+        offset = game.getOffset();
+        batch = game.getBatch();
+        fontSkin = game.getFontSkin();
+        currentConnection.add(cities.get(0));
+        graph = new Graph(vertices, 1);
+    }
+
+    private void initializeUIElements() {
+        initializeText();
+        background = new BackgroundGroup(game, stage, text, 4);
+        mainMenuButton = background.findActor("mainMenuButton");
+        boatImage = background.findActor("boatImage");
+        infotext = background.findActor("infotext");
+        Table mangoCounter = background.findActor("mangoCounter");
         mangoCounterLabel = (Label) mangoCounter.getChild(1);
+        initializeDropBoxItems();
+    }
+
+    private void initializeGameComponents() {
+        draw = new DrawLineOrArrow();
+        stage.addActor(new MapGroup_Level2_3(game, 0, graph, boatImage, linesToDraw));
+        checkCode = new CheckCode(camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), 150, "code", game, stage, camera, 4);
+
+        // Add remaining actors
+        stage.addActor(boatImage);
+        stage.addActor(mainMenuButton);
+        stage.addActor(infotext);
     }
 
     public void initializeText() {
-        StringBuilder textBuilder = new StringBuilder();
-        textBuilder.append("You know who this is, Captain!\n\n");
-        textBuilder.append("Fantastic job so far! We updated our system. Now that you have added ");
-        textBuilder.append("the right weight to the connections, we have an excellent overview!\n\n");
-        textBuilder.append("Let`s check if everything is clear - find the weights for the connections written down below.\n\n");
-        textBuilder.append("We must to understand how these graphs work to get ahead of the other crews. Like that, we can generate ");
-        textBuilder.append("much more loooooooooooooooot!\n\n");
-        textBuilder.append("Remember to ENTER to check if you got the costs correct!");
-        text = textBuilder.toString();
+        text = "You know who this is, Captain!\n\n" +
+                "Fantastic job so far! We updated our system. Now that you have added " +
+                "the right weight to the graph, we have an excellent overview!\n\n" +
+                "Let`s check if everything is clear - find the weights for the graph written down below.\n\n" +
+                "We must to understand how these graphs work to get ahead of the other crews. Like that, we can generate " +
+                "much more loooooooooooooooot!\n\n" +
+                "Remember to ENTER to check if you got the costs correct!";
     }
 
-    public void dropBoxItems() {
+    public void initializeDropBoxItems() {
         final int[] numOfEdges = {0};
-        for (int i = 0; i < game.vertices; i++) {
+        for (int i = 0; i < vertices; i++) {
             //init j for positioning items correctly
             int j = 0;
-            java.util.List<Edge> neighbors = connections.getNeighbors(i);
-            City sourceCity = game.cities.get(i);
+            java.util.List<Edge> neighbors = graph.getNeighbors(i);
+            City sourceCity = cities.get(i);
             //init table to fill
             for (Edge neighbor : neighbors) {
                 //define destination City and connection to color
-                City destCity = game.cities.get(neighbor.destination);
-                final Vector2 start = new Vector2(sourceCity.x, sourceCity.y);
-                final Vector2 end = new Vector2(destCity.x, destCity.y);
+                City destCity = cities.get(neighbor.getDestination());
+                final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
+                final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
                 //init label
-                String labelText = sourceCity.name + " - " + destCity.name;
+                String labelText = sourceCity.getName() + " - " + destCity.getName();
                 String fieldText = "Costs: ";
                 //init table
                 Table infoTable = createInfoTable(labelText, i, j);
                 TextField textField = createTextField(fieldText, start, end, neighbor, numOfEdges);
                 //add table to stage
                 infoTable.add(textField);
-                infoTable.setBackground(game.fontSkin.getDrawable("color"));
+                infoTable.setBackground(fontSkin.getDrawable("color"));
                 stage.addActor(infoTable);
                 j++;
             }
@@ -157,11 +157,11 @@ public class GameScreen_Level2 implements Screen {
     }
 
     private Table createInfoTable(String labelText, int i, int j) {
-        Table infoTable = new Table(game.fontSkin);
-        infoTable.setSize((camera.viewportWidth) / (game.vertices), 50);
-        infoTable.setPosition(2 * game.offset + infoTable.getWidth() * i + game.space * (i + 1), (float) ((camera.viewportHeight * 0.28) - game.offset - (infoTable.getHeight() + game.space) * j));
+        Table infoTable = new Table(fontSkin);
+        infoTable.setSize((camera.viewportWidth) / (vertices), (camera.viewportHeight / 3) / (vertices - 1));
+        infoTable.setPosition(2 * offset + infoTable.getWidth() * i + space * (i + 1), (float) ((camera.viewportHeight * 0.28) - offset - (infoTable.getHeight() + space) * j));
 
-        Label codeLabel = new Label(labelText, game.fontSkin);
+        Label codeLabel = new Label(labelText, fontSkin);
         codeLabel.setAlignment(left);
         codeLabel.setFontScale(0.75f);
         infoTable.add(codeLabel).row();
@@ -171,7 +171,7 @@ public class GameScreen_Level2 implements Screen {
 
     private TextField createTextField(final String fieldText, final Vector2 start, final Vector2 end, final Edge neighbor, final int[] numOfEdges) {
         //init default
-        final TextField textField = new TextField(fieldText, game.fontSkin);
+        final TextField textField = new TextField(fieldText, fontSkin);
         textField.setColor(Color.BLACK);
         textField.setAlignment(left);
         textField.addListener(new ClickListener() {
@@ -188,11 +188,11 @@ public class GameScreen_Level2 implements Screen {
             public void keyTyped(TextField textField, char key) {
                 String userInput = textField.getText();
                 String userInputSubstring = userInput.substring(userInput.length() - 2).trim();
-                boolean isCorrect = userInputSubstring.equals(String.valueOf(neighbor.weight));
+                boolean isCorrect = userInputSubstring.equals(String.valueOf(neighbor.getWeight()));
                 //set connection green if correct
                 if (key == '\r' || key == '\n') {
                     if (isCorrect && !neighbor.isEdgeAdded()) {
-                        game.dropSound.play();
+                        game.getDropSound().play();
                         numOfEdges[0]++;
                         neighbor.setEdgeAdded(true);
                         textField.setColor(Color.GREEN);
@@ -202,10 +202,10 @@ public class GameScreen_Level2 implements Screen {
                             textField.removeListener(listener);
                         }
                     } else {
-                        levelLost();
+                        handleLevelLost();
                     }
                 }
-                if (numOfEdges[0] == connections.numOfEdges) {
+                if (numOfEdges[0] == graph.getNumOfEdges()) {
                     stage.addActor(checkCode);
                 }
             }
@@ -213,12 +213,12 @@ public class GameScreen_Level2 implements Screen {
         return textField;
     }
 
-    public void levelLost() {
-        GameScreen_Level1.negativeFeedbackLoop(game, camera, stage);
+    public void handleLevelLost() {
+        provideNegativeFeedback();
         final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
         if (newValue > 0) mangoCounterLabel.setText(newValue);
         else {
-            game.parrotImage.remove();
+            game.getParrotImage().remove();
 
             final LevelLostGroup lost = new LevelLostGroup(game, camera);
             stage.addActor(lost);
@@ -227,13 +227,21 @@ public class GameScreen_Level2 implements Screen {
             close.addListener(new ClickListener() {
                 @Override
                 public void clicked(InputEvent event, float x, float y) {
-                    game.mangos = 30;
-                    mangoCounterLabel.setText(game.mangos);
+                    game.setMangos(30);
+                    mangoCounterLabel.setText(game.getMangos());
                     game.setScreen(new GameScreen_Level2(game));
                     dispose();
                 }
             });
         }
+    }
+
+    private void provideNegativeFeedback() {
+        game.getBattle().play();
+        game.getBlood().addAction(Actions.sequence(
+                Actions.fadeOut(1f),
+                Actions.removeActor()
+        ));
     }
 
     @Override

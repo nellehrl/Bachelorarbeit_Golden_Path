@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.screens;
 
 import java.util.Iterator;
 
@@ -17,42 +17,42 @@ import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.mygdx.dijkstra.DijkstraAlgorithm;
 
 public class LevelWonScreen implements Screen {
-    private Texture mangoImage;
-    private Texture levelWonImage;
-    private Texture bucketImage;
-    private Stage stage;
-    private Sound dropSound;
+    private final Texture levelWonImage;
+    private final Texture bucketImage;
+    private final Stage stage;
+    private final Sound dropSound;
     private float screenStartTime;
     private int collectedMangos = 0, spawnedMangos = 0;
-    final DijkstraAlgorithm game;
-    private SpriteBatch batch;
-    private OrthographicCamera camera;
-    private Rectangle background, bucket;
-    private Array<Rectangle> mangos;
-    int nextLevel;
-    private float elapsedTime = 0f;
+    private final DijkstraAlgorithm game;
+    private final SpriteBatch batch;
+    private final OrthographicCamera camera;
+    private final Rectangle background, bucket;
+    private final Array<Rectangle> mangos;
+    private final int nextLevel;
     private long lastDropTime;
-    Music music;
-    Sound sound;
+    private final Music music;
+    private final Sound sound;
 
+    //Code inspiration from https://libgdx.com/wiki/start/a-simple-game
     public LevelWonScreen(final DijkstraAlgorithm game, int nextLevel) {
 
         stage = new Stage();
         this.game = game;
         this.nextLevel = nextLevel;
 
-        music = game.assetManager.get("pirates.mp3", Music.class);
+        music = game.getAssetManager().get("pirates.mp3", Music.class);
         music.setVolume(0.5f);
 
-        sound = game.assetManager.get("ambiente.wav", Sound.class);
+        sound = game.getAssetManager().get("ambiente.wav", Sound.class);
         sound.play();
 
-        levelWonImage = game.assetManager.get("levelWon.png", Texture.class);
-        bucketImage = game.assetManager.get("bucket.png", Texture.class);
+        levelWonImage = game.getAssetManager().get("levelWon.png", Texture.class);
+        bucketImage = game.getAssetManager().get("bucket.png", Texture.class);
 
-        dropSound = game.dropSound;
+        dropSound = game.getDropSound();
 
         // create the camera and the SpriteBatch
         camera = new OrthographicCamera();
@@ -60,7 +60,7 @@ public class LevelWonScreen implements Screen {
         batch = new SpriteBatch();
 
         // create a Rectangle to logically represent the bucket
-        bucket = new Rectangle(camera.viewportWidth/2,0, 64, 64);
+        bucket = new Rectangle(camera.viewportWidth / 2, 0, 64, 64);
 
         // create a Rectangle to logically represent the background
         background = new Rectangle();
@@ -91,8 +91,8 @@ public class LevelWonScreen implements Screen {
         batch.draw(levelWonImage, background.x, background.y, background.width, background.height);
         batch.draw(bucketImage, bucket.x, bucket.y, bucket.width, bucket.height);
         for (Rectangle mango : mangos) {
-            if (game.assetManager.isLoaded("mango.png", Texture.class)) {
-                batch.draw(game.assetManager.get("mango.png", Texture.class), mango.x, mango.y, mango.getWidth(), mango.getHeight());
+            if (game.getAssetManager().isLoaded("mango.png", Texture.class)) {
+                batch.draw(game.getAssetManager().get("mango.png", Texture.class), mango.x, mango.y, mango.getWidth(), mango.getHeight());
             }
         }
         batch.end();
@@ -102,7 +102,7 @@ public class LevelWonScreen implements Screen {
             Vector3 touchPos = new Vector3();
             touchPos.set(Gdx.input.getX(), Gdx.input.getY(), 0);
             camera.unproject(touchPos);
-            bucket.x = touchPos.x - 64/2;
+            bucket.x = touchPos.x - 64 / 2;
         }
 
         if (Gdx.input.isKeyPressed(Keys.LEFT)) bucket.x -= 200 * Gdx.graphics.getDeltaTime();
@@ -118,7 +118,7 @@ public class LevelWonScreen implements Screen {
                 spawnMangos();
                 if (spawnedMangos >= 10) {
                     // If 10 mangos were collected or lost, switch to a new screen
-                    game.mangos += collectedMangos;
+                    game.setMangos(game.getMangos() + collectedMangos);
                     if (nextLevel != 3.5) {
                         game.setScreen(new MainMenuScreen(game, nextLevel));
                         sound.pause();

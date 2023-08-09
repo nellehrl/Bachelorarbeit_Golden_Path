@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.models;
 
 public class Edge {
     int source;

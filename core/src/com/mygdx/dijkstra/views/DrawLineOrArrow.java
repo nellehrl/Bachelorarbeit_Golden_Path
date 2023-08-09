@@ -1,19 +1,17 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.views;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.math.Matrix4;
 import com.badlogic.gdx.math.Vector2;
 
 public class DrawLineOrArrow {
 
     public void drawLine(ShapeRenderer shapeRenderer, int lineWidth, Color color, Vector2 start, Vector2 end) {
-        drawLine(shapeRenderer,color, lineWidth, start, end);
+        drawLine(shapeRenderer, color, lineWidth, start, end);
     }
 
-    public void drawArrow(ShapeRenderer shapeRenderer,int lineWidth, Color color, Vector2 start, Vector2 end) {
-        drawArrow(shapeRenderer,color, lineWidth, start, end);
+    public void drawArrow(ShapeRenderer shapeRenderer, int lineWidth, Color color, Vector2 start, Vector2 end) {
+        drawArrow(shapeRenderer, color, lineWidth, start, end);
     }
 
     private static void drawLine(ShapeRenderer shapeRenderer, Color color, int lineWidth, Vector2 start, Vector2 end) {
@@ -44,7 +42,7 @@ public class DrawLineOrArrow {
         endY = startY + directionY * (length - shortenBy);
 
         // Draw the main line of the shortened arrow
-        shapeRenderer.rectLine(startX, startY, endX, endY, arrowSize/4);
+        shapeRenderer.rectLine(startX, startY, endX, endY, arrowSize / 4);
 
         // Draw & Calculate the arrow wings
         float wingX = -directionY;

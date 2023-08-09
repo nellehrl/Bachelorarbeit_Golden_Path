@@ -1,12 +1,12 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.models;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Graph {
-    private int numVertices;
-    List<Edge>[] adjacencyList;
-    int numOfEdges;
+    private final int numVertices;
+    private final List<Edge>[] adjacencyList;
+    private int numOfEdges;
 
     public Graph(int numVertices, int mode) {
         this.numVertices = numVertices;
@@ -49,7 +49,7 @@ public class Graph {
 
                     // Connect the remaining nodes with a given probability
                     for (int j = i + 1; j < vertices; j++) {
-                        if ((isConnected || probability < Math.random()) && connected.size() < vertices/2) {
+                        if ((isConnected || probability < Math.random()) && connected.size() < vertices / 2) {
                             double weight = Math.random() * 10 + 1;
                             this.addEdge(i, j, (int) weight);
                             connected.add(j);
@@ -57,7 +57,7 @@ public class Graph {
                     }
                 }
         }
-        if(0 == this.getNeighbors(0).size()){
+        if (0 == this.getNeighbors(0).size()) {
             int randomNode = (int) (Math.random() * vertices);
             this.addEdge(0, randomNode, (int) (Math.random() * 10 + 1));
         }
@@ -81,5 +81,9 @@ public class Graph {
 
     public int getNumVertices() {
         return numVertices;
+    }
+
+    public int getNumOfEdges() {
+        return numOfEdges;
     }
 }

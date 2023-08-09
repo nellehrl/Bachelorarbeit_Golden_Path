@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.screens;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -11,13 +11,14 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.mygdx.dijkstra.DijkstraAlgorithm;
 
 public class GameWonScreen implements Screen {
-    final DijkstraAlgorithm game;
+    private final DijkstraAlgorithm game;
     private SpriteBatch batch;
     private OrthographicCamera camera;
     private final FitViewport fitViewport;
-    Stage stage;
+    private Stage stage;
 
     public GameWonScreen(final DijkstraAlgorithm game) {
         this.game = game;
@@ -27,13 +28,11 @@ public class GameWonScreen implements Screen {
         fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
 
         stage = new Stage(fitViewport);
-        Gdx.input.setInputProcessor(stage);
         batch = new SpriteBatch();
 
-        Music music = game.assetManager.get("pirates.mp3", Music.class);
+        Music music = game.getAssetManager().get("pirates.mp3", Music.class);
         music.pause();
-
-        Sound sound = game.assetManager.get("ambiente.wav", Sound.class);
+        Sound sound = game.getAssetManager().get("ambiente.wav", Sound.class);
         sound.play();
     }
 
@@ -51,18 +50,18 @@ public class GameWonScreen implements Screen {
         gameWon.setPosition(0, -10);
 
         String wonLabel = "Congrats Captain!!!!\n\nYou have mastered the art of the golden paths. Now we will always have enough mangooos.\n\n" +
-                "You have collected " + game.mangos + " mangooos during our adventure. Thanks you owe me nothing anymore! \n\n Good luck with the pirates.";
+                "You have collected " + game.getMangos() + " mangooos during our adventure. Thanks you owe me nothing anymore! \n\n Good luck with the pirates.";
 
         batch.begin();
-        batch.draw(game.assetManager.get("gameWon.png", Texture.class), gameWon.x, gameWon.y, gameWon.width,  gameWon.height);
-        game.fontSkin.getFont("font").draw(batch, wonLabel, camera.viewportWidth/2 - camera.viewportWidth/6,
-                (float) (camera.viewportHeight - camera.viewportHeight*0.28), camera.viewportWidth/3, 1,true);
+        batch.draw(game.getAssetManager().get("gameWon.png", Texture.class), gameWon.x, gameWon.y, gameWon.width, gameWon.height);
+        game.getFontSkin().getFont("font").draw(batch, wonLabel, camera.viewportWidth / 2 - camera.viewportWidth / 6,
+                (float) (camera.viewportHeight - camera.viewportHeight * 0.28), camera.viewportWidth / 3, 1, true);
         batch.end();
     }
 
     @Override
     public void show() {
-
+        Gdx.input.setInputProcessor(stage);
     }
 
     @Override

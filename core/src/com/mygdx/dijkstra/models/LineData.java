@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra;
+package com.mygdx.dijkstra.models;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Vector2;
@@ -25,6 +25,7 @@ public class LineData {
     public Color getColor() {
         return color;
     }
+
     public void setStart(Vector2 start) {
 
         this.start = start;
