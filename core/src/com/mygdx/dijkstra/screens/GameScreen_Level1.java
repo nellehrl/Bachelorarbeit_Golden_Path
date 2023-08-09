@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.models.City;
+import com.mygdx.dijkstra.models.*;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -17,9 +17,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.viewport.FitViewport;
-import com.mygdx.dijkstra.models.Edge;
-import com.mygdx.dijkstra.models.Graph;
-import com.mygdx.dijkstra.models.LineData;
 import com.mygdx.dijkstra.views.*;
 
 import java.util.ArrayList;
@@ -37,13 +34,12 @@ public class GameScreen_Level1 implements Screen {
     private Image connectionArea;
     private Table portTable;
     private Group infotext;
-    private boolean correctDrop;
     private OrthographicCamera camera;
     private FitViewport fitViewport;
     private Graph graph;
     private Stage stage;
     private final ArrayList<City> currentConnection = new ArrayList<>();
-    private ArrayList<Integer> validConnection = new ArrayList<>();
+    private final ArrayList<Integer> validConnection = new ArrayList<>();
     private java.util.List<LineData> linesToDraw;
     private Group background;
     private ArrayList<City> cities;
@@ -128,7 +124,7 @@ public class GameScreen_Level1 implements Screen {
         added = new boolean[graph.getNumOfEdges()];
         draw = new DrawLineOrArrow();
 
-        String text = createTextForMode();
+        String text = createTextForLevel();
 
         background = new BackgroundGroup(game, stage, text, level);
         mainMenuButton = background.findActor("mainMenuButton");
@@ -143,7 +139,7 @@ public class GameScreen_Level1 implements Screen {
         currentConnection.add(cities.get(0));
         validConnection.add(0);
 
-        checkCode = new CheckCode(camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, "code", game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, "code", game, stage, camera, level);
     }
 
     private void initializeActorsForStage() {
@@ -159,7 +155,7 @@ public class GameScreen_Level1 implements Screen {
         stage.addActor(infotext);
     }
 
-    private String createTextForMode() {
+    private String createTextForLevel() {
         StringBuilder textBuilder = new StringBuilder();
 
         switch (level) {
@@ -198,45 +194,37 @@ public class GameScreen_Level1 implements Screen {
 
     private void initializeCities() {
         for (int i = 0; i < vertices; i++) {
-            City currentCity = cities.get(i);
+            final City currentCity = cities.get(i);
             portTable = new Ports(currentCity, game);
 
             if (level <= 2) {
-                addClickListenerToCity(currentCity);
+                portTable.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        currentConnection.add(currentCity);
+                    }
+                });
             } else if (level == 3) {
-                initializeConnectionsForMode3(i);
+                java.util.List<Edge> neighbors = graph.getNeighbors(i);
+                for (int j = 0; j < neighbors.size(); j++) {
+                    City sourceCity = cities.get(i);
+                    City destCity = cities.get(neighbors.get(j).getDestination());
+                    initializeConnectionArea(sourceCity, destCity, neighbors.get(j).getWeight());
+                    initializDraggableWeightStack(neighbors, j);
+                }
             }
 
             stage.addActor(portTable);
         }
     }
 
-    private void addClickListenerToCity(final City currentCity) {
-        portTable.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                currentConnection.add(currentCity);
-            }
-        });
-    }
-
-    private void initializeConnectionsForMode3(int cityIndex) {
-        java.util.List<Edge> neighbors = graph.getNeighbors(cityIndex);
-        for (int j = 0; j < neighbors.size(); j++) {
-            City sourceCity = cities.get(cityIndex);
-            City destCity = cities.get(neighbors.get(j).getDestination());
-            setupConnectionArea(sourceCity, destCity, neighbors.get(j).getWeight());
-            setupDraggableWeightStack(neighbors, j);
-        }
-    }
-
-    private void setupConnectionArea(City sourceCity, City destCity, int weight) {
+    private void initializeConnectionArea(City sourceCity, City destCity, int weight) {
         connectionArea = new ConnectionAreaImage(sourceCity, destCity);
         connectionArea.setName(" " + weight);
         stage.addActor(connectionArea);
     }
 
-    private void setupDraggableWeightStack(java.util.List<Edge> neighbors, int j) {
+    private void initializDraggableWeightStack(java.util.List<Edge> neighbors, int j) {
         int start = 5 * offset + space;
         Stack stack = createWeights(String.valueOf(neighbors.get(j).getWeight()),
                 start + countTotalWeights * (space + 40), (float) (camera.viewportHeight * 0.3 - space / 2));
@@ -251,7 +239,7 @@ public class GameScreen_Level1 implements Screen {
         if (isValidPath) drawConnections();
         else {
             currentConnection.remove(currentConnection.size() - 1);
-            handleMangosLost();
+            new WrongUserInput(mangoCounterLabel,game, stage, level);
         }
     }
     private void drawConnections() {
@@ -355,11 +343,10 @@ public class GameScreen_Level1 implements Screen {
             @Override
             public void dragStop(InputEvent event, float x, float y, int pointer, DragAndDrop.Payload payload, DragAndDrop.Target target) {
                 if (target != null && target.getActor().getName().equals(payload.getDragActor().getName())) {
-                    correctDrop = true;
                     game.getDropSound().play();
                 } else {
                     stack.setPosition(initialX, initialY);
-                    handleMangosLost();
+                    new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
         };
@@ -438,42 +425,6 @@ public class GameScreen_Level1 implements Screen {
             }
         }
         return true;
-    }
-
-    public void handleMangosLost() {
-        provideNegativeFeedback();
-
-        int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
-        if (newValue > 0) {
-            mangoCounterLabel.setText(newValue);
-        } else {
-            handleLevelLost();
-        }
-    }
-
-    private void handleLevelLost() {
-        game.getParrotImage().remove();
-        LevelLostGroup lost = new LevelLostGroup(game, camera);
-        stage.addActor(lost);
-
-        Button close = (Button) lost.getChild(2);
-        close.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                game.setMangos(30);
-                mangoCounterLabel.setText(game.getMangos());
-                game.setScreen(new GameScreen_Level1(game, level));
-                dispose();
-            }
-        });
-    }
-
-    private void provideNegativeFeedback() {
-        game.getBattle().play();
-        game.getBlood().addAction(Actions.sequence(
-                Actions.fadeOut(1f),
-                Actions.removeActor()
-        ));
     }
 
     @Override

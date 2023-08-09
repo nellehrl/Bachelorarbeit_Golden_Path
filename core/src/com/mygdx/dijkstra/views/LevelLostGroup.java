@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra.screens;
+package com.mygdx.dijkstra.views;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -37,7 +37,7 @@ public class LevelLostGroup extends Group {
         GlyphLayout layout = createLayout(camera);
         Table table = new Table();
         table.setBackground(game.getFontSkin().getDrawable("color"));
-        table.setSize(layout.width, layout.height + 125); // Adjusted height calculation
+        table.setSize(layout.width, layout.height + 225); // Adjusted height calculation
         table.setPosition(camera.viewportWidth / 2 - table.getWidth() / 2, camera.viewportHeight / 2 - table.getHeight() / 2);
 
         Image shipWreckImage = new Image(game.getAssetManager().get("shipWreck.png", Texture.class));

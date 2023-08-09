@@ -7,12 +7,10 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.screens.GameScreen_Level3;
-import com.mygdx.dijkstra.screens.LevelLostGroup;
+import com.mygdx.dijkstra.models.WrongUserInput;
 import com.mygdx.dijkstra.screens.LevelWonScreen;
 
 import static com.badlogic.gdx.utils.Align.center;
@@ -30,12 +28,14 @@ public class CheckCode extends Group {
     private final Texture shadowTexture;
     private final Texture xCloseTexture;
     private Image shadowImage;
+    private final Label mangoCounterLabel;
 
-    public CheckCode(final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final Stage stage, final OrthographicCamera camera, final int level) {
+    public CheckCode(Label mangoCounterLabel, final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final Stage stage, final OrthographicCamera camera, final int level) {
         this.game = game;
         this.fontSkin = game.getFontSkin();
         this.camera = camera;
         this.level = level;
+        this.mangoCounterLabel = mangoCounterLabel;
 
         // Preload the assets
         treasureTexture = game.getAssetManager().get("treasure.png", Texture.class);
@@ -89,7 +89,7 @@ public class CheckCode extends Group {
                 if (level == 1) {
                     correctInput();
                 } else {
-                    wrongInput(stage);
+                    new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
         });
@@ -100,7 +100,7 @@ public class CheckCode extends Group {
                 if (level == 2 || level == 3) {
                     correctInput();
                 } else {
-                    wrongInput(stage);
+                    new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
         });
@@ -111,7 +111,7 @@ public class CheckCode extends Group {
                 if (level == 4) {
                     correctInput();
                 } else {
-                    wrongInput(stage);
+                    new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
         });
@@ -220,7 +220,7 @@ public class CheckCode extends Group {
 
     private void checkIfLevelLost(String code, Stage stage) {
         if (input.trim().equals(code.trim())) correctInput();
-        else wrongInput(stage);
+        else new WrongUserInput(mangoCounterLabel,game, stage, level);
     }
 
     private void correctInput() {
@@ -228,30 +228,5 @@ public class CheckCode extends Group {
         game.getDropSound().play();
         game.setScreen(new LevelWonScreen(game, level));
         isCorrect = true;
-    }
-
-    private void wrongInput(Stage stage) {
-        game.setMangos(game.getMangos() - 10);
-        game.getBattle().play();
-        game.getBlood().setSize(camera.viewportWidth, camera.viewportHeight);
-        game.getBlood().setPosition(0, 0);
-        stage.addActor(game.getBlood());
-        game.getBlood().addAction(Actions.sequence(
-                Actions.delay(1f),
-                Actions.fadeOut(1f),
-                Actions.removeActor()
-        ));
-        if (game.getMangos() < 0) {
-            final LevelLostGroup lost = new LevelLostGroup(game, new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-            addActor(lost);
-            Button close = (Button) lost.getChild(2);
-            close.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    game.setMangos(30);
-                    game.setScreen(new GameScreen_Level3(game, level));
-                }
-            });
-        }
     }
 }

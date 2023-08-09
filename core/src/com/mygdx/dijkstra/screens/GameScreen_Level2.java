@@ -9,15 +9,11 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.models.City;
-import com.mygdx.dijkstra.models.Edge;
-import com.mygdx.dijkstra.models.Graph;
-import com.mygdx.dijkstra.models.LineData;
+import com.mygdx.dijkstra.models.*;
 import com.mygdx.dijkstra.views.*;
 
 import java.util.ArrayList;
@@ -110,7 +106,7 @@ public class GameScreen_Level2 implements Screen {
     private void initializeGameComponents() {
         draw = new DrawLineOrArrow();
         stage.addActor(new MapGroup_Level2_3(game, 0, graph, boatImage, linesToDraw));
-        checkCode = new CheckCode(camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), 150, "code", game, stage, camera, 4);
+        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), 150, "code", game, stage, camera, 4);
 
         // Add remaining actors
         stage.addActor(boatImage);
@@ -202,7 +198,7 @@ public class GameScreen_Level2 implements Screen {
                             textField.removeListener(listener);
                         }
                     } else {
-                        handleLevelLost();
+                        new WrongUserInput(mangoCounterLabel,game, stage, 4);
                     }
                 }
                 if (numOfEdges[0] == graph.getNumOfEdges()) {
@@ -211,37 +207,6 @@ public class GameScreen_Level2 implements Screen {
             }
         });
         return textField;
-    }
-
-    public void handleLevelLost() {
-        provideNegativeFeedback();
-        final int newValue = Integer.parseInt(String.valueOf(mangoCounterLabel.getText())) - 10;
-        if (newValue > 0) mangoCounterLabel.setText(newValue);
-        else {
-            game.getParrotImage().remove();
-
-            final LevelLostGroup lost = new LevelLostGroup(game, camera);
-            stage.addActor(lost);
-
-            Button close = (Button) lost.getChild(2);
-            close.addListener(new ClickListener() {
-                @Override
-                public void clicked(InputEvent event, float x, float y) {
-                    game.setMangos(30);
-                    mangoCounterLabel.setText(game.getMangos());
-                    game.setScreen(new GameScreen_Level2(game));
-                    dispose();
-                }
-            });
-        }
-    }
-
-    private void provideNegativeFeedback() {
-        game.getBattle().play();
-        game.getBlood().addAction(Actions.sequence(
-                Actions.fadeOut(1f),
-                Actions.removeActor()
-        ));
     }
 
     @Override

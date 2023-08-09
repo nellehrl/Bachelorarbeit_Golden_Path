@@ -5,9 +5,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
@@ -20,8 +18,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
-import com.badlogic.gdx.scenes.scene2d.utils.Drawable;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
@@ -29,8 +25,6 @@ import com.mygdx.dijkstra.views.*;
 
 import java.util.*;
 import java.util.List;
-
-import static com.badlogic.gdx.utils.Align.left;
 
 public class GameScreen_Level3 implements Screen {
     private final DijkstraAlgorithm game;
@@ -43,7 +37,7 @@ public class GameScreen_Level3 implements Screen {
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private List<LineData> linesToDraw;
     private FitViewport fitViewport;
-    private Image boatImage, parrotImage;
+    private Image boatImage;
     private OrthographicCamera camera;
     private String code = "";
     private Button mainMenuButton, doneButton;
@@ -53,6 +47,7 @@ public class GameScreen_Level3 implements Screen {
     private int[] distances;
     private final ArrayList<Integer> correctNodes = new ArrayList<>();
     private int[][] iterations, precursor;
+    private Label mangoCounterLabel;
     private DrawLineOrArrow draw;
     private ArrayList<Integer> dijkstraConnections;
     private Group background;
@@ -71,10 +66,11 @@ public class GameScreen_Level3 implements Screen {
         this.game = game;
         this.level = level;
 
+
         initializeEnvironment();
         initializeBackgroundAndMap();
         processDijkstraAndPrepareTable();
-        setupCodeCheck();
+        initializeCodeCheck();
 
         stage.addActor(dropBox);
         stage.addActor(mainMenuButton);
@@ -122,14 +118,15 @@ public class GameScreen_Level3 implements Screen {
         offset = game.getOffset();
         batch = game.getBatch();
         fontSkin = game.getFontSkin();
-        parrotImage = game.getParrotImage();
 
         graph = new Graph(vertices, 1);
-        linesToDraw = new ArrayList<>();
+        GraphAlgorithms dijkstra = new GraphAlgorithms(graph);
+        distances = dijkstra.getDistances();
+        iterations = dijkstra.getIterations();
+        dijkstraConnections = dijkstra.getDijkstraConnections();
+        precursor = dijkstra.getPrecursor();
 
-        distances = new int[vertices];
-        iterations = new int[vertices][vertices];
-        dijkstraConnections = new ArrayList<>();
+        linesToDraw = new ArrayList<>();
         draw = new DrawLineOrArrow();
     }
 
@@ -140,12 +137,13 @@ public class GameScreen_Level3 implements Screen {
         mainMenuButton = background.findActor("mainMenuButton");
         boatImage = background.findActor("boatImage");
         infotext = background.findActor("infotext");
+        Table mangoCounter = background.findActor("mangoCounter");
+        mangoCounterLabel = (Label) mangoCounter.getChild(1);
 
         stage.addActor(new MapGroup_Level2_3(game, level, graph, boatImage, linesToDraw));
     }
 
     private void processDijkstraAndPrepareTable() {
-        dijkstra();
 
         algorithmTable = new Table(fontSkin);
         algorithmTable.setBackground(fontSkin.getDrawable("color"));
@@ -158,9 +156,9 @@ public class GameScreen_Level3 implements Screen {
         dropBox.setPosition(-10, -10);
     }
 
-    private void setupCodeCheck() {
+    private void initializeCodeCheck() {
         buildCode();
-        checkCode = new CheckCode(camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, camera, level);
         doneButton = new TextButton("Done", game.getMySkin(), "default");
         doneButton.setSize(4 * offset, (float) (1.5 * offset));
         doneButton.setPosition(3 * space, (float) (camera.viewportHeight - (1.5 * offset) - mainMenuButton.getHeight() - 3 * space));
@@ -213,58 +211,6 @@ public class GameScreen_Level3 implements Screen {
                 break;
         }
 
-    }
-
-    public void dijkstra() {
-        int count = 0, source = 0;
-        boolean[] visited = new boolean[vertices];
-
-        Arrays.fill(distances, Integer.MAX_VALUE); //fill distances with infinity to initialize it
-        distances[source] = 0; //set distance to zero at source node
-
-        //got the priorityQueue idea from chatgpt conversation on the 13th of July 3.32
-        Comparator<Node> nodeComparator = new Comparator<Node>() {
-            @Override
-            public int compare(Node node1, Node node2) {
-                return Integer.compare(node1.getDistance(), node2.getDistance());
-            }
-        };
-        PriorityQueue<Node> minHeap = new PriorityQueue<>(nodeComparator);
-
-        precursor = new int[vertices][vertices];
-        minHeap.add(new Node(source, 0));
-
-        //loop until all graph are found
-        while (!minHeap.isEmpty()) {
-            //get the node with the lowest distances + current node
-            Node currentNode = minHeap.poll();
-            int vertex = currentNode.getVertex();
-            if (!dijkstraConnections.contains(vertex)) dijkstraConnections.add(vertex);
-
-            // if node has already been visited go to next one otherwise set visited
-            if (visited[vertex]) continue;
-
-            visited[vertex] = true;
-            List<Edge> neighbors = graph.getNeighbors(vertex);
-
-            //Calculate distance to each node and add to queue (which orders them then by distance)
-            for (Edge edge : neighbors) {
-                int neighbor = edge.getDestination();
-                if (visited[neighbor]) continue;
-
-                int weight = edge.getWeight();
-                int newDistance = distances[vertex] + weight;
-
-                //check if there has already been a shorter connection via a different node
-                if (newDistance < distances[neighbor]) {
-                    precursor[count][neighbor] = vertex;
-                    distances[neighbor] = newDistance;
-                    minHeap.add(new Node(neighbor, newDistance));
-                }
-            }
-            System.arraycopy(distances, 0, iterations[count], 0, vertices);
-            count++;
-        }
     }
 
     private String getTopLabelText(int col) {
@@ -367,7 +313,6 @@ public class GameScreen_Level3 implements Screen {
 
             // Modify and add listeners based on the neighboring cities
             textField = addListenersToTextField(textField, correctValue, neighbors, iteration, col);
-
             newRow.add(textField).expandX().fillX();
         }
     }
@@ -428,9 +373,34 @@ public class GameScreen_Level3 implements Screen {
             textField.setColor(Color.RED);
         } else {
             if (finalCorrectValue.equals("INFINITY"))
-                displayHint("There is no route to this city yet. Maybe we will find one later");
+                stage.addActor(new HintGroup("There is no route to this city yet. Maybe we will find one later", game));
             else
-                displayHint("There is no new connection available to this city from " + sourceCity.getName() + ". We may find another one but lets stick to the one we know.");
+                stage.addActor(new HintGroup("There is no new connection available to this city from " + sourceCity.getName() + ". We may find another one but lets stick to the one we know.",game));
+        }
+    }
+
+    private void handleKeyTyped(TextField textField, City sourceCity, char key, boolean neighbor, Vector2 start, Vector2 end, String finalCorrectValue, int i) {
+        if (key == '\r' || key == '\n') {
+            String userInput = textField.getText().replaceAll("\\s", "").toLowerCase();
+            boolean isCorrect = userInput.equals(finalCorrectValue.trim().replaceAll("\\s", "").toLowerCase());
+
+            if (isCorrect) handleCorrectInput(textField, sourceCity, neighbor, start, end, i);
+            else {
+                switch (level) {
+                    case 5:
+                        stage.addActor(new HintGroup("Hint: We are always looking for the shortest path from our treasury!",game));
+                        break;
+                    case 6:
+                        stage.addActor(new HintGroup("Hint: We are always looking for the shortest path from our treasury!\nThis is how you build the value:\nShortage of precursor - Added costs",game));
+                        break;
+                    case 7:
+                        stage.addActor(new HintGroup("This is how you build the value:\nShortage of precursor - Added costs",game));
+                        break;
+                    default:
+                        stage.addActor(new HintGroup("To our treasury(starting point) we need 0 costs.\nThis is how you build the value:\nShortage of precursor - Added costs",game));
+                        break;
+                }
+            }
         }
     }
 
@@ -446,74 +416,6 @@ public class GameScreen_Level3 implements Screen {
             for (EventListener listener : textField.getListeners()) textField.removeListener(listener);
             checkIfNewRow(i);
         }
-    }
-
-    private void handleKeyTyped(TextField textField, City sourceCity, char key, boolean neighbor, Vector2 start, Vector2 end, String finalCorrectValue, int i) {
-        if (key == '\r' || key == '\n') {
-            String userInput = textField.getText().replaceAll("\\s", "").toLowerCase();
-            boolean isCorrect = userInput.equals(finalCorrectValue.trim().replaceAll("\\s", "").toLowerCase());
-
-            if (isCorrect) handleCorrectInput(textField, sourceCity, neighbor, start, end, i);
-            else {
-                switch (level) {
-                    case 5:
-                        displayHint("Hint: We are always looking for the shortest path from our treasury!");
-                        break;
-                    case 6:
-                        displayHint("Hint: We are always looking for the shortest path from our treasury!\nThis is how you build the value:\nShortage of precursor - Added costs");
-                        break;
-                    case 7:
-                        displayHint("This is how you build the value:\nShortage of precursor - Added costs");
-                        break;
-                    default:
-                        displayHint("To our treasury(starting point) we need 0 costs.\nThis is how you build the value:\nShortage of precursor - Added costs");
-                        break;
-                }
-            }
-        }
-    }
-
-    private void displayHint(String hintText) {
-        Table textBoxTable = createHintTable();
-        Label textBox = createHintLabel(hintText, textBoxTable);
-
-        addFadeOutAndRemoveAction(textBoxTable);
-        addFadeOutAndRemoveAction(textBox);
-
-        stage.addActor(textBoxTable);
-        stage.addActor(textBox);
-    }
-
-    private Table createHintTable() {
-        Table textBoxTable = new Table(fontSkin);
-        textBoxTable.setSize(camera.viewportWidth / 4 + 2 * space, camera.viewportHeight / 10);
-        textBoxTable.setPosition(parrotImage.getX() - textBoxTable.getWidth() - space,
-                parrotImage.getY() + parrotImage.getHeight(), left);
-
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white 1.png", Texture.class)));
-        textBoxTable.setBackground(backgroundDrawable);
-
-        return textBoxTable;
-    }
-
-    private Label createHintLabel(String hintText, Table textBoxTable) {
-        Label textBox = new Label(hintText, fontSkin);
-        textBox.setPosition(parrotImage.getX() - textBoxTable.getWidth(),
-                parrotImage.getY() + parrotImage.getHeight(), left);
-        textBox.setFontScale(0.7f);
-        textBox.setAlignment(left);
-        textBox.setWrap(true);
-        textBox.setWidth(camera.viewportWidth / 4);
-
-        return textBox;
-    }
-
-    private void addFadeOutAndRemoveAction(Actor actor) {
-        actor.addAction(Actions.sequence(
-                Actions.delay(3f),
-                Actions.fadeOut(1f),
-                Actions.removeActor()
-        ));
     }
 
     private void lookForPrecursors(int i, Vector2 start, City sourceCity, Color color) {
@@ -543,7 +445,7 @@ public class GameScreen_Level3 implements Screen {
         if (correctlyFilledTextFieldsInCurrentRow != vertices) return;
 
         if (level == 8)
-            displayHint("Let's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path");
+            stage.addActor(new HintGroup("Let's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path",game));
         else if (iteration + 1 < dijkstraConnections.size() - 1) moveBoatToNextCity(iteration);
         else {
             for (LineData line : linesToDraw) line.setColor(Color.GREEN);
@@ -555,7 +457,7 @@ public class GameScreen_Level3 implements Screen {
         City nextCity = cities.get(dijkstraConnections.get(iteration + 1));
         if (level < 8) {
             String hintText = "Let's move to " + nextCity.getName() + ", it has the current lowest costs! Like that we will always find the shortest Path";
-            displayHint(hintText);
+            stage.addActor(new HintGroup(hintText,game));
             boatImage.addAction(Actions.moveTo(nextCity.getX() - boatImage.getHeight() / 2,
                     nextCity.getY() - boatImage.getHeight() / 2 + offset,
                     1.5f));
@@ -565,9 +467,16 @@ public class GameScreen_Level3 implements Screen {
     }
 
     public String buildCorrectValue(int costs, String precursorString) {
-        if (costs == Integer.MAX_VALUE) return infinity;
-        else if (costs == 0) return precursorString + " - 0";
-        else return precursorString + " - " + costs;
+        if (level == 5){
+            if (costs == Integer.MAX_VALUE) return infinity;
+            else if (costs == 0) return " 0";
+            else return String.valueOf(costs);
+        }
+        else {
+            if (costs == Integer.MAX_VALUE) return infinity;
+            else if (costs == 0) return precursorString + " - 0";
+            else return precursorString + " - " + costs;
+        }
     }
 
     @Override
