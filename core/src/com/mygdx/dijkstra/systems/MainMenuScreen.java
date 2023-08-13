@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra.screens;
+package com.mygdx.dijkstra.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
@@ -26,13 +27,13 @@ public class MainMenuScreen implements Screen {
     private OrthographicCamera camera;
     private FitViewport fitViewport;
     private final int row_height, col_width;
+    Skin mySkin;
+    private float volume;
 
     public MainMenuScreen(final DijkstraAlgorithm game, int currentLevel) {
-
         this.game = game;
         int offset = game.getOffset();
-        int space = game.getSpace();
-        Skin mySkin = game.getMySkin();
+        mySkin = game.getMySkin();
         row_height = offset;
         col_width = offset * 3;
 
@@ -40,7 +41,9 @@ public class MainMenuScreen implements Screen {
         setupInfoText();
         setupTextures();
         setupLabels();
+        setUpVolumeSlider();
         setupButtons(currentLevel);
+
         if (game.isFirstOpened()) {
             stage.addActor(infotext);
             game.setFirstOpened(false);
@@ -49,6 +52,7 @@ public class MainMenuScreen implements Screen {
 
     @Override
     public void show() {
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.input.setInputProcessor(stage);
     }
 
@@ -65,9 +69,8 @@ public class MainMenuScreen implements Screen {
     }
 
     private void setupCamera() {
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
-        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
+        camera = game.getCamera();
+        fitViewport = game.getFitViewport();
         stage = new Stage(fitViewport);
     }
 
@@ -96,43 +99,45 @@ public class MainMenuScreen implements Screen {
 
     private void setupButtons(int currentLevel) {
         ArrayList<TextButton> levelButtons = new ArrayList<>();
+        double  initialWidth = 1200;
+        double initialHeight = 720;
 
-        TextButton level11Button = generateButton("1.1", 310 - col_width / 2, 55 - row_height / 2, new GameScreen_Level1(game, 1), 1);
+        TextButton level11Button = generateButton("1.1", (int) (camera.viewportWidth * (310/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (55/initialHeight) - row_height / 2), new GameScreen_Level1(game, 1), 1);
         stage.addActor(level11Button);
         level11Button.setName("1");
         levelButtons.add(level11Button);
 
-        TextButton level12Button = generateButton("1.2", 300 - col_width / 2, 225 - row_height / 2, new GameScreen_Level1(game, 2), 2);
+        TextButton level12Button = generateButton("1.2", (int) (camera.viewportWidth * (300/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (225/initialHeight) - row_height / 2), new GameScreen_Level1(game, 2), 2);
         stage.addActor(level12Button);
         level12Button.setName("2");
         levelButtons.add(level12Button);
 
-        TextButton level13Button = generateButton("1.3", 327 - col_width / 2, 400 - row_height / 2, new GameScreen_Level1(game, 3), 3);
+        TextButton level13Button = generateButton("1.3", (int) (camera.viewportWidth * (327/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (400/initialHeight) - row_height / 2), new GameScreen_Level1(game, 3), 3);
         stage.addActor(level13Button);
         level13Button.setName("3");
         levelButtons.add(level13Button);
 
-        TextButton level21Button = generateButton("2.0", 540 - col_width / 2, 380 - row_height / 2, new GameScreen_Level2(game), 4);
+        TextButton level21Button = generateButton("2.0", (int) (camera.viewportWidth * (540/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (380/initialHeight) - row_height / 2), new GameScreen_Level2(game), 4);
         stage.addActor(level21Button);
         level21Button.setName("4");
         levelButtons.add(level21Button);
 
-        TextButton level3Button = generateButton("3.1", 625 - col_width / 2, 210 - row_height / 2, new GameScreen_Level3(game, 5), 5);
+        TextButton level3Button = generateButton("3.1", (int) (camera.viewportWidth * (625/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (210/initialHeight) - row_height / 2), new GameScreen_Level3(game, 5), 5);
         stage.addActor(level3Button);
         level3Button.setName("5");
         levelButtons.add(level3Button);
 
-        TextButton level32Button = generateButton("3.2", 850 - col_width / 2, 160 - row_height / 2, new GameScreen_Level3(game, 6), 6);
+        TextButton level32Button = generateButton("3.2", (int) (camera.viewportWidth * (850/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (160/initialHeight) - row_height / 2), new GameScreen_Level3(game, 6), 6);
         stage.addActor(level32Button);
         level32Button.setName("6");
         levelButtons.add(level32Button);
 
-        TextButton level33Button = generateButton("3.3", 900 - col_width / 2, 300 - row_height / 2, new GameScreen_Level3(game, 7), 7);
+        TextButton level33Button = generateButton("3.3", (int) (camera.viewportWidth * (900/ initialWidth) - col_width / 2), (int) (camera.viewportHeight * (300/initialHeight) - row_height / 2), new GameScreen_Level3(game, 7), 7);
         stage.addActor(level33Button);
         level33Button.setName("7");
         levelButtons.add(level33Button);
 
-        TextButton level34Button = generateButton("3.4", 800 - col_width / 2, 440 - row_height / 2, new GameScreen_Level3(game, 8), 8);
+        TextButton level34Button = generateButton("3.4", (int) (camera.viewportWidth * (800/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (440/initialHeight) - row_height / 2), new GameScreen_Level3(game, 8), 8);
         stage.addActor(level34Button);
         level34Button.setName("8");
         levelButtons.add(level34Button);
@@ -198,6 +203,7 @@ public class MainMenuScreen implements Screen {
         Action setScreenAction = Actions.run(new Runnable() {
             @Override
             public void run() {
+                game.resetGlobalState();
                 game.setScreen(screen);
                 MainMenuScreen.this.dispose();
             }
@@ -205,13 +211,34 @@ public class MainMenuScreen implements Screen {
         SequenceAction sequenceAction = Actions.sequence(moveToAction, setScreenAction);
         boatImage.addAction(sequenceAction);
     }
+    public void setUpVolumeSlider(){
+        final Slider volumeSlider = new Slider(0f, 1f, 0.1f, false, game.getFontSkin());
+        volumeSlider.setPosition(2*game.getOffset(), camera.viewportHeight - volumeSlider.getHeight() - 5*game.getOffset());
+        volumeSlider.setValue(1f);  // Setze die anfängliche Lautstärke auf 100%
+
+        Label volumeLabel = new Label("Music Volume", game.getFontSkin());
+        volumeLabel.setPosition(volumeSlider.getX(), volumeSlider.getY() + volumeSlider.getHeight());
+
+        volumeSlider.addListener(new ChangeListener() {
+            @Override
+            public void changed(ChangeEvent event, Actor actor) {
+                volume = volumeSlider.getValue();
+                game.getBackGroundMusic().setVolume(volume); // Passe die Lautstärke des Sounds an
+            }
+        });
+
+        stage.addActor(volumeSlider);
+        stage.addActor(volumeLabel);
+    }
+
+    public float getVolume(){
+        return volume;
+    }
 
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
-        camera.viewportWidth = width;
-        camera.viewportHeight = height;
-        camera.update();
+        camera.position.set((float) 1200 / 2, (float) 720 / 2, 0);
     }
 
     @Override

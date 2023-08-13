@@ -12,7 +12,7 @@ import com.badlogic.gdx.assets.AssetManager;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.models.City;
-import com.mygdx.dijkstra.screens.MainMenuScreen;
+import com.mygdx.dijkstra.systems.MainMenuScreen;
 
 import java.util.ArrayList;
 
@@ -37,7 +37,10 @@ public class DijkstraAlgorithm extends Game {
     private FitViewport fitViewport;
 
     public void create() {
-        initCamera();
+        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
+        fitViewport = new FitViewport(1200, 720, camera);
+        
         initAssets();
         initUIElements();
         initCities();
@@ -48,12 +51,6 @@ public class DijkstraAlgorithm extends Game {
     public void render() {
         assetManager.update();
         super.render(); // important!
-    }
-
-    private void initCamera() {
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
-        fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
     }
 
     private void initUIElements() {
@@ -87,6 +84,7 @@ public class DijkstraAlgorithm extends Game {
         int heightWorld = (int) (camera.viewportHeight * 0.66);
         int midHeightWorld = (int) (heightWorld / 2 + camera.viewportHeight / 3);
 
+        //order cities into different regions to distribute them well on the screen
         for (City city : allCities) {
             if (city.getX() <= widthWorld / 3 && city.getY() >= midHeightWorld) {
                 northWest.add(city);
@@ -109,7 +107,7 @@ public class DijkstraAlgorithm extends Game {
     }
 
     private void generateRandomCities() {
-        int cityIndex = 0;
+        int cityIndex;
         cities = new ArrayList<>();
         for (int i = 0; i < 6; i++) {
             if (i == 0) {
@@ -136,22 +134,22 @@ public class DijkstraAlgorithm extends Game {
 
     private void initCities() {
         allCities = new ArrayList<>();
-        allCities.add(new City("Shanghai", calcX(0.58), calcY(525), "SH"));
-        allCities.add(new City("Singapore", calcX(0.56), calcY(435), "SP"));
-        allCities.add(new City("Rotterdam", calcX(0.35), calcY(555), "RD"));
-        allCities.add(new City("Bergen", calcX(0.37), calcY(600), "BG"));
-        allCities.add(new City("Jebel Ali", calcX(0.44), calcY(487), "JA"));
-        allCities.add(new City("Los Angeles", calcX(0.1375), calcY(525), "LA"));
-        allCities.add(new City("New York", calcX(0.23), calcY(540), "NY"));
-        allCities.add(new City("Colombo", calcX(0.493), calcY(435), "CB"));
-        allCities.add(new City("Colon", calcX(0.2), calcY(412), "CL"));
-        allCities.add(new City("Santos", calcX(0.268), calcY(360), "ST"));
-        allCities.add(new City("Buenos Aires", calcX(0.225), calcY(300), "BA"));
-        allCities.add(new City("Antisarana", calcX(0.4375), calcY(383), "AS"));
-        allCities.add(new City("Banjul", calcX(0.3258), calcY(459), "BJ"));
-        allCities.add(new City("Portland", calcX(0.6025), calcY(315), "PL"));
-        allCities.add(new City("Wyndham", calcX(0.565), calcY(375), "WH"));
-        allCities.add(new City("Lima", calcX(0.208), calcY(405), "LM"));
+        allCities.add(new City("Shanghai", calcXCoordinate(0.58), calcYCoordinate(525), "SH"));
+        allCities.add(new City("Singapore", calcXCoordinate(0.56), calcYCoordinate(435), "SP"));
+        allCities.add(new City("Rotterdam", calcXCoordinate(0.35), calcYCoordinate(555), "RD"));
+        allCities.add(new City("Bergen", calcXCoordinate(0.37), calcYCoordinate(600), "BG"));
+        allCities.add(new City("Jebel Ali", calcXCoordinate(0.44), calcYCoordinate(487), "JA"));
+        allCities.add(new City("Los Angeles", calcXCoordinate(0.1375), calcYCoordinate(525), "LA"));
+        allCities.add(new City("New York", calcXCoordinate(0.23), calcYCoordinate(540), "NY"));
+        allCities.add(new City("Colombo", calcXCoordinate(0.493), calcYCoordinate(435), "CB"));
+        allCities.add(new City("Colon", calcXCoordinate(0.2), calcYCoordinate(412), "CL"));
+        allCities.add(new City("Santos", calcXCoordinate(0.268), calcYCoordinate(360), "ST"));
+        allCities.add(new City("Buenos Aires", calcXCoordinate(0.225), calcYCoordinate(300), "BA"));
+        allCities.add(new City("Antisarana", calcXCoordinate(0.4375), calcYCoordinate(383), "AS"));
+        allCities.add(new City("Banjul", calcXCoordinate(0.3258), calcYCoordinate(459), "BJ"));
+        allCities.add(new City("Portland", calcXCoordinate(0.6025), calcYCoordinate(315), "PL"));
+        allCities.add(new City("Wyndham", calcXCoordinate(0.565), calcYCoordinate(375), "WH"));
+        allCities.add(new City("Lima", calcXCoordinate(0.208), calcYCoordinate(405), "LM"));
     }
 
     private void initAssets() {
@@ -185,11 +183,11 @@ public class DijkstraAlgorithm extends Game {
         assetManager.finishLoading();
     }
 
-    private int calcY(int y) {
+    private int calcYCoordinate(int y) {
         return (int) (camera.viewportHeight * y / 720);
     }
 
-    private int calcX(double x) {
+    private int calcXCoordinate(double x) {
         return (int) (camera.viewportWidth * x);
     }
 
@@ -279,6 +277,17 @@ public class DijkstraAlgorithm extends Game {
 
     public void setMangos(int mangos) {
         this.mangos = mangos;
+    }
+
+    public void resetGlobalState() {
+        // Reset camera
+        camera.position.set(camera.viewportWidth / 2f, camera.viewportHeight / 2f, 0);
+        camera.zoom = 1.0f;
+        camera.update();
+
+        // Reset viewport
+        fitViewport.setWorldSize(1200, 720);
+        fitViewport.update(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), true);
     }
 
     public Image createActor(int width, float height, float x, float y, Texture texture) {

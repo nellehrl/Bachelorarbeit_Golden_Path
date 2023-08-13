@@ -14,11 +14,12 @@ public class InfoTextGroup extends Group {
     private Button closeButton;
     private final DijkstraAlgorithm game;
     private Table table;
-    private final int row_height = 25;
+    private final int row_height;
 
     public InfoTextGroup(final DijkstraAlgorithm game, String text, OrthographicCamera camera) {
 
         this.game = game;
+        this.row_height = game.getOffset();
 
         GlyphLayout layout = new GlyphLayout();
         layout.setText(game.getFontSkin().getFont("font"), text, Color.BLACK, (float) (camera.viewportWidth * 0.62), left, true);
@@ -35,7 +36,7 @@ public class InfoTextGroup extends Group {
 
         int parrottWidth = (int) (camera.viewportWidth * 0.1);
         Image parrottImage = game.createActor(parrottWidth, (float) (parrottWidth * 1.25), table.getX() + table.getWidth() - parrottWidth,
-                table.getY() + table.getHeight() - 18, game.getAssetManager().get("parrott.png", Texture.class));
+                table.getY() + table.getHeight() - game.getOffset(), game.getAssetManager().get("parrott.png", Texture.class));
         parrottImage.setName("parrottImage");
         addActor(parrottImage);
 
@@ -43,7 +44,7 @@ public class InfoTextGroup extends Group {
         closeButton = new TextButton("Let's do it", game.getMySkin(), "default");
         int col_width = 50;
         closeButton.setSize((float) (3 * col_width) + 20, (float) (1.5 * row_height));
-        closeButton.setPosition(table.getX() + table.getWidth() - closeButton.getWidth() - 25, table.getY() + 15);
+        closeButton.setPosition(table.getX() + table.getWidth() - closeButton.getWidth() - game.getOffset(), table.getY() + game.getSpace());
         addActor(closeButton);
         closeButton.setName("closeButton");
     }

@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra.screens;
+package com.mygdx.dijkstra.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -23,9 +23,8 @@ public class GameWonScreen implements Screen {
     public GameWonScreen(final DijkstraAlgorithm game) {
         this.game = game;
 
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, 800, 480);
-        fitViewport = new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), camera);
+        camera = game.getCamera();
+        fitViewport = game.getFitViewport();
 
         stage = new Stage(fitViewport);
         batch = new SpriteBatch();
@@ -61,15 +60,14 @@ public class GameWonScreen implements Screen {
 
     @Override
     public void show() {
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.input.setInputProcessor(stage);
     }
 
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
-        camera.viewportWidth = width;
-        camera.viewportHeight = height;
-        camera.update();
+        camera.position.set((float) 1200 / 2, (float) 720 / 2, 0);
     }
 
     @Override

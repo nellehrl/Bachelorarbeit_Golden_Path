@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.screens.MainMenuScreen;
+import com.mygdx.dijkstra.systems.MainMenuScreen;
 
 public class BackgroundGroup extends Group {
     private final DijkstraAlgorithm game;
@@ -22,26 +22,30 @@ public class BackgroundGroup extends Group {
 
     public BackgroundGroup(final DijkstraAlgorithm game, final Stage stage, String text, final int level) {
         this.game = game;
-        camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.setToOrtho(false, camera.viewportWidth, camera.viewportHeight);
+        camera = game.getCamera();
 
-        initializeFields();
-        initializeBackground();
+        initializeGlobalGameVariables();
+        initializeBackgroundUIElements();
         initializeMangoCounter();
         initializeMainMenuButton(level);
         initializeInfoBox(stage, text);
     }
 
-    private void initializeFields() {
+    private void initializeGlobalGameVariables() {
         space = game.getSpace();
         offset = game.getOffset();
         parrotImage = game.getParrotImage();
+        int parrotWidth = (int) (camera.viewportWidth * 0.1);
+        parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
+        parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - offset), (camera.viewportHeight / 3 - space));
+        parrotImage.setName("parrotImage");
+        addActor(parrotImage);
         assetManager = game.getAssetManager();
         infoImage = game.getInfoImage();
     }
 
-    private void initializeBackground() {
-        Image wood = game.createActor((int) (camera.viewportWidth * 1.1), (float) (camera.viewportHeight * 1.1), -52, -45, assetManager.get("background.png", Texture.class));
+    private void initializeBackgroundUIElements() {
+        Image wood = game.createActor((int) camera.viewportWidth, camera.viewportHeight, 0, 0, assetManager.get("background.png", Texture.class));
         addActor(wood);
         wood.setName("wood");
 
@@ -49,7 +53,7 @@ public class BackgroundGroup extends Group {
         addActor(water);
         water.setName("water");
 
-        Image mapImage = game.createActor((int) (camera.viewportWidth * 0.9), (float) (camera.viewportHeight * 0.6), (float) (2.5 * offset), (float) camera.viewportHeight / 3 + 25, assetManager.get("worldMap 1.png", Texture.class));
+        Image mapImage = game.createActor((int) (camera.viewportWidth * 0.9), (float) (camera.viewportHeight * 0.6), (float) (2.5 * offset), camera.viewportHeight / 3 + game.getOffset(), assetManager.get("worldMap 1.png", Texture.class));
         addActor(mapImage);
         mapImage.setName("mapImage");
 
@@ -78,16 +82,16 @@ public class BackgroundGroup extends Group {
         mangoCounter.add(mangoCounterLabel).padLeft((float) (-0.6 * mangoCounter.getWidth()));
         addActor(mangoCounter);
         mangoCounter.setName("mangoCounter");
-
     }
 
     private void initializeMainMenuButton(final int level) {
         Button mainMenuButton = new TextButton("Menu", game.getMySkin(), "default");
         mainMenuButton.setSize(4 * offset, (float) (1.5 * offset));
-        mainMenuButton.setPosition(space * 3, (float) (camera.viewportHeight - 1.5 * offset - space * 3));
+        mainMenuButton.setPosition(game.getOffset(), camera.viewportHeight - mainMenuButton.getHeight() - game.getOffset());
         mainMenuButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
+                game.resetGlobalState();
                 game.setScreen(new MainMenuScreen(game, level));
             }
         });
@@ -102,19 +106,8 @@ public class BackgroundGroup extends Group {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 infoText.remove();
-                int parrotWidth = (int) (camera.viewportWidth * 0.1);
-                parrotImage.setSize((float) parrotWidth, (float) (parrotWidth * 1.25));
-                parrotImage.setPosition((float) (Gdx.graphics.getWidth() - parrotWidth - offset), (camera.viewportHeight / 3 - space));
                 infoImage.setSize((float) (camera.viewportWidth * 0.025), (float) (camera.viewportWidth * 0.025));
                 infoImage.setPosition(parrotImage.getX() - space, parrotImage.getY() + parrotImage.getHeight());
-                parrotImage.addListener(new ClickListener() {
-                    @Override
-                    public void clicked(InputEvent event, float x, float y) {
-                        stage.addActor(infoText);
-                        parrotImage.remove();
-                        infoImage.remove();
-                    }
-                });
                 stage.addActor(infoImage);
                 stage.addActor(parrotImage);
             }

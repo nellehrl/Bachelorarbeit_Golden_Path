@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra.screens;
+package com.mygdx.dijkstra.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -47,9 +47,7 @@ public class GameScreen_Level1 implements Screen {
     private DragAndDrop dragAndDrop;
     private Label mangoCounterLabel;
     private DrawLineOrArrow draw;
-    private int vertices;
-    private int space;
-    private int offset;
+    private int vertices, space, offset, triangleSize = 40;
     private Batch batch;
     private Button mainMenuButton;
 
@@ -109,10 +107,10 @@ public class GameScreen_Level1 implements Screen {
         switch (level) {
             case 1:
             case 2:
-                graph = new Graph(vertices, 2);
+                graph = new Graph(game, vertices, 2);
                 break;
             case 3:
-                graph = new Graph(vertices, 1);
+                graph = new Graph(game, vertices, 1);
                 dragAndDrop = new DragAndDrop();
                 break;
         }
@@ -138,18 +136,17 @@ public class GameScreen_Level1 implements Screen {
         initializeCities();
         currentConnection.add(cities.get(0));
         validConnection.add(0);
-
-        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, 150, "code", game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight/5, "code", game, stage, camera, level);
     }
 
     private void initializeActorsForStage() {
-        int width = (int) (camera.viewportWidth / vertices);
-        int height = (int) (camera.viewportHeight / 6 - space);
         int x = 3 * offset;
-        int y = (int) (camera.viewportHeight * 0.28 - space);
-        if (level == 3) y = (int) (camera.viewportHeight * 0.225 - 2 * space);
+        int y = (int) (camera.viewportHeight * 0.25);
+        int width = (int) ((camera.viewportWidth - 3*x) / vertices);
+        int height = (int) (camera.viewportHeight / 6 - space);
+        if (level == 3) y = y - triangleSize - space;
 
-        stage.addActor(new ConnectionOverviewGroup(vertices, cities, game, (int) (width * 0.8), height, x, y, graph, level));
+        stage.addActor(new ConnectionOverviewGroup(vertices, cities, game, width , height, x, y, graph, level));
         stage.addActor(boatImage);
         stage.addActor(mainMenuButton);
         stage.addActor(infotext);
@@ -164,7 +161,7 @@ public class GameScreen_Level1 implements Screen {
                 textBuilder.append("Let's see what we got here….We want to visit all cities and then come back to bring");
                 textBuilder.append("all our conquests to our treasury.\n\n");
                 textBuilder.append("In the box down on the radar you can see all graph.");
-                textBuilder.append("They go both ways. So it should be easy, right? Let's get on it.\n\n");
+                textBuilder.append(" They go both ways. So it should be easy, right? Let's get on it.\n\n");
                 textBuilder.append("Please stay on the route cause there are");
                 textBuilder.append(" other pirates out there with canooons waiting for a fight.");
                 break;
@@ -193,6 +190,7 @@ public class GameScreen_Level1 implements Screen {
     }
 
     private void initializeCities() {
+        int index = 0;
         for (int i = 0; i < vertices; i++) {
             final City currentCity = cities.get(i);
             portTable = new Ports(currentCity, game);
@@ -210,7 +208,8 @@ public class GameScreen_Level1 implements Screen {
                     City sourceCity = cities.get(i);
                     City destCity = cities.get(neighbors.get(j).getDestination());
                     initializeConnectionArea(sourceCity, destCity, neighbors.get(j).getWeight());
-                    initializDraggableWeightStack(neighbors, j);
+                    initializDraggableWeightStack(neighbors, j, index);
+                    index++;
                 }
             }
 
@@ -224,12 +223,12 @@ public class GameScreen_Level1 implements Screen {
         stage.addActor(connectionArea);
     }
 
-    private void initializDraggableWeightStack(java.util.List<Edge> neighbors, int j) {
+    private void initializDraggableWeightStack(java.util.List<Edge> neighbors, int j, int index) {
         int start = 5 * offset + space;
         Stack stack = createWeights(String.valueOf(neighbors.get(j).getWeight()),
-                start + countTotalWeights * (space + 40), (float) (camera.viewportHeight * 0.3 - space / 2));
+                start + countTotalWeights * (space + triangleSize), (float) (camera.viewportHeight * 0.3 - space / 2));
         stack.setName(" " + neighbors.get(j).getWeight());
-        addDragAndDrop(stack, j);
+        addDragAndDrop(stack, index);
         stage.addActor(stack);
         countTotalWeights++;
     }
@@ -334,9 +333,10 @@ public class GameScreen_Level1 implements Screen {
 
                 DragAndDrop.Payload payload = new DragAndDrop.Payload();
                 payload.setDragActor(getActor());
-                dragAndDrop.setDragActorPosition(x, y - 30);
+                dragAndDrop.setDragActorPosition(x, y - (float) triangleSize /2 );
                 stage.addActor(getActor());
 
+                payload.setObject(stack.getName());  // Setting the name of the source actor in the payload
                 return payload;
             }
 
@@ -356,7 +356,9 @@ public class GameScreen_Level1 implements Screen {
         return new DragAndDrop.Target(target) {
             @Override
             public boolean drag(DragAndDrop.Source source, DragAndDrop.Payload payload, float x, float y, int pointer) {
-                return true;
+                String sourceName = (String) payload.getObject();
+
+                return getActor().getName().equals(sourceName);
             }
 
             @Override
@@ -403,7 +405,6 @@ public class GameScreen_Level1 implements Screen {
         stack.add(triangleTable);
         stack.add(labelTable);
         stack.setPosition(centerX - offset, centerY - offset);
-        float triangleSize = 40;
         stack.setSize(triangleSize, triangleSize);
 
         return stack;
@@ -430,14 +431,13 @@ public class GameScreen_Level1 implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
-        camera.viewportWidth = width;
-        camera.viewportHeight = height;
-        camera.update();
+        camera.update(true);
     }
 
     @Override
     public void show() {
         Gdx.input.setInputProcessor(stage);
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
     }
 
     @Override

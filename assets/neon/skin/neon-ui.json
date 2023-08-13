@@ -17,6 +17,12 @@ com.badlogic.gdx.graphics.Color: {
 		b: 0
 		a: 1
 	},
+	red: {
+		r:0.95
+		g:0.871
+		b:0.726
+		a:1
+	},
 	tooltip: {
 		r: 1
 		g: 1

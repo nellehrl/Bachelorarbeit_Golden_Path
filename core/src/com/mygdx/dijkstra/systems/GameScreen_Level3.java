@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra.screens;
+package com.mygdx.dijkstra.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -8,22 +8,19 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.Group;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
-import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
 import com.mygdx.dijkstra.views.*;
 
-import java.util.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class GameScreen_Level3 implements Screen {
@@ -32,12 +29,13 @@ public class GameScreen_Level3 implements Screen {
     private static final float CELL_WIDTH = 140f;
     private static final float CELL_HEIGHT = 20f;
     private static final float PAD_BOTTOM = 10;
+    private String hint;
     private static final String infinity = "INFINITY";
     private Stage stage;
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private List<LineData> linesToDraw;
     private FitViewport fitViewport;
-    private Image boatImage;
+    private Image boatImage, parrotImage;
     private OrthographicCamera camera;
     private String code = "";
     private Button mainMenuButton, doneButton;
@@ -119,7 +117,7 @@ public class GameScreen_Level3 implements Screen {
         batch = game.getBatch();
         fontSkin = game.getFontSkin();
 
-        graph = new Graph(vertices, 1);
+        graph = new Graph(game, vertices, 1);
         GraphAlgorithms dijkstra = new GraphAlgorithms(graph);
         distances = dijkstra.getDistances();
         iterations = dijkstra.getIterations();
@@ -137,6 +135,7 @@ public class GameScreen_Level3 implements Screen {
         mainMenuButton = background.findActor("mainMenuButton");
         boatImage = background.findActor("boatImage");
         infotext = background.findActor("infotext");
+        parrotImage = background.findActor("parrotImage");
         Table mangoCounter = background.findActor("mangoCounter");
         mangoCounterLabel = (Label) mangoCounter.getChild(1);
 
@@ -158,10 +157,10 @@ public class GameScreen_Level3 implements Screen {
 
     private void initializeCodeCheck() {
         buildCode();
-        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, camera, level);
         doneButton = new TextButton("Done", game.getMySkin(), "default");
         doneButton.setSize(4 * offset, (float) (1.5 * offset));
-        doneButton.setPosition(3 * space, (float) (camera.viewportHeight - (1.5 * offset) - mainMenuButton.getHeight() - 3 * space));
+        doneButton.setPosition(offset, camera.viewportHeight - (3 * offset) - mainMenuButton.getHeight());
         doneButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
@@ -187,7 +186,7 @@ public class GameScreen_Level3 implements Screen {
                 textBuilder.append(" millions to know our secret - but first: Let`s get back to work\n\n");
                 textBuilder.append("I guess you know what to do? If not, I am here to help. Cause you know - I am the endless source ");
                 textBuilder.append("of wisdom.\n And don`t forget about the code so we can get an endless amount of mangooos!\n\n");
-                textBuilder.append("Oh, and I have realized that it would be good to note down where we are always coming from...the precursors you know?");
+                textBuilder.append("Oh, and I have realized that it would be good to note down where we are currently at - the precursor you know?");
                 textBuilder.append(" Like that, it is easier for us to find the correct route afterward. Our ship will show you where we currently are.");
                 textBuilder.append("\n\nCode: Remember the code is built by the distance of the connection to the city. For INFINITY, ");
                 textBuilder.append("it was a ...... 0");
@@ -372,10 +371,14 @@ public class GameScreen_Level3 implements Screen {
             lookForPrecursors(i, start, sourceCity, Color.RED);
             textField.setColor(Color.RED);
         } else {
-            if (finalCorrectValue.equals("INFINITY"))
-                stage.addActor(new HintGroup("There is no route to this city yet. Maybe we will find one later", game));
-            else
-                stage.addActor(new HintGroup("There is no new connection available to this city from " + sourceCity.getName() + ". We may find another one but lets stick to the one we know.",game));
+            if (finalCorrectValue.equals("INFINITY")){
+                hint = "I can`t find a route to this city yet, you? Maybe we will find one later";
+                stage.addActor(new HintGroup(hint, game));
+            }
+            else{
+                hint = "I can`t find a new connection to this city from " + sourceCity.getName() + ". We may find another one later but lets stick to the one we know.";
+                stage.addActor(new HintGroup(hint, game));
+            }
         }
     }
 
@@ -386,18 +389,56 @@ public class GameScreen_Level3 implements Screen {
 
             if (isCorrect) handleCorrectInput(textField, sourceCity, neighbor, start, end, i);
             else {
+                userInput = userInput.replaceAll("[^0-9]", "");
+                finalCorrectValue = finalCorrectValue.replaceAll("[^0-9]", "");
+                boolean isShortestPath = Integer.valueOf(userInput) > Integer.valueOf(finalCorrectValue);
                 switch (level) {
                     case 5:
-                        stage.addActor(new HintGroup("Hint: We are always looking for the shortest path from our treasury!",game));
+                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                        else hint = "Are you sure that you added the costs of the routes correctly";
+                        stage.addActor(new HintGroup(hint, game));
+                        parrotImage.addListener(new ClickListener() {
+                            @Override
+                            public void clicked(InputEvent event, float x, float y) {
+                                stage.addActor(new HintGroup(hint, game));
+                            }
+                        });
                         break;
                     case 6:
-                        stage.addActor(new HintGroup("Hint: We are always looking for the shortest path from our treasury!\nThis is how you build the value:\nShortage of precursor - Added costs",game));
+                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                        else hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
+                        stage.addActor(new HintGroup(hint, game));
+                        parrotImage.addListener(new ClickListener() {
+                            @Override
+                            public void clicked(InputEvent event, float x, float y) {
+                                stage.addActor(new HintGroup(hint, game));
+                            }
+                        });
                         break;
                     case 7:
-                        stage.addActor(new HintGroup("This is how you build the value:\nShortage of precursor - Added costs",game));
+                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                        else if (userInput.substring(0,2) != finalCorrectValue.substring(0,2)) {
+                            System.out.println(userInput.substring(0,2));
+                            hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
+                        }
+                        else hint = "Is there a route to this city?\nIf there is no route the correct Value is Infinity.";
+                        stage.addActor(new HintGroup(hint, game));
+                        parrotImage.addListener(new ClickListener() {
+                            @Override
+                            public void clicked(InputEvent event, float x, float y) {
+                                stage.addActor(new HintGroup(hint, game));
+                            }
+                        });
                         break;
                     default:
-                        stage.addActor(new HintGroup("To our treasury(starting point) we need 0 costs.\nThis is how you build the value:\nShortage of precursor - Added costs",game));
+                        hint = "To go to our treasury (starting point) we need 0 costs.\nDid you build the value correctly?\n(Shortage of precursor - Added costs)";
+                        stage.addActor(new HintGroup(hint, game));
+                        parrotImage.addListener(new ClickListener() {
+                            @Override
+                            public void clicked(InputEvent event, float x, float y) {
+                                stage.addActor(new HintGroup(hint, game));
+                            }
+                        });
                         break;
                 }
             }
@@ -445,7 +486,7 @@ public class GameScreen_Level3 implements Screen {
         if (correctlyFilledTextFieldsInCurrentRow != vertices) return;
 
         if (level == 8)
-            stage.addActor(new HintGroup("Let's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path",game));
+            stage.addActor(new HintGroup("Great job!\nLet's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path", game));
         else if (iteration + 1 < dijkstraConnections.size() - 1) moveBoatToNextCity(iteration);
         else {
             for (LineData line : linesToDraw) line.setColor(Color.GREEN);
@@ -457,7 +498,7 @@ public class GameScreen_Level3 implements Screen {
         City nextCity = cities.get(dijkstraConnections.get(iteration + 1));
         if (level < 8) {
             String hintText = "Let's move to " + nextCity.getName() + ", it has the current lowest costs! Like that we will always find the shortest Path";
-            stage.addActor(new HintGroup(hintText,game));
+            stage.addActor(new HintGroup(hintText, game));
             boatImage.addAction(Actions.moveTo(nextCity.getX() - boatImage.getHeight() / 2,
                     nextCity.getY() - boatImage.getHeight() / 2 + offset,
                     1.5f));
@@ -467,12 +508,11 @@ public class GameScreen_Level3 implements Screen {
     }
 
     public String buildCorrectValue(int costs, String precursorString) {
-        if (level == 5){
+        if (level == 5) {
             if (costs == Integer.MAX_VALUE) return infinity;
             else if (costs == 0) return " 0";
             else return String.valueOf(costs);
-        }
-        else {
+        } else {
             if (costs == Integer.MAX_VALUE) return infinity;
             else if (costs == 0) return precursorString + " - 0";
             else return precursorString + " - " + costs;
@@ -482,13 +522,12 @@ public class GameScreen_Level3 implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
-        camera.viewportWidth = width;
-        camera.viewportHeight = height;
-        camera.update();
+        camera.position.set((float) 1200 / 2, (float) 720 / 2, 0);
     }
 
     @Override
     public void show() {
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.input.setInputProcessor(stage);
     }
 

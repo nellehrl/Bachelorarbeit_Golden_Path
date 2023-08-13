@@ -1,5 +1,7 @@
 package com.mygdx.dijkstra.models;
 
+import com.mygdx.dijkstra.DijkstraAlgorithm;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,8 +9,10 @@ public class Graph {
     private final int numVertices;
     private final List<Edge>[] adjacencyList;
     private int numOfEdges;
+    private DijkstraAlgorithm game;
 
-    public Graph(int numVertices, int mode) {
+    public Graph(DijkstraAlgorithm gamem, int numVertices, int mode) {
+        this.game = game;
         this.numVertices = numVertices;
         adjacencyList = new List[numVertices];
 
@@ -64,6 +68,13 @@ public class Graph {
     }
 
     public void addEdge(int source, int destination, int weight) {
+        // Ensure that the reverse edge doesn't exist
+        for(Edge e : adjacencyList[destination]) {
+            if(e.getDestination() == source) {
+                return; // If the reverse edge already exists, do not add the current edge
+            }
+        }
+
         Edge edge = new Edge(source, destination, weight);
         adjacencyList[source].add(edge);
         numOfEdges++;

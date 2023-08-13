@@ -53,7 +53,7 @@ public class HintGroup extends Group {
 
     private void addFadeOutAndRemoveAction(Actor actor) {
         actor.addAction(Actions.sequence(
-                Actions.delay(3f),
+                Actions.delay(5f),
                 Actions.fadeOut(1f),
                 Actions.removeActor()
         ));

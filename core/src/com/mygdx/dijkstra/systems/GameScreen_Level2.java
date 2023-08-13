@@ -1,4 +1,4 @@
-package com.mygdx.dijkstra.screens;
+package com.mygdx.dijkstra.systems;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -89,7 +89,7 @@ public class GameScreen_Level2 implements Screen {
         batch = game.getBatch();
         fontSkin = game.getFontSkin();
         currentConnection.add(cities.get(0));
-        graph = new Graph(vertices, 1);
+        graph = new Graph(game, vertices, 1);
     }
 
     private void initializeUIElements() {
@@ -106,7 +106,7 @@ public class GameScreen_Level2 implements Screen {
     private void initializeGameComponents() {
         draw = new DrawLineOrArrow();
         stage.addActor(new MapGroup_Level2_3(game, 0, graph, boatImage, linesToDraw));
-        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), 150, "code", game, stage, camera, 4);
+        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), camera.viewportHeight/5, "code", game, stage, camera, 4);
 
         // Add remaining actors
         stage.addActor(boatImage);
@@ -126,28 +126,32 @@ public class GameScreen_Level2 implements Screen {
 
     public void initializeDropBoxItems() {
         final int[] numOfEdges = {0};
+        int count = 0;
         for (int i = 0; i < vertices; i++) {
             //init j for positioning items correctly
             int j = 0;
             java.util.List<Edge> neighbors = graph.getNeighbors(i);
             City sourceCity = cities.get(i);
             //init table to fill
-            for (Edge neighbor : neighbors) {
-                //define destination City and connection to color
-                City destCity = cities.get(neighbor.getDestination());
-                final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
-                final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
-                //init label
-                String labelText = sourceCity.getName() + " - " + destCity.getName();
-                String fieldText = "Costs: ";
-                //init table
-                Table infoTable = createInfoTable(labelText, i, j);
-                TextField textField = createTextField(fieldText, start, end, neighbor, numOfEdges);
-                //add table to stage
-                infoTable.add(textField);
-                infoTable.setBackground(fontSkin.getDrawable("color"));
-                stage.addActor(infoTable);
-                j++;
+            if(neighbors.size() != 0) {
+                for (Edge neighbor : neighbors) {
+                    //define destination City and connection to color
+                    City destCity = cities.get(neighbor.getDestination());
+                    final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
+                    final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
+                    //init label
+                    String labelText = sourceCity.getName() + " - " + destCity.getName();
+                    String fieldText = "Costs: ";
+                    //init table
+                    Table infoTable = createInfoTable(labelText, count, j);
+                    TextField textField = createTextField(fieldText, start, end, neighbor, numOfEdges);
+                    //add table to stage
+                    infoTable.add(textField);
+                    infoTable.setBackground(fontSkin.getDrawable("color"));
+                    stage.addActor(infoTable);
+                    j++;
+                }
+                count++;
             }
         }
     }
@@ -155,7 +159,7 @@ public class GameScreen_Level2 implements Screen {
     private Table createInfoTable(String labelText, int i, int j) {
         Table infoTable = new Table(fontSkin);
         infoTable.setSize((camera.viewportWidth) / (vertices), (camera.viewportHeight / 3) / (vertices - 1));
-        infoTable.setPosition(2 * offset + infoTable.getWidth() * i + space * (i + 1), (float) ((camera.viewportHeight * 0.28) - offset - (infoTable.getHeight() + space) * j));
+        infoTable.setPosition(2 * offset + infoTable.getWidth() * i + space * (i + 1), (float) ((camera.viewportHeight * 0.25) - offset - (infoTable.getHeight() + space) * j));
 
         Label codeLabel = new Label(labelText, fontSkin);
         codeLabel.setAlignment(left);
@@ -212,13 +216,12 @@ public class GameScreen_Level2 implements Screen {
     @Override
     public void resize(int width, int height) {
         fitViewport.update(width, height, true);
-        camera.viewportWidth = width;
-        camera.viewportHeight = height;
-        camera.update();
+        camera.position.set((float) 1200 / 2, (float) 720 / 2, 0);
     }
 
     @Override
     public void show() {
+        resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         Gdx.input.setInputProcessor(stage);
     }
 

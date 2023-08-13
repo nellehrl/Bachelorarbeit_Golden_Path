@@ -28,4 +28,7 @@ public class Edge {
     public int getWeight() {
         return weight;
     }
+    public int getSource() {
+        return source;
+    }
 }

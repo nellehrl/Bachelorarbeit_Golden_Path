@@ -7,7 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Button;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.screens.GameScreen_Level1;
+import com.mygdx.dijkstra.systems.GameScreen_Level1;
 import com.mygdx.dijkstra.views.LevelLostGroup;
 
 public class WrongUserInput {
@@ -37,6 +37,7 @@ public class WrongUserInput {
             public void clicked(InputEvent event, float x, float y) {
                 game.setMangos(30);
                 mangoCounterLabel.setText(game.getMangos());
+                game.resetGlobalState();
                 game.setScreen(new GameScreen_Level1(game, level));
             }
         });

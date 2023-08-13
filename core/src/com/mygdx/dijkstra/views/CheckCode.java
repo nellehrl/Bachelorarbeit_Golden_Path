@@ -10,20 +10,19 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
+import com.mygdx.dijkstra.models.CheckCodeModel;
 import com.mygdx.dijkstra.models.WrongUserInput;
-import com.mygdx.dijkstra.screens.LevelWonScreen;
 
 import static com.badlogic.gdx.utils.Align.center;
 
 public class CheckCode extends Group {
     private Table codeTable;
-    public boolean isCorrect = false;
     private String input = "";
     private final DijkstraAlgorithm game;
-    private String text, option1, option2, option3;
+    private String text;
     private final Skin fontSkin;
-    private final OrthographicCamera camera;
     private final int level;
+    private CheckCodeModel model;
     private final Texture treasureTexture;
     private final Texture shadowTexture;
     private final Texture xCloseTexture;
@@ -33,9 +32,10 @@ public class CheckCode extends Group {
     public CheckCode(Label mangoCounterLabel, final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final Stage stage, final OrthographicCamera camera, final int level) {
         this.game = game;
         this.fontSkin = game.getFontSkin();
-        this.camera = camera;
         this.level = level;
         this.mangoCounterLabel = mangoCounterLabel;
+
+        model = new CheckCodeModel(game, level);
 
         // Preload the assets
         treasureTexture = game.getAssetManager().get("treasure.png", Texture.class);
@@ -55,7 +55,7 @@ public class CheckCode extends Group {
         codeTable.setSize(width, (float) (height * 0.66));
         codeTable.setPosition(x, y);
 
-        text = determineTextByLevel();
+        text = model.getText();
         final Image treasure = new Image(treasureTexture);
 
         Label codeLabel = new Label(text, fontSkin);
@@ -78,16 +78,16 @@ public class CheckCode extends Group {
         codeTable.add(codeLabel).expand().fill().center().padLeft(-150f).padTop(20f);
         codeTable.row().colspan(3);
 
-        initializeOptions();
-        CheckBox option1Button = new CheckBox(option1, fontSkin);
-        CheckBox option2Button = new CheckBox(option2, fontSkin);
-        CheckBox option3Button = new CheckBox(option3, fontSkin);
+        model.setOptionsByLevel(level);
+        CheckBox option1Button = new CheckBox(model.getOption1(), fontSkin);
+        CheckBox option2Button = new CheckBox(model.getOption2(), fontSkin);
+        CheckBox option3Button = new CheckBox(model.getOption3(), fontSkin);
 
         option1Button.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (level == 1) {
-                    correctInput();
+                    model.correctInput();
                 } else {
                     new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
@@ -98,7 +98,7 @@ public class CheckCode extends Group {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (level == 2 || level == 3) {
-                    correctInput();
+                    model.correctInput();
                 } else {
                     new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
@@ -109,7 +109,7 @@ public class CheckCode extends Group {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 if (level == 4) {
-                    correctInput();
+                    model.correctInput();
                 } else {
                     new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
@@ -136,6 +136,7 @@ public class CheckCode extends Group {
             public boolean keyTyped(InputEvent event, char key) {
                 input += key;
                 if (key == '\r' || key == '\n') {
+                    model.setInput(input);
                     checkIfLevelLost(code, stage);
                 }
                 return super.keyTyped(event, key);
@@ -143,61 +144,10 @@ public class CheckCode extends Group {
         });
     }
 
-    private void initializeOptions() {
-        switch (level) {
-            case 1:
-                option1 = "Goes in both directions";
-                option2 = "Has no destination";
-                option3 = "Has no source";
-                break;
-            case 2:
-                option1 = "Has a destination";
-                option2 = "Has a source and a destination";
-                option3 = "Has a source";
-                break;
-            case 3:
-                option1 = "A directed graph";
-                option2 = "Each edge has a cost";
-                option3 = "The graph has a cost";
-                break;
-            case 4:
-                option1 = "A weighted graph";
-                option2 = "A directed graph";
-                option3 = "A weighted and directed graph";
-                break;
-        }
-    }
-
-    private String determineTextByLevel() {
-        switch (level) {
-            case 1:
-                text = "What is an undirected graph:";
-                break;
-            case 2:
-                text = "What is a directed graph:";
-                break;
-            case 3:
-                text = "What is a weighted graph:";
-                break;
-            case 4:
-                text = "What kind of graph was represented:";
-                break;
-            case 5:
-                text = "Enter the Code (costs to each city) for the treasure:";
-                break;
-            case 6:
-            case 7:
-            case 8:
-                text = "Please enter the exact route and the costs: " + game.getCities().get(0).getShortName() + " -> " + game.getCities().get(5).getShortName() + "?\n";
-                break;
-        }
-        return text;
-    }
-
     private Image createShadowImage() {
         shadowImage = new Image(shadowTexture);
         shadowImage.setSize((float) (codeTable.getWidth() * 1.25), (float) (codeTable.getHeight() * 1.15));
-        shadowImage.setPosition(codeTable.getX() - 70, codeTable.getY() - 10);
+        shadowImage.setPosition(codeTable.getX() - 70, codeTable.getY() - game.getSpace());
         shadowImage.setName("shadowImage");
         return shadowImage;
     }
@@ -219,14 +169,7 @@ public class CheckCode extends Group {
     }
 
     private void checkIfLevelLost(String code, Stage stage) {
-        if (input.trim().equals(code.trim())) correctInput();
+        if (model.checkInputAgainstCode(code)) model.correctInput();
         else new WrongUserInput(mangoCounterLabel,game, stage, level);
-    }
-
-    private void correctInput() {
-        if (game.getMangos() < 30) game.setMangos(30);
-        game.getDropSound().play();
-        game.setScreen(new LevelWonScreen(game, level));
-        isCorrect = true;
     }
 }
