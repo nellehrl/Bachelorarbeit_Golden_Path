@@ -46,11 +46,9 @@ public class LevelWonScreen implements Screen {
         this.game = game;
         this.nextLevel = nextLevel;
         fitViewport = game.getFitViewport();
-        mainMenuScreen = new MainMenuScreen(game, nextLevel);
 
         sound = game.getAssetManager().get("ambiente.wav", Sound.class);
-        //sound.setVolume((long)(mainMenuScreen.getVolume()));
-        sound.play();
+        sound.play(game.getVolume());
 
         levelWonImage = game.getAssetManager().get("levelWon.png", Texture.class);
         bucketImage = game.getAssetManager().get("bucket.png", Texture.class);

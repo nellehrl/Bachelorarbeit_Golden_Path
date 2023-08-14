@@ -28,7 +28,6 @@ public class MainMenuScreen implements Screen {
     private FitViewport fitViewport;
     private final int row_height, col_width;
     Skin mySkin;
-    private float volume;
 
     public MainMenuScreen(final DijkstraAlgorithm game, int currentLevel) {
         this.game = game;
@@ -238,17 +237,13 @@ public class MainMenuScreen implements Screen {
         volumeSlider.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                volume = volumeSlider.getValue();
-                game.getBackGroundMusic().setVolume(volume); // Passe die Lautstärke des Sounds an
+                game.setVolume(volumeSlider.getValue());
+                game.getBackGroundMusic().setVolume(game.getVolume()); // Passe die Lautstärke des Sounds an
             }
         });
 
         stage.addActor(volumeSlider);
         stage.addActor(volumeLabel);
-    }
-
-    public float getVolume(){
-        return volume;
     }
 
     @Override

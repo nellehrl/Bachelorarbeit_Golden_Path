@@ -20,6 +20,7 @@ public class DijkstraAlgorithm extends Game {
 
     private SpriteBatch batch;
     private BitmapFont font;
+    private float volume = 1;
     private int offset, vertices, space, mangos = 30;
     private ArrayList<City> northWest = new ArrayList<>(), northMid = new ArrayList<>(), northEast = new ArrayList<>(),
             southWest = new ArrayList<>(), southMid = new ArrayList<>(), southEast = new ArrayList<>();
@@ -277,6 +278,14 @@ public class DijkstraAlgorithm extends Game {
 
     public void setMangos(int mangos) {
         this.mangos = mangos;
+    }
+
+    public float getVolume() {
+        return volume;
+    }
+
+    public void setVolume(float volume) {
+        this.volume = volume;
     }
 
     public void resetGlobalState() {

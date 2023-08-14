@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.systems.GameScreen_Level1;
+import com.mygdx.dijkstra.systems.MainMenuScreen;
 import com.mygdx.dijkstra.views.LevelLostGroup;
 
 public class WrongUserInput {
@@ -44,7 +45,8 @@ public class WrongUserInput {
     }
 
     private void provideNegativeFeedback(Stage stage) {
-        game.getBattle().play();
+        System.out.println(game.getVolume());
+        game.getBattle().play(game.getVolume());
         stage.addActor(game.getBlood());
         game.getBlood().addAction(Actions.sequence(
                 Actions.fadeOut(1f),
