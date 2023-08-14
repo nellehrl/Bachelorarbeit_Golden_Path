@@ -75,10 +75,10 @@ public class MainMenuScreen implements Screen {
     }
 
     private void setupInfoText() {
-        String text = "Hey Captain,\n\nWelcome on board - I am papou. Your help is much needed!\n\nThis crew gets lost " +
-                "on the routes and cant read cards let alone finding fast paths. Let`s get on it and find the hidden treasures." +
-                "\n\nIf you are new here start with level 1.1. If you are already familiar with Graphs you can start with " +
-                "level 1.3. If you are pro go to level 3 than we can get to the treasures even faster and I will finally get my mangooooooos.";
+        String text = "Hey Captain,\n\nWelcome on board - I am Papou. Your help is much needed! This crew gets lost on " +
+                "the routes and can't read cards, let alone find fast paths. Let's get on it and find the hidden treasures.\n" +
+                "If you are new here, start with level 1.1. If you are already familiar with Graphs, you can start with level 1.3. " +
+                "If you are a pro, go to level 3; then we can get to the treasures even faster, and I will finally get my mangooooooos.";
         infotext = new InfoTextGroup(game, text, camera);
         Button closeButton = infotext.getCloseButton();
         closeButton.addListener(new ClickListener() {

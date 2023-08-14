@@ -115,13 +115,10 @@ public class GameScreen_Level2 implements Screen {
     }
 
     public void initializeText() {
-        text = "You know who this is, Captain!\n\n" +
-                "Fantastic job so far! We updated our system. Now that you have added " +
-                "the right weight to the graph, we have an excellent overview!\n\n" +
-                "Let`s check if everything is clear - find the weights for the graph written down below.\n\n" +
-                "We must to understand how these graphs work to get ahead of the other crews. Like that, we can generate " +
-                "much more loooooooooooooooot!\n\n" +
-                "Remember to ENTER to check if you got the costs correct!";
+        text = "You know who this is, Captain!\n\nFantastic job so far - we finally updated our system. Now that you have " +
+                "added the correct costs to the connections, we have an excellent overview!\nLet`s check if everything is clear - " +
+                "find the costs for the connections written on the radar. Can you see them?\nWe must get ahead of the other crews. " +
+                "Like that, we can get much more loooooooooooooooot and mangos!\n\nP.S:Remember to ENTER to check if you got the costs correct!";
     }
 
     public void initializeDropBoxItems() {

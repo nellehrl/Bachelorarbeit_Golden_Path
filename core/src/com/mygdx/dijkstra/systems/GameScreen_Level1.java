@@ -136,17 +136,17 @@ public class GameScreen_Level1 implements Screen {
         initializeCities();
         currentConnection.add(cities.get(0));
         validConnection.add(0);
-        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight/5, "code", game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, "code", game, stage, camera, level);
     }
 
     private void initializeActorsForStage() {
         int x = 3 * offset;
         int y = (int) (camera.viewportHeight * 0.25);
-        int width = (int) ((camera.viewportWidth - 3*x) / vertices);
+        int width = (int) ((camera.viewportWidth - 3 * x) / vertices);
         int height = (int) (camera.viewportHeight / 6 - space);
         if (level == 3) y = y - triangleSize - space;
 
-        stage.addActor(new ConnectionOverviewGroup(vertices, cities, game, width , height, x, y, graph, level));
+        stage.addActor(new ConnectionOverviewGroup(vertices, cities, game, width, height, x, y, graph, level));
         stage.addActor(boatImage);
         stage.addActor(mainMenuButton);
         stage.addActor(infotext);
@@ -157,32 +157,27 @@ public class GameScreen_Level1 implements Screen {
 
         switch (level) {
             case 1:
-                textBuilder.append("Howdy Captain,\n\n");
-                textBuilder.append("Let's see what we got here….We want to visit all cities and then come back to bring");
-                textBuilder.append("all our conquests to our treasury.\n\n");
-                textBuilder.append("In the box down on the radar you can see all graph.");
-                textBuilder.append(" They go both ways. So it should be easy, right? Let's get on it.\n\n");
-                textBuilder.append("Please stay on the route cause there are");
-                textBuilder.append(" other pirates out there with canooons waiting for a fight.");
+                textBuilder.append("Howdy Captain,\n\nLet's see what we got here. On the map, you can see our target cities. " +
+                        "We need to visit all of them, then return to bring all our conquests to our treasury.\n" +
+                        "Can you see the box with all the connections down on the radar?\n" +
+                        "The connections go both ways - they are undirected. Let's visit all cities but remember to stay +" +
+                        "on the route cause there are other pirates out there with canooons waiting for a fight.");
                 break;
             case 2:
-                textBuilder.append("What`s kickin`, Captain?\n\n");
-                textBuilder.append("That was great. Those mangos are quite delicious, but we will");
-                textBuilder.append(" need more of them for me and more gold for you. Let`s keep chartering.\u2028\u2028");
-                textBuilder.append("It is windy and stormy around this time of the year. Lets use it to our advantage!\n\n");
-                textBuilder.append("You can see all graph below. Keep in mind to check the directions that are marked for ");
-                textBuilder.append("the graph.\n\n");
-                textBuilder.append("We can`t go in the other direction - the wind will hold us back! ");
-                textBuilder.append("Please remember the other pirates. I can`t see blood. I am always getting sick when I see it.");
+                textBuilder.append("What's kickin', Captain?\n\nThat was great. Those mangos are pretty delicious. " +
+                        "We will need more of them for me and more gold for you. Let's keep chartering!\n" +
+                        "It is windy and stormy around this time of the year. Let's use it to our advantage!\n" +
+                        "Can you see the connections on the radar again? Keep in mind to check the directions that are marked for each connection. " +
+                        "We can't go in the other direction - the wind will hold us back, and we will cross other pirates. " +
+                        "I really can't see blood!\n I am always getting sick when I see it.");
                 break;
             case 3:
-                textBuilder.append("Ahoy, Captain! \n\n");
-                textBuilder.append("Wow, you are fast! I don`t know how to keep up with your pace! It`s great to have ");
-                textBuilder.append("you finally on board - controlling wild crew!\n\n");
-                textBuilder.append("Our crew is developing, and we can get more strategic now. In the box below, you can see all graph. Let`s ");
-                textBuilder.append("organize the graph and put the weights on the corresponding connection. Like that, we will get a");
-                textBuilder.append(" better overview of the current situation.\n\n");
-                textBuilder.append("Just grab a weight and drop it at the right space.");
+                textBuilder.append("Ahoy, Captain! \n\n Wow, we are fast, and our mango stock is growing! It's great " +
+                        "to have you finally on board - controlling this wild crew!\nOur crew is developing with you, " +
+                        "and we can get more strategic now. In the box below, you can see all the connections again. Can you see the costs too?\n" +
+                        "We need to match the costs to the corresponding connections. Through that, we will better " +
+                        "understand the current situation and how long we need for each city. Just grab a cost and drop " +
+                        "it on the proper connection!");
                 break;
         }
 
@@ -232,35 +227,39 @@ public class GameScreen_Level1 implements Screen {
         stage.addActor(stack);
         countTotalWeights++;
     }
+
     private void renderCurrentConnections() {
         if (currentConnection.size() < 2) return;
         boolean isValidPath = validatePathConnections();
         if (isValidPath) drawConnections();
         else {
             currentConnection.remove(currentConnection.size() - 1);
-            new WrongUserInput(mangoCounterLabel,game, stage, level);
+            new WrongUserInput(mangoCounterLabel, game, stage, level);
         }
     }
+
     private void drawConnections() {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         for (LineData lineData : linesToDraw) {
-            if(level == 1) {
-                draw.drawLine(shapeRenderer,3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
+            if (level == 1) {
+                draw.drawLine(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
             } else {
-                draw.drawArrow(shapeRenderer,3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
+                draw.drawArrow(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
             }
         }
 
         shapeRenderer.end();
     }
+
     private boolean validatePathConnections() {
         for (int i = 0; i < currentConnection.size() - 3; i++) {
             if (!checkConnectionValidity(i, false)) return false;
         }
         return checkConnectionValidity(currentConnection.size() - 2, true);
     }
+
     private void renderCurrentConnectionsLevel3() {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
@@ -277,6 +276,7 @@ public class GameScreen_Level1 implements Screen {
         }
         shapeRenderer.end();
     }
+
     private boolean checkConnectionValidity(int i, boolean lastConnection) {
         // Not enough cities or no more graph to check
         if (currentConnection.size() < 2 || i >= currentConnection.size() - 1) {
@@ -333,7 +333,7 @@ public class GameScreen_Level1 implements Screen {
 
                 DragAndDrop.Payload payload = new DragAndDrop.Payload();
                 payload.setDragActor(getActor());
-                dragAndDrop.setDragActorPosition(x, y - (float) triangleSize /2 );
+                dragAndDrop.setDragActorPosition(x, y - (float) triangleSize / 2);
                 stage.addActor(getActor());
 
                 payload.setObject(stack.getName());  // Setting the name of the source actor in the payload
@@ -346,7 +346,7 @@ public class GameScreen_Level1 implements Screen {
                     game.getDropSound().play();
                 } else {
                     stack.setPosition(initialX, initialY);
-                    new WrongUserInput(mangoCounterLabel,game, stage, level);
+                    new WrongUserInput(mangoCounterLabel, game, stage, level);
                 }
             }
         };

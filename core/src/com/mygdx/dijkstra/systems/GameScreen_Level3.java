@@ -173,43 +173,39 @@ public class GameScreen_Level3 implements Screen {
         StringBuilder textBuilder = new StringBuilder();
         switch (level) {
             case 5:
-                textBuilder = new StringBuilder();
-                textBuilder.append("Servus Captain,\n\nThese damn mangooos are hard to get. :D To get them before the other crews we need to find ");
-                textBuilder.append("the shortest paths to each city from our hometown! \n\nFill out the table below, I will help you! ");
-                textBuilder.append("In the end, we will know how long it takes us to travel to each city from our treasury and the fastest path!\n");
-                textBuilder.append("I am sure you will find out how it works!\n\nWe will need to find the code to unlock this treasure I have found!\n\n");
-                textBuilder.append("\n\nCode: The code is built by the distance of the connection to the city. For INFINITY, it was a ...... 0");
-                text = textBuilder.toString();
+                textBuilder.append("Servus Captain,\n\nThese damn mangooos are hard to get. We need to find the shortest" +
+                        " paths to each city from our hometown to get them before the other crews! \nFill out the table below, " +
+                        "I will help you! Ultimately, we will know how long it takes us to travel to each city from our treasury" +
+                        " and the fastest path!\nI am sure you will find out how it works!\\n\\nWe will need to find the " +
+                        "code to unlock this treasure I have found!\nCode: The code is built by the costs of the connection " +
+                        "to the city. For INFINITY, it was a ...... 0");
                 break;
             case 6:
-                textBuilder.append("Hola Captain, \n\nYou are getting on it! We are surely becoming the pirates of the golden paths! Everyone will pay");
-                textBuilder.append(" millions to know our secret - but first: Let`s get back to work\n\n");
-                textBuilder.append("I guess you know what to do? If not, I am here to help. Cause you know - I am the endless source ");
-                textBuilder.append("of wisdom.\n And don`t forget about the code so we can get an endless amount of mangooos!\n\n");
-                textBuilder.append("Oh, and I have realized that it would be good to note down where we are currently at - the precursor you know?");
-                textBuilder.append(" Like that, it is easier for us to find the correct route afterward. Our ship will show you where we currently are.");
-                textBuilder.append("\n\nCode: Remember the code is built by the distance of the connection to the city. For INFINITY, ");
-                textBuilder.append("it was a ...... 0");
-                text = textBuilder.toString();
+                textBuilder.append("Hola, Captain,\n\nYou are getting on it! We are indeed becoming the pirates of the " +
+                        "golden paths! Everyone will pay millions to know our secret - but first: Let`s get back to work.\n " +
+                        "Do you know what to do? If not, I am here to help. Cause you know - I am the endless source of wisdom.\n" +
+                        "And remember the code so we can get endless mangooos!\nI have realized that it would be good to" +
+                        " note where we are currently at - the precursor, you know? Like that, it is easier for us to find " +
+                        "the correct route afterward. Our ship will show you where we currently are.\nCode: The code is " +
+                        "now built by the shortages of the cities we passed and the total costs of the connection. ");
                 break;
             case 7:
-                textBuilder.append("Hello and welcome on board again Captain, \n\nThere are still some routes to calculate but we ");
-                textBuilder.append("are getting better. So I am sure we will find the solution this time too!\n\n");
-                textBuilder.append("TIP: Remember that we seek for the shortest connection from our start city. We are always moving to the shortest available connection to discover new ones.");
-                textBuilder.append(" Like that, we will always find the shortest path.\n\n");
-                textBuilder.append("Code: Remember the code is built by distance of the connection to the city. For INFINITY, it was a ...... 0");
-                text = textBuilder.toString();
+                textBuilder.append("Hello and welcome on board again, Captain, \nThere are still some routes to calculate, " +
+                        "but we are getting better. So we will likely find the solution this time too!\nTIP: Remember that we " +
+                        "seek the shortest connection from our start city. We are always moving to the fastest available " +
+                        "connection to discover new ones. Like that, we will always find the shortest path.\nCode: Remember," +
+                        " the code is built by the shortages of the cities we passed and the total costs of the connection.");
                 break;
             case 8:
-                textBuilder.append("Ay Ay Captain, \n\nFinally! I think all our hard work pays off if we can open this last treasure. We can finally retire.\n");
-                textBuilder.append("\nFind the last code to unlock the treasure.\n\n");
-                textBuilder.append("TIP: Remember that we seek for the shortest connection from our start city. You can click on the ports and our ship will move there.");
-                textBuilder.append(" Like that, you always know where we currently are!\n\n");
-                textBuilder.append("Code: Remember the code is built by the distance of the connection to the city. For INFINITY, it was a ...... 0");
-                text = textBuilder.toString();
+                textBuilder.append("Ay Ay Captain,\n" +
+                        "Finally! All our hard work pays off if we can open this last treasure. We can finally retire. " +
+                        "Find the last code to unlock the treasure.\nTIP: Remember that we seek the shortest connection " +
+                        "from our start city. You can click on the ports, and our ship will move there. Like that, you " +
+                        "always know where we currently are!\nCode: Remember, the code is built by the shortages of the" +
+                        " cities we passed and the total costs of the connection.");
                 break;
         }
-
+        text = textBuilder.toString();
     }
 
     private String getTopLabelText(int col) {
