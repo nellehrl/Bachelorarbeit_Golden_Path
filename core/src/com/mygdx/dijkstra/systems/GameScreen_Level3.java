@@ -35,7 +35,7 @@ public class GameScreen_Level3 implements Screen {
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private List<LineData> linesToDraw;
     private FitViewport fitViewport;
-    private Image boatImage, parrotImage;
+    private Image boatImage, parrotImage, infoImage;
     private OrthographicCamera camera;
     private String code = "";
     private Button mainMenuButton, doneButton;
@@ -136,6 +136,7 @@ public class GameScreen_Level3 implements Screen {
         boatImage = background.findActor("boatImage");
         infotext = background.findActor("infotext");
         parrotImage = background.findActor("parrotImage");
+        infoImage = background.findActor("infoImage");
         Table mangoCounter = background.findActor("mangoCounter");
         mangoCounterLabel = (Label) mangoCounter.getChild(1);
 
@@ -176,7 +177,7 @@ public class GameScreen_Level3 implements Screen {
                 textBuilder.append("Servus Captain,\n\nThese damn mangooos are hard to get. We need to find the shortest" +
                         " paths to each city from our hometown to get them before the other crews! \nFill out the table below, " +
                         "I will help you! Ultimately, we will know how long it takes us to travel to each city from our treasury" +
-                        " and the fastest path!\nI am sure you will find out how it works!\\n\\nWe will need to find the " +
+                        " and the fastest path!\nI am sure you will find out how it works!\n\nWe will need to find the " +
                         "code to unlock this treasure I have found!\nCode: The code is built by the costs of the connection " +
                         "to the city. For INFINITY, it was a ...... 0");
                 break;
@@ -387,58 +388,44 @@ public class GameScreen_Level3 implements Screen {
             else {
                 userInput = userInput.replaceAll("[^0-9]", "");
                 finalCorrectValue = finalCorrectValue.replaceAll("[^0-9]", "");
-                boolean isShortestPath = Integer.valueOf(userInput) > Integer.valueOf(finalCorrectValue);
+                boolean isShortestPath = false;
+                if(!userInput.equals(""))isShortestPath = Integer.valueOf(userInput) > Integer.valueOf(finalCorrectValue);
                 switch (level) {
                     case 5:
                         if (isShortestPath) hint = "Are you sure you chose the shortest path?";
                         else hint = "Are you sure that you added the costs of the routes correctly";
-                        stage.addActor(new HintGroup(hint, game));
-                        parrotImage.addListener(new ClickListener() {
-                            @Override
-                            public void clicked(InputEvent event, float x, float y) {
-                                stage.addActor(new HintGroup(hint, game));
-                            }
-                        });
                         break;
                     case 6:
                         if (isShortestPath) hint = "Are you sure you chose the shortest path?";
                         else hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
-                        stage.addActor(new HintGroup(hint, game));
-                        parrotImage.addListener(new ClickListener() {
-                            @Override
-                            public void clicked(InputEvent event, float x, float y) {
-                                stage.addActor(new HintGroup(hint, game));
-                            }
-                        });
                         break;
                     case 7:
                         if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                        else if (userInput.substring(0,2) != finalCorrectValue.substring(0,2)) {
-                            System.out.println(userInput.substring(0,2));
+                        else if(userInput.length() >= 2 && userInput.substring(0,2) != finalCorrectValue.substring(0,2)) {
                             hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
                         }
                         else hint = "Is there a route to this city?\nIf there is no route the correct Value is Infinity.";
-                        stage.addActor(new HintGroup(hint, game));
-                        parrotImage.addListener(new ClickListener() {
-                            @Override
-                            public void clicked(InputEvent event, float x, float y) {
-                                stage.addActor(new HintGroup(hint, game));
-                            }
-                        });
                         break;
                     default:
                         hint = "To go to our treasury (starting point) we need 0 costs.\nDid you build the value correctly?\n(Shortage of precursor - Added costs)";
                         stage.addActor(new HintGroup(hint, game));
-                        parrotImage.addListener(new ClickListener() {
-                            @Override
-                            public void clicked(InputEvent event, float x, float y) {
-                                stage.addActor(new HintGroup(hint, game));
-                            }
-                        });
                         break;
                 }
+                stage.addActor(new HintGroup(hint, game));
+                addHintListener(parrotImage);
+                addHintListener(infoImage);
             }
         }
+    }
+
+    private void addHintListener(Image image){
+        image.clearListeners();
+        image.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                stage.addActor(new HintGroup(hint, game));
+            }
+        });
     }
 
     private void handleCorrectInput(TextField textField, City sourceCity, boolean neighbor, Vector2 start, Vector2 end, int i) {

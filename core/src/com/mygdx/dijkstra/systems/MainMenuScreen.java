@@ -173,6 +173,8 @@ public class MainMenuScreen implements Screen {
         final TextButton button = new TextButton(name, game.getMySkin(), "default");
         button.setSize(col_width, row_height);
         button.setPosition(x, y);
+        setImageListener(level, x, y, button, screen);
+
         LevelDescriptionHoverActor card = new LevelDescriptionHoverActor(game, button.getX(), button.getY() + button.getHeight(), 200, level);
         final Table cardTableFinal = card.getTable();
         button.addListener(new ClickListener() {
@@ -194,6 +196,20 @@ public class MainMenuScreen implements Screen {
         });
 
         return button;
+    }
+
+    public void setImageListener(int level, int x, int y, final TextButton button, final Screen screen){
+        Image transparent = new Image(game.getAssetManager().get("transparent.png", Texture.class));
+        transparent.setSize(100, 100);
+        if(level == 1) transparent.setPosition(x - transparent.getWidth()/2, y);
+        else transparent.setPosition(x, y);
+        transparent.addListener(new ClickListener() {
+            @Override
+            public void clicked(InputEvent event, float x, float y) {
+                moveBoatAndSetScreen(button, screen);
+            }
+        });
+        stage.addActor(transparent);
     }
 
     private void moveBoatAndSetScreen(TextButton button, final Screen screen) {

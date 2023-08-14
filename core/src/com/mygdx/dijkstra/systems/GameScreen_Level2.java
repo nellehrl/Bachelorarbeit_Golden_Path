@@ -105,7 +105,7 @@ public class GameScreen_Level2 implements Screen {
 
     private void initializeGameComponents() {
         draw = new DrawLineOrArrow();
-        stage.addActor(new MapGroup_Level2_3(game, 0, graph, boatImage, linesToDraw));
+        stage.addActor(new MapGroup_Level2_3(game,0, graph, boatImage, linesToDraw));
         checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), camera.viewportHeight/5, "code", game, stage, camera, 4);
 
         // Add remaining actors

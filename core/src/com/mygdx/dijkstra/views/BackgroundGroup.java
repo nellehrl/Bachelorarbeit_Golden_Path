@@ -42,6 +42,10 @@ public class BackgroundGroup extends Group {
         addActor(parrotImage);
         assetManager = game.getAssetManager();
         infoImage = game.getInfoImage();
+        infoImage.setSize((float) (camera.viewportWidth * 0.025), (float) (camera.viewportWidth * 0.025));
+        infoImage.setPosition(parrotImage.getX() - space, parrotImage.getY() + parrotImage.getHeight());
+        infoImage.setName("infoImage");
+        addActor(infoImage);
     }
 
     private void initializeBackgroundUIElements() {
@@ -108,6 +112,18 @@ public class BackgroundGroup extends Group {
                 infoText.remove();
                 infoImage.setSize((float) (camera.viewportWidth * 0.025), (float) (camera.viewportWidth * 0.025));
                 infoImage.setPosition(parrotImage.getX() - space, parrotImage.getY() + parrotImage.getHeight());
+                infoImage.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        stage.addActor(infoText);
+                    }
+                });
+                parrotImage.addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        stage.addActor(infoText);
+                    }
+                });
                 stage.addActor(infoImage);
                 stage.addActor(parrotImage);
             }
