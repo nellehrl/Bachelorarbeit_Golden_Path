@@ -16,7 +16,7 @@ public class ConnectionAreaImage extends Image {
         Vector2 point2 = new Vector2(destCity.getX(), destCity.getY());
 
         float width = point1.dst(point2);
-        float height = 20f;
+        float height = 40f;
         double angle = Math.toDegrees(Math.atan2(destCity.getY() - sourceCity.getY(), (destCity.getX()) - sourceCity.getX()));
 
         calculateNewCoordinates(angle, sourceCity, height);

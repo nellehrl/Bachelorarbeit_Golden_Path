@@ -31,7 +31,7 @@ public class GameScreen_Level1 implements Screen {
     private final int level;
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private Image boatImage;
-    private Image connectionArea;
+    private Image[] conenctionAreas;
     private Table portTable;
     private Group infotext;
     private OrthographicCamera camera;
@@ -186,6 +186,7 @@ public class GameScreen_Level1 implements Screen {
 
     private void initializeCities() {
         int index = 0;
+        conenctionAreas = new Image[graph.getNumOfEdges()];
         for (int i = 0; i < vertices; i++) {
             final City currentCity = cities.get(i);
             portTable = new Ports(currentCity, game);
@@ -202,7 +203,7 @@ public class GameScreen_Level1 implements Screen {
                 for (int j = 0; j < neighbors.size(); j++) {
                     City sourceCity = cities.get(i);
                     City destCity = cities.get(neighbors.get(j).getDestination());
-                    initializeConnectionArea(sourceCity, destCity, neighbors.get(j).getWeight());
+                    initializeConnectionArea(sourceCity, destCity, neighbors.get(j).getWeight(), index);
                     initializDraggableWeightStack(neighbors, j, index);
                     index++;
                 }
@@ -212,10 +213,10 @@ public class GameScreen_Level1 implements Screen {
         }
     }
 
-    private void initializeConnectionArea(City sourceCity, City destCity, int weight) {
-        connectionArea = new ConnectionAreaImage(sourceCity, destCity);
+    private void initializeConnectionArea(City sourceCity, City destCity, int weight, int i) {
+        Image connectionArea = new ConnectionAreaImage(sourceCity, destCity);
         connectionArea.setName(" " + weight);
-        stage.addActor(connectionArea);
+        conenctionAreas[i] = connectionArea;
     }
 
     private void initializDraggableWeightStack(java.util.List<Edge> neighbors, int j, int index) {
@@ -315,25 +316,26 @@ public class GameScreen_Level1 implements Screen {
     }
 
     public void addDragAndDrop(Stack stack, int index) {
-        DragAndDrop.Source source = createSource(stack);
-        DragAndDrop.Target target = createTarget(connectionArea, index);
+        DragAndDrop.Source source = createSource(stack, index);
         dragAndDrop.addSource(source);
-        dragAndDrop.addTarget(target);
     }
 
-    private DragAndDrop.Source createSource(final Stack stack) {
+    private DragAndDrop.Source createSource(final Stack stack, final int index) {
         return new DragAndDrop.Source(stack) {
             private float initialX;
             private float initialY;
 
             @Override
             public DragAndDrop.Payload dragStart(InputEvent event, float x, float y, int pointer) {
+                DragAndDrop.Target target = createTarget(conenctionAreas[index], index);
+                dragAndDrop.addTarget(target);
+                stage.addActor(conenctionAreas[index]);
                 initialX = stack.getX();
                 initialY = stack.getY();
 
                 DragAndDrop.Payload payload = new DragAndDrop.Payload();
                 payload.setDragActor(getActor());
-                dragAndDrop.setDragActorPosition(x, y - (float) triangleSize / 2);
+                dragAndDrop.setDragActorPosition(x, y - triangleSize);
                 stage.addActor(getActor());
 
                 payload.setObject(stack.getName());  // Setting the name of the source actor in the payload
@@ -364,7 +366,7 @@ public class GameScreen_Level1 implements Screen {
             @Override
             public void drop(DragAndDrop.Source source, DragAndDrop.Payload payload, float x, float y, int pointer) {
 
-                payload.getDragActor().setUserObject(connectionArea);
+                payload.getDragActor().setUserObject(conenctionAreas[index]);
                 payload.getDragActor().toFront();
 
                 added[index] = true; // Mark the edge as added

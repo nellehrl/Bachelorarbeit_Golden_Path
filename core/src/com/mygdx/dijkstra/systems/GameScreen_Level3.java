@@ -184,7 +184,7 @@ public class GameScreen_Level3 implements Screen {
                 textBuilder.append("Hola, Captain,\n\nYou are getting on it! We are indeed becoming the pirates of the " +
                         "golden paths! Everyone will pay millions to know our secret - but first: Let`s get back to work.\n " +
                         "Do you know what to do? If not, I am here to help. Cause you know - I am the endless source of wisdom.\n" +
-                        "And remember the code so we can get endless mangooos!\nI have realized that it would be good to" +
+                        "And remember the code so we can get endless mangooos!\nIt would be good to" +
                         " note where we are currently at - the precursor, you know? Like that, it is easier for us to find " +
                         "the correct route afterward. Our ship will show you where we currently are.\nCode: The code is " +
                         "now built by the shortages of the cities we passed and the total costs of the connection. ");
