@@ -346,7 +346,9 @@ public class GameScreen_Level1 implements Screen {
             public void dragStop(InputEvent event, float x, float y, int pointer, DragAndDrop.Payload payload, DragAndDrop.Target target) {
                 if (target != null && target.getActor().getName().equals(payload.getDragActor().getName())) {
                     game.getDropSound().play();
+                    conenctionAreas[index].remove();
                 } else {
+                    conenctionAreas[index].remove();
                     stack.setPosition(initialX, initialY);
                     new WrongUserInput(mangoCounterLabel, game, stage, level);
                 }
