@@ -101,42 +101,42 @@ public class MainMenuScreen implements Screen {
         double  initialWidth = 1200;
         double initialHeight = 720;
 
-        TextButton level11Button = generateButton("1.1", (int) (camera.viewportWidth * (310/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (55/initialHeight) - row_height / 2), new GameScreen_Level1(game, 1), 1);
+        TextButton level11Button = generateButton("1", (int) (camera.viewportWidth * (310/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (55/initialHeight) - row_height / 2), new GameScreen_Level1(game, 1), 1);
         stage.addActor(level11Button);
         level11Button.setName("1");
         levelButtons.add(level11Button);
 
-        TextButton level12Button = generateButton("1.2", (int) (camera.viewportWidth * (300/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (225/initialHeight) - row_height / 2), new GameScreen_Level1(game, 2), 2);
+        TextButton level12Button = generateButton("2", (int) (camera.viewportWidth * (300/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (225/initialHeight) - row_height / 2), new GameScreen_Level1(game, 2), 2);
         stage.addActor(level12Button);
         level12Button.setName("2");
         levelButtons.add(level12Button);
 
-        TextButton level13Button = generateButton("1.3", (int) (camera.viewportWidth * (327/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (400/initialHeight) - row_height / 2), new GameScreen_Level1(game, 3), 3);
+        TextButton level13Button = generateButton("3", (int) (camera.viewportWidth * (327/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (400/initialHeight) - row_height / 2), new GameScreen_Level1(game, 3), 3);
         stage.addActor(level13Button);
         level13Button.setName("3");
         levelButtons.add(level13Button);
 
-        TextButton level21Button = generateButton("2.0", (int) (camera.viewportWidth * (540/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (380/initialHeight) - row_height / 2), new GameScreen_Level2(game), 4);
+        TextButton level21Button = generateButton("4", (int) (camera.viewportWidth * (540/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (380/initialHeight) - row_height / 2), new GameScreen_Level2(game), 4);
         stage.addActor(level21Button);
         level21Button.setName("4");
         levelButtons.add(level21Button);
 
-        TextButton level3Button = generateButton("3.1", (int) (camera.viewportWidth * (625/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (210/initialHeight) - row_height / 2), new GameScreen_Level3(game, 5), 5);
+        TextButton level3Button = generateButton("5", (int) (camera.viewportWidth * (625/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (210/initialHeight) - row_height / 2), new GameScreen_Level3(game, 5), 5);
         stage.addActor(level3Button);
         level3Button.setName("5");
         levelButtons.add(level3Button);
 
-        TextButton level32Button = generateButton("3.2", (int) (camera.viewportWidth * (850/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (160/initialHeight) - row_height / 2), new GameScreen_Level3(game, 6), 6);
+        TextButton level32Button = generateButton("6", (int) (camera.viewportWidth * (850/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (160/initialHeight) - row_height / 2), new GameScreen_Level3(game, 6), 6);
         stage.addActor(level32Button);
         level32Button.setName("6");
         levelButtons.add(level32Button);
 
-        TextButton level33Button = generateButton("3.3", (int) (camera.viewportWidth * (900/ initialWidth) - col_width / 2), (int) (camera.viewportHeight * (300/initialHeight) - row_height / 2), new GameScreen_Level3(game, 7), 7);
+        TextButton level33Button = generateButton("7", (int) (camera.viewportWidth * (900/ initialWidth) - col_width / 2), (int) (camera.viewportHeight * (300/initialHeight) - row_height / 2), new GameScreen_Level3(game, 7), 7);
         stage.addActor(level33Button);
         level33Button.setName("7");
         levelButtons.add(level33Button);
 
-        TextButton level34Button = generateButton("3.4", (int) (camera.viewportWidth * (800/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (440/initialHeight) - row_height / 2), new GameScreen_Level3(game, 8), 8);
+        TextButton level34Button = generateButton("8", (int) (camera.viewportWidth * (800/initialWidth) - col_width / 2), (int) (camera.viewportHeight * (440/initialHeight) - row_height / 2), new GameScreen_Level3(game, 8), 8);
         stage.addActor(level34Button);
         level34Button.setName("8");
         levelButtons.add(level34Button);

@@ -11,6 +11,7 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
@@ -89,7 +90,7 @@ public class GameScreen_Level2 implements Screen {
         batch = game.getBatch();
         fontSkin = game.getFontSkin();
         currentConnection.add(cities.get(0));
-        graph = new Graph(game, vertices, 1);
+        graph = new Graph(vertices);
     }
 
     private void initializeUIElements() {
@@ -106,7 +107,7 @@ public class GameScreen_Level2 implements Screen {
     private void initializeGameComponents() {
         draw = new DrawLineOrArrow();
         stage.addActor(new MapGroup_Level2_3(game,0, graph, boatImage, linesToDraw));
-        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), camera.viewportHeight/5, "code", game, stage, camera, 4);
+        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), camera.viewportHeight/5, "code", game, stage, 4);
 
         // Add remaining actors
         stage.addActor(boatImage);
@@ -118,31 +119,31 @@ public class GameScreen_Level2 implements Screen {
         text = "You know who this is, Captain!\n\nFantastic job so far - we finally updated our system. Now that you have " +
                 "added the correct costs to the connections, we have an excellent overview!\nLet`s check if everything is clear - " +
                 "find the costs for the connections written on the radar. Can you see them?\nWe must get ahead of the other crews. " +
-                "Like that, we can get much more loooooooooooooooot and mangos!\n\nP.S:Remember to ENTER to check if you got the costs correct!";
+                "Like that, we can get much more loooooooooooooooot and mangos!\n\nP.S:Click in a text field to start and remember to ENTER to check if you got the costs correct!";
     }
 
     public void initializeDropBoxItems() {
         final int[] numOfEdges = {0};
         int count = 0;
         for (int i = 0; i < vertices; i++) {
-            //init j for positioning items correctly
+
             int j = 0;
             java.util.List<Edge> neighbors = graph.getNeighbors(i);
             City sourceCity = cities.get(i);
-            //init table to fill
+
             if(neighbors.size() != 0) {
                 for (Edge neighbor : neighbors) {
-                    //define destination City and connection to color
+
                     City destCity = cities.get(neighbor.getDestination());
                     final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
                     final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
-                    //init label
+
                     String labelText = sourceCity.getName() + " - " + destCity.getName();
                     String fieldText = "Costs: ";
-                    //init table
+
                     Table infoTable = createInfoTable(labelText, count, j);
                     TextField textField = createTextField(fieldText, start, end, neighbor, numOfEdges);
-                    //add table to stage
+
                     infoTable.add(textField);
                     infoTable.setBackground(fontSkin.getDrawable("color"));
                     stage.addActor(infoTable);
@@ -155,7 +156,7 @@ public class GameScreen_Level2 implements Screen {
 
     private Table createInfoTable(String labelText, int i, int j) {
         Table infoTable = new Table(fontSkin);
-        infoTable.setSize((camera.viewportWidth) / (vertices), (camera.viewportHeight / 3) / (vertices - 1));
+        infoTable.setSize((camera.viewportWidth) / (vertices+1), (camera.viewportHeight / 3) / (vertices - 1));
         infoTable.setPosition(2 * offset + infoTable.getWidth() * i + space * (i + 1), (float) ((camera.viewportHeight * 0.25) - offset - (infoTable.getHeight() + space) * j));
 
         Label codeLabel = new Label(labelText, fontSkin);
@@ -171,11 +172,39 @@ public class GameScreen_Level2 implements Screen {
         final TextField textField = new TextField(fieldText, fontSkin);
         textField.setColor(Color.BLACK);
         textField.setAlignment(left);
+
+        final Image connectionArea = new ConnectionAreaImage(start, end);
+        ConnectionHoverActor card = new ConnectionHoverActor(game, (start.x + end.x) / 2, (end.y + start.y) / 2,
+                150, 60, game.getCities().get(neighbor.getSource()).getName(), game.getCities().get(neighbor.getDestination()).getName(), neighbor.getWeight());
+        final Table cardTableFinal = card.getTable();
+        connectionArea.addListener(new InputListener() {
+            @Override
+            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                stage.addActor(cardTableFinal);
+            }
+
+            @Override
+            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                cardTableFinal.remove();
+            }
+        });
+        textField.addListener(new FocusListener() {
+            @Override
+            public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                if (!focused) {  // If the focus is no longer on the textField
+                    connectionArea.remove();
+                    textField.setColor(Color.DARK_GRAY);
+                    linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
+                }
+            }
+        });
+
         textField.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
                 //set connection red as visualization if clicked
                 textField.setColor(Color.RED);
+                stage.addActor(connectionArea);
                 linesToDraw.add(new LineData(start, end, Color.RED));
                 return true;
             }
@@ -198,6 +227,7 @@ public class GameScreen_Level2 implements Screen {
                         for (EventListener listener : textField.getListeners()) {
                             textField.removeListener(listener);
                         }
+                        connectionArea.remove();
                     } else {
                         new WrongUserInput(mangoCounterLabel,game, stage, 4);
                     }

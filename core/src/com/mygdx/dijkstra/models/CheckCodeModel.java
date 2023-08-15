@@ -52,12 +52,12 @@ public class CheckCodeModel {
                 this.text = "What kind of graph was represented:";
                 break;
             case 5:
-                this.text = "Enter the Code (costs to each city) for the treasure:";
+                this.text = "Enter the Code (final costs to each city from " + game.getCities().get(0) +"):";
                 break;
             case 6:
             case 7:
             case 8:
-                this.text = "Please enter the exact route and the costs: " + game.getCities().get(0).getShortName() + " -> " + game.getCities().get(5).getShortName() + "?\n";
+                this.text = "Please enter the exact route and the final costs: " + game.getCities().get(0).getShortName() + " -> " + game.getCities().get(5).getShortName() + "?\n";
                 break;
             default:
                 this.text = "";

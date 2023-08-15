@@ -107,10 +107,10 @@ public class GameScreen_Level1 implements Screen {
         switch (level) {
             case 1:
             case 2:
-                graph = new Graph(game, vertices, 2);
+                graph = new Graph(vertices);
                 break;
             case 3:
-                graph = new Graph(game, vertices, 1);
+                graph = new Graph(vertices);
                 dragAndDrop = new DragAndDrop();
                 break;
         }
@@ -136,7 +136,7 @@ public class GameScreen_Level1 implements Screen {
         initializeCities();
         currentConnection.add(cities.get(0));
         validConnection.add(0);
-        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, "code", game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, "code", game, stage, level);
     }
 
     private void initializeActorsForStage() {
@@ -203,7 +203,9 @@ public class GameScreen_Level1 implements Screen {
                 for (int j = 0; j < neighbors.size(); j++) {
                     City sourceCity = cities.get(i);
                     City destCity = cities.get(neighbors.get(j).getDestination());
-                    initializeConnectionArea(sourceCity, destCity, neighbors.get(j).getWeight(), index);
+
+
+                    initializeConnectionArea(new Vector2(sourceCity.getX(), sourceCity.getY()), new Vector2(destCity.getX(), destCity.getY()), neighbors.get(j).getWeight(), index);
                     initializDraggableWeightStack(neighbors, j, index);
                     index++;
                 }
@@ -213,7 +215,7 @@ public class GameScreen_Level1 implements Screen {
         }
     }
 
-    private void initializeConnectionArea(City sourceCity, City destCity, int weight, int i) {
+    private void initializeConnectionArea(Vector2 sourceCity, Vector2 destCity, int weight, int i) {
         Image connectionArea = new ConnectionAreaImage(sourceCity, destCity);
         connectionArea.setName(" " + weight);
         conenctionAreas[i] = connectionArea;
@@ -344,14 +346,12 @@ public class GameScreen_Level1 implements Screen {
 
             @Override
             public void dragStop(InputEvent event, float x, float y, int pointer, DragAndDrop.Payload payload, DragAndDrop.Target target) {
-                if (target != null && target.getActor().getName().equals(payload.getDragActor().getName())) {
-                    game.getDropSound().play();
-                    conenctionAreas[index].remove();
-                } else {
-                    conenctionAreas[index].remove();
+                if (target != null && target.getActor().getName().equals(payload.getDragActor().getName())) game.getDropSound().play();
+                else {
                     stack.setPosition(initialX, initialY);
                     new WrongUserInput(mangoCounterLabel, game, stage, level);
                 }
+                conenctionAreas[index].remove();
             }
         };
     }

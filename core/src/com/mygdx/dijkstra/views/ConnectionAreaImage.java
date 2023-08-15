@@ -9,15 +9,15 @@ import com.mygdx.dijkstra.models.City;
 public class ConnectionAreaImage extends Image {
     double newX, newY;
 
-    public ConnectionAreaImage(City sourceCity, City destCity) {
+    public ConnectionAreaImage(Vector2 sourceCity, Vector2 destCity) {
         super(new Texture(Gdx.files.internal("transparent.png")));
 
-        Vector2 point1 = new Vector2(sourceCity.getX(), sourceCity.getY());
-        Vector2 point2 = new Vector2(destCity.getX(), destCity.getY());
+        Vector2 point1 = new Vector2(sourceCity.x, sourceCity.y);
+        Vector2 point2 = new Vector2(destCity.x, destCity.y);
 
         float width = point1.dst(point2);
         float height = 40f;
-        double angle = Math.toDegrees(Math.atan2(destCity.getY() - sourceCity.getY(), (destCity.getX()) - sourceCity.getX()));
+        double angle = Math.toDegrees(Math.atan2(destCity.y - sourceCity.y, (destCity.x) - sourceCity.x));
 
         calculateNewCoordinates(angle, sourceCity, height);
 
@@ -26,14 +26,14 @@ public class ConnectionAreaImage extends Image {
         this.setPosition((float) newX, (float) newY);
     }
 
-    public void calculateNewCoordinates(double angle, City sourceCity, float height) {
+    public void calculateNewCoordinates(double angle, Vector2 sourceCity, float height) {
         double rotatedAngle = angle - 90; // Rotate the angle 90 degrees
 
         double rotatedAngleRadians = Math.toRadians(rotatedAngle);
         double rotatedX = Math.cos(rotatedAngleRadians);
         double rotatedY = Math.sin(rotatedAngleRadians);
 
-        newX = sourceCity.getX() + rotatedX * height / 2;
-        newY = sourceCity.getY() + rotatedY * height / 2;
+        newX = sourceCity.x + rotatedX * height / 2;
+        newY = sourceCity.y + rotatedY * height / 2;
     }
 }

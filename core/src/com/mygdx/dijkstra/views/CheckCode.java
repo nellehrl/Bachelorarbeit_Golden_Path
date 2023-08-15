@@ -29,7 +29,7 @@ public class CheckCode extends Group {
     private Image shadowImage;
     private final Label mangoCounterLabel;
 
-    public CheckCode(Label mangoCounterLabel, final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final Stage stage, final OrthographicCamera camera, final int level) {
+    public CheckCode(Label mangoCounterLabel, final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final Stage stage, final int level) {
         this.game = game;
         this.fontSkin = game.getFontSkin();
         this.level = level;
@@ -79,9 +79,9 @@ public class CheckCode extends Group {
         codeTable.row().colspan(3);
 
         model.setOptionsByLevel(level);
-        CheckBox option1Button = new CheckBox(model.getOption1(), fontSkin);
-        CheckBox option2Button = new CheckBox(model.getOption2(), fontSkin);
-        CheckBox option3Button = new CheckBox(model.getOption3(), fontSkin);
+        final CheckBox option1Button = new CheckBox(model.getOption1(), fontSkin);
+        final CheckBox option2Button = new CheckBox(model.getOption2(), fontSkin);
+        final CheckBox option3Button = new CheckBox(model.getOption3(), fontSkin);
 
         option1Button.addListener(new ClickListener() {
             @Override
@@ -89,6 +89,7 @@ public class CheckCode extends Group {
                 if (level == 1) {
                     model.correctInput();
                 } else {
+                    option1Button.setChecked(false);
                     new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
@@ -100,6 +101,7 @@ public class CheckCode extends Group {
                 if (level == 2 || level == 3) {
                     model.correctInput();
                 } else {
+                    option2Button.setChecked(false);
                     new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
@@ -111,6 +113,7 @@ public class CheckCode extends Group {
                 if (level == 4) {
                     model.correctInput();
                 } else {
+                    option3Button.setChecked(false);
                     new WrongUserInput(mangoCounterLabel,game, stage, level);
                 }
             }
@@ -137,7 +140,7 @@ public class CheckCode extends Group {
                 input += key;
                 if (key == '\r' || key == '\n') {
                     model.setInput(input);
-                    checkIfLevelLost(code, stage);
+                    checkIfLevelLost(code, stage, codeInput);
                 }
                 return super.keyTyped(event, key);
             }
@@ -168,8 +171,11 @@ public class CheckCode extends Group {
         addActor(xClose);
     }
 
-    private void checkIfLevelLost(String code, Stage stage) {
+    private void checkIfLevelLost(String code, Stage stage, TextField textField) {
         if (model.checkInputAgainstCode(code)) model.correctInput();
-        else new WrongUserInput(mangoCounterLabel,game, stage, level);
+        else{
+            textField.setText("");
+            new WrongUserInput(mangoCounterLabel,game, stage, level);
+        }
     }
 }

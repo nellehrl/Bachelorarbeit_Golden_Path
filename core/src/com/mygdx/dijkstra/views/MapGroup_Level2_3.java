@@ -45,30 +45,12 @@ public class MapGroup_Level2_3 extends Group {
             java.util.List<Edge> neighbors = graph.getNeighbors(i);
             for (Edge neighbor : neighbors) {
                 int destination = neighbor.getDestination();
-                int weight = neighbor.getWeight();
                 City destCity = game.getCities().get(destination);
 
                 Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
                 Vector2 end = new Vector2(destCity.getX(), destCity.getY());
-                Image connectionArea = new ConnectionAreaImage(sourceCity, destCity);
 
-                ConnectionHoverActor card = new ConnectionHoverActor(game, (float) (destCity.getX() + sourceCity.getX()) / 2,
-                        (float) (destCity.getY() + sourceCity.getY()) / 2, 150, 60, sourceCity.getName(), destCity.getName(), weight);
-                final Table cardTableFinal = card.getTable();
-
-                connectionArea.addListener(new InputListener() {
-                    @Override
-                    public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                        addActor(cardTableFinal);
-                    }
-
-                    @Override
-                    public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                        cardTableFinal.remove();
-                    }
-                });
                 linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
-                addActor(connectionArea);
             }
         }
     }

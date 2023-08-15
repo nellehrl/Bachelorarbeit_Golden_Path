@@ -96,7 +96,7 @@ public class GameScreen_Level3 implements Screen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (LineData lineData : linesToDraw) {
-            draw.drawArrow(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
+            draw.drawLine(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
         }
         shapeRenderer.end();
 
@@ -117,7 +117,7 @@ public class GameScreen_Level3 implements Screen {
         batch = game.getBatch();
         fontSkin = game.getFontSkin();
 
-        graph = new Graph(game, vertices, 1);
+        graph = new Graph(vertices);
         GraphAlgorithms dijkstra = new GraphAlgorithms(graph);
         distances = dijkstra.getDistances();
         iterations = dijkstra.getIterations();
@@ -158,7 +158,7 @@ public class GameScreen_Level3 implements Screen {
 
     private void initializeCodeCheck() {
         buildCode();
-        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, camera, level);
+        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, level);
         doneButton = new TextButton("Done", game.getMySkin(), "default");
         doneButton.setSize(4 * offset, (float) (1.5 * offset));
         doneButton.setPosition(offset, camera.viewportHeight - (3 * offset) - mainMenuButton.getHeight());
