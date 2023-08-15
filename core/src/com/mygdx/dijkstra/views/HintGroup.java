@@ -43,7 +43,7 @@ public class HintGroup extends Group {
         Label textBox = new Label(hintText, game.getFontSkin());
         textBox.setPosition(game.getParrotImage().getX() - textBoxTable.getWidth(),
                 game.getParrotImage().getY() + game.getParrotImage().getHeight(), left);
-        textBox.setFontScale(0.7f);
+        textBox.setFontScale(0.8f);
         textBox.setAlignment(left);
         textBox.setWrap(true);
         textBox.setWidth(game.getCamera().viewportWidth / 4);

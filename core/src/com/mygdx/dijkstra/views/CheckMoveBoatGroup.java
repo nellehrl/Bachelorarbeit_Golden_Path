@@ -49,7 +49,6 @@ public class CheckMoveBoatGroup extends Group {
         xCloseTexture = game.getAssetManager().get("xClose.png", Texture.class);
 
         initializeCodeTable(x, y, width, height, stage);
-        xCloseImage();
 
         final Image shadowImage = createShadowImage();
         addActor(shadowImage);
@@ -58,7 +57,7 @@ public class CheckMoveBoatGroup extends Group {
 
     private void initializeCodeTable(final float x, final float y, final float width, final float height, final Stage stage) {
 
-        String text = "Which city should we visit next?\nRemember: We always want to visit the city with the current lowest costs!";
+        String text = "Which is the city with the current lowest costs?";
 
         codeTable = new Table(fontSkin);
         codeTable.setSize(width, height);
@@ -79,11 +78,11 @@ public class CheckMoveBoatGroup extends Group {
 
     private void handleLevel3(Label codeLabel, float width, float height, final Stage stage) {
         // Add an input field to the codeTable
-        codeTable.add(codeLabel).expand().fill().center().padTop(-20f).padLeft(game.getSpace()).padRight(game.getSpace());
+        codeTable.add(codeLabel).expand().fill().center().padLeft(game.getSpace()).padRight(game.getSpace());
         codeTable.row().colspan(3);
         final TextField codeInput = new TextField("", fontSkin);
         codeInput.setMessageText("Shortage of city");
-        codeTable.add(codeInput).width(width/2).height(height/6).center().padTop(-50f);
+        codeTable.add(codeInput).width(width/2).height(height/6).center().padBottom(game.getSpace());
         codeInput.addListener(new InputListener() {
             @Override
             public boolean keyTyped(InputEvent event, char key) {
@@ -103,22 +102,6 @@ public class CheckMoveBoatGroup extends Group {
         shadowImage.setPosition(codeTable.getX(), codeTable.getY() - game.getSpace());
         shadowImage.setName("shadowImage");
         return shadowImage;
-    }
-
-    private void xCloseImage() {
-        final Image xClose = new Image(xCloseTexture);
-        xClose.setSize(20, 20);
-        xClose.setPosition(codeTable.getX() + xClose.getWidth(),
-                codeTable.getY() + codeTable.getHeight() - xClose.getHeight() - game.getSpace());
-        xClose.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                removeActor(codeTable);
-                removeActor(xClose);
-                removeActor(shadowImage);
-            }
-        });
-        addActor(xClose);
     }
 
     private void checkIfLevelLost(String input, Stage stage, String correctAnswer,TextField textField) {

@@ -150,7 +150,12 @@ public class GameScreen_Level3 implements Screen {
 
     private void initializeCodeCheck() {
         buildCode();
-        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, code, game, stage, level);
+        float width = camera.viewportWidth / 2;
+        float height = camera.viewportHeight / 5;
+        float x = parrotImage.getX() - width;
+        float y = parrotImage.getY() + parrotImage.getHeight();
+        infoImage.remove();
+        checkCode = new CheckCode(mangoCounterLabel, x, y, width, height, code, game, stage, level);
         doneButton = new TextButton("Done", game.getMySkin(), "default");
         doneButton.setSize(4 * offset, (float) (1.5 * offset));
         doneButton.setPosition(offset, camera.viewportHeight - (3 * offset) - mainMenuButton.getHeight());
@@ -562,12 +567,13 @@ public class GameScreen_Level3 implements Screen {
             stage.addActor(new HintGroup("Great job!\nLet's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path", game));
             addNewRow(iteration + 1);
         } else if (iteration + 1 < dijkstraConnections.size() - 1) {
-            int width = (int) (camera.viewportWidth / 3);
-            int height = (int) (camera.viewportHeight / 5);
-            int x = (int) (camera.viewportWidth / 2 - width / 2);
-            int y = (int) (camera.viewportHeight / 2 - height / 2);
+            int width = (int) (camera.viewportWidth / 4);
+            int height = (int) (camera.viewportHeight / 8);
+            int x = (int) (parrotImage.getX() - width);
+            int y = (int) (parrotImage.getY() + parrotImage.getHeight());
             String correctAnswer = cities.get(dijkstraConnections.get(iteration + 1)).getShortName();
             moveBoat = new CheckMoveBoatGroup(this, mangoCounterLabel, x, y, width, height, game, stage, correctAnswer, iteration, level);
+            infoImage.remove();
             stage.addActor(moveBoat);
         } else {
             for (LineData line : linesToDraw) line.setColor(Color.GREEN);
@@ -576,8 +582,12 @@ public class GameScreen_Level3 implements Screen {
     }
 
     public void moveBoatToNextCity(int iteration) {
-        if (moveBoat != null) moveBoat.remove();
         City nextCity = cities.get(dijkstraConnections.get(iteration + 1));
+        if (moveBoat != null){
+            moveBoat.remove();
+            stage.addActor(infoImage);
+            stage.addActor(new HintGroup("Yes! Let´s move to " + nextCity.getName() + " and discover the other connections!",game));
+        }
         if (level < 8) {
             boatImage.addAction(Actions.moveTo(nextCity.getX() - boatImage.getHeight() / 2,
                     nextCity.getY() - boatImage.getHeight() / 2 + offset,
