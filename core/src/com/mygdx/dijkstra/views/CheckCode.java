@@ -141,6 +141,7 @@ public class CheckCode extends Group {
                 if (key == '\r' || key == '\n') {
                     model.setInput(input);
                     checkIfLevelLost(code, stage, codeInput);
+                    input = "";
                 }
                 return super.keyTyped(event, key);
             }

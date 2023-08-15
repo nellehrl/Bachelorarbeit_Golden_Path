@@ -52,12 +52,12 @@ public class CheckCodeModel {
                 this.text = "What kind of graph was represented:";
                 break;
             case 5:
-                this.text = "Enter the Code (final costs to each city from " + game.getCities().get(0) +"):";
+                this.text = "Enter the Code (final costs to each city from " + game.getCities().get(0).getShortName() +"):";
                 break;
             case 6:
             case 7:
             case 8:
-                this.text = "Please enter the exact route and the final costs: " + game.getCities().get(0).getShortName() + " -> " + game.getCities().get(5).getShortName() + "?\n";
+                this.text = "Enter the exact route and the final costs: " + game.getCities().get(0).getShortName() + " -> " + game.getCities().get(5).getShortName() + "?\n";
                 break;
             default:
                 this.text = "";
@@ -114,6 +114,6 @@ public class CheckCodeModel {
     }
 
     public boolean checkInputAgainstCode(String code) {
-        return input.trim().equals(code.trim());
+        return input.trim().equalsIgnoreCase(code.trim());
     }
 }

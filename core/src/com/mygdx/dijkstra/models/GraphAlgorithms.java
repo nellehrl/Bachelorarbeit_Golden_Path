@@ -60,10 +60,13 @@ public class GraphAlgorithms {
 
                 //check if there has already been a shorter connection via a different node
                 if (newDistance < distances[neighbor]) {
-                    precursor[count][neighbor] = vertex;
+                    for(int i = count; i < vertices; i++){
+                        precursor[i][neighbor] = vertex;
+                    }
                     distances[neighbor] = newDistance;
                     minHeap.add(new Node(neighbor, newDistance));
                 }
+
             }
             System.arraycopy(distances, 0, iterations[count], 0, vertices);
             count++;

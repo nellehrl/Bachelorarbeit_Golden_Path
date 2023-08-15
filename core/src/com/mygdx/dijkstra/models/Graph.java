@@ -101,4 +101,8 @@ public class Graph {
     public int getNumOfEdges() {
         return numOfEdges;
     }
+
+    public List<Edge>[] getAdjacencyList() {
+        return adjacencyList;
+    }
 }

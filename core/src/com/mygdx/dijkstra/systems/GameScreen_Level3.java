@@ -8,13 +8,11 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
-import com.badlogic.gdx.scenes.scene2d.Group;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
@@ -26,10 +24,9 @@ import java.util.List;
 public class GameScreen_Level3 implements Screen {
     private final DijkstraAlgorithm game;
     private static final Color LABEL_COLOR = new Color(0.95f, 0.871f, 0.726f, 1);
-    private static final float CELL_WIDTH = 140f;
-    private static final float CELL_HEIGHT = 20f;
-    private static final float PAD_BOTTOM = 10;
-    private String hint;
+    private static final float CELL_WIDTH = 140f, CELL_HEIGHT = 20f, PAD_BOTTOM = 10;
+    private String hint, text, code = "";
+    private CheckMoveBoatGroup moveBoat;
     private static final String infinity = "INFINITY";
     private Stage stage;
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
@@ -37,7 +34,6 @@ public class GameScreen_Level3 implements Screen {
     private FitViewport fitViewport;
     private Image boatImage, parrotImage, infoImage;
     private OrthographicCamera camera;
-    private String code = "";
     private Button mainMenuButton, doneButton;
     private ScrollPane dropBox;
     private Table algorithmTable;
@@ -48,13 +44,11 @@ public class GameScreen_Level3 implements Screen {
     private Label mangoCounterLabel;
     private DrawLineOrArrow draw;
     private ArrayList<Integer> dijkstraConnections;
-    private Group background;
+    private Group background, infotext;
     private CheckCode checkCode;
-    private Group infotext;
     private int correctlyFilledTextFieldsInCurrentRow = 0;
-    private final int level;
-    private String text;
-    private int vertices, space, offset;
+    public final int level;
+    private int vertices, offset;
     private Batch batch;
     private ArrayList<City> cities;
     private Skin fontSkin;
@@ -63,7 +57,6 @@ public class GameScreen_Level3 implements Screen {
 
         this.game = game;
         this.level = level;
-
 
         initializeEnvironment();
         initializeBackgroundAndMap();
@@ -96,7 +89,7 @@ public class GameScreen_Level3 implements Screen {
         shapeRenderer.setProjectionMatrix(camera.combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (LineData lineData : linesToDraw) {
-            draw.drawLine(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
+            draw.drawArrow(shapeRenderer, 2, lineData.getColor(), lineData.getStart(), lineData.getEnd());
         }
         shapeRenderer.end();
 
@@ -112,7 +105,6 @@ public class GameScreen_Level3 implements Screen {
 
         cities = game.getCities();
         vertices = game.getVertices();
-        space = game.getSpace();
         offset = game.getOffset();
         batch = game.getBatch();
         fontSkin = game.getFontSkin();
@@ -317,16 +309,14 @@ public class GameScreen_Level3 implements Screen {
         City sourceCity = cities.get(dijkstraConnections.get(iteration));
         City destCity = cities.get(col);
 
-        boolean isNeighbor = false;
+        Edge neighbor = new Edge(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         for (Edge edge : neighbors) {
             if (edge.getDestination() == col) {
-                isNeighbor = true;
-                break;
+                neighbor = edge;
+                return addNeighborListener(textField, sourceCity, destCity, correctValue, iteration, true, neighbor);
             }
         }
-
-        if (isNeighbor) return addNeighborListener(textField, sourceCity, destCity, correctValue, iteration, true);
-        else return addNeighborListener(textField, sourceCity, destCity, correctValue, iteration, false);
+        return addNeighborListener(textField, sourceCity, destCity, correctValue, iteration, false, neighbor);
     }
 
     private void disableTextField(TextField textField, String correctValue) {
@@ -339,86 +329,170 @@ public class GameScreen_Level3 implements Screen {
         }
     }
 
-    private TextField addNeighborListener(final TextField textField, final City sourceCity, City destCity, final String finalCorrectValue, final int i, final boolean neighbor) {
+    private TextField addNeighborListener(final TextField textField, final City sourceCity, City destCity, final String finalCorrectValue, final int i, final boolean hasNeighbor, final Edge neighbor) {
         final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
         final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
+        final Image connectionArea = addConnectionHoverActor(start, end, neighbor, hasNeighbor);
+        final ArrayList<Image>[] connectionAreas = new ArrayList[]{new ArrayList<>()};
 
-        if (level < 8) {
-            textField.addListener(new ClickListener() {
-                @Override
-                public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                    handleTouchDown(textField, sourceCity, neighbor, start, end, finalCorrectValue, i);
-                    return true;
-                }
-            });
+        switch (level) {
+            case 5:
+            case 6:
+            case 7:
+                textField.addListener(new FocusListener() {
+                    @Override
+                    public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                        if (!focused) {
+                            textField.setColor(Color.DARK_GRAY);
+                            linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
+                            for (Image image : connectionAreas[0]) {
+                                if (image != null) {
+                                    image.remove();
+                                }
+                            }
+                        }
+                    }
+                });
+                textField.addListener(new ClickListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        if (hasNeighbor) {
+                            linesToDraw.add(new LineData(start, end, Color.RED));
+                            connectionAreas[0] = lookForPrecursors(i, start, sourceCity, Color.RED, true);
+                            connectionAreas[0].add(connectionArea);
+                            textField.setColor(Color.RED);
+                            for (Image image : connectionAreas[0]) {
+                                stage.addActor(image);
+                            }
+                        } else {
+                            if (finalCorrectValue.equals("INFINITY")) {
+                                hint = "I can`t find a route to this city yet, you? Maybe we will find one later";
+                                stage.addActor(new HintGroup(hint, game));
+                            } else {
+                                hint = "I can`t find a new connection to this city from " + sourceCity.getName() + ". We may find another one later but lets stick to the one we know.";
+                                stage.addActor(new HintGroup(hint, game));
+                            }
+                        }
+                        return true;
+                    }
+                });
 
-            textField.setTextFieldListener(new TextField.TextFieldListener() {
-                @Override
-                public void keyTyped(TextField textField, char key) {
-                    handleKeyTyped(textField, sourceCity, key, neighbor, start, end, finalCorrectValue, i);
-                }
-            });
+                textField.setTextFieldListener(new TextField.TextFieldListener() {
+                    @Override
+                    public void keyTyped(TextField textField, char key) {
+                        if (key == '\r' || key == '\n') {
+                            String userInput = textField.getText().replaceAll("\\s", "").toLowerCase();
+                            boolean isCorrect = userInput.equals(finalCorrectValue.trim().replaceAll("\\s", "").toLowerCase());
+                            if (isCorrect) {
+                                for (Image image : connectionAreas[0]) {
+                                    if (image != null) {
+                                        image.remove();
+                                    }
+                                }
+                                handleCorrectInput(textField, sourceCity, hasNeighbor, start, end, i);
+                            } else {
+                                userInput = userInput.replaceAll("[^0-9]", "");
+                                String correctValue = finalCorrectValue.replaceAll("[^0-9]", "");
+                                boolean isShortestPath = false;
+                                if (!userInput.equals(""))
+                                    isShortestPath = Integer.parseInt(userInput) > Integer.parseInt(correctValue);
+                                switch (level) {
+                                    case 5:
+                                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                                        else hint = "Are you sure that you added the costs of the routes correctly";
+                                        break;
+                                    case 6:
+                                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                                        else
+                                            hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
+                                        break;
+                                    case 7:
+                                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                                        else if (userInput.length() >= 2 && !userInput.substring(0, 2).equals(correctValue.substring(0, 2))) {
+                                            hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
+                                        } else
+                                            hint = "Is there a route to this city?\nIf there is no route the correct Value is Infinity.";
+                                        break;
+                                    default:
+                                        hint = "To go to our treasury (starting point) we need 0 costs.\nDid you build the value correctly?\n(Shortage of precursor - Added costs)";
+                                        stage.addActor(new HintGroup(hint, game));
+                                        break;
+                                }
+                                stage.addActor(new HintGroup(hint, game));
+                                addHintListener(parrotImage);
+                                addHintListener(infoImage);
+                            }
+                        }
+                    }
+                });
+                break;
+            case 8:
+                textField.addListener(new FocusListener() {
+                    @Override
+                    public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                        if (!focused) {
+                            for (Image image : connectionAreas[0]) {
+                                if (image != null) {
+                                    image.remove();
+                                }
+                            }
+                        }
+                    }
+                });
+                textField.addListener(new ClickListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                        if (hasNeighbor) {
+                            connectionAreas[0] = lookForPrecursors(i, start, sourceCity, Color.RED, true);
+                            connectionAreas[0].add(connectionArea);
+                            for (Image image : connectionAreas[0]) {
+                                stage.addActor(image);
+                            }
+                        }
+                        return true;
+                    }
+                });
+
+                textField.setTextFieldListener(new TextField.TextFieldListener() {
+                    @Override
+                    public void keyTyped(TextField textField, char key) {
+                        if (key == '\r' || key == '\n') {
+                            for (Image image : connectionAreas[0]) {
+                                if (image != null) {
+                                    image.remove();
+                                }
+                            }
+                            checkIfNewRow(i);
+                        }
+                    }
+                });
+                break;
         }
         return textField;
     }
 
-    private void handleTouchDown(TextField textField, City sourceCity, final boolean neighbor, final Vector2 start, final Vector2 end, final String finalCorrectValue, final int i) {
-        if (neighbor) {
-            linesToDraw.add(new LineData(start, end, Color.RED));
-            lookForPrecursors(i, start, sourceCity, Color.RED);
-            textField.setColor(Color.RED);
-        } else {
-            if (finalCorrectValue.equals("INFINITY")){
-                hint = "I can`t find a route to this city yet, you? Maybe we will find one later";
-                stage.addActor(new HintGroup(hint, game));
-            }
-            else{
-                hint = "I can`t find a new connection to this city from " + sourceCity.getName() + ". We may find another one later but lets stick to the one we know.";
-                stage.addActor(new HintGroup(hint, game));
-            }
-        }
-    }
-
-    private void handleKeyTyped(TextField textField, City sourceCity, char key, boolean neighbor, Vector2 start, Vector2 end, String finalCorrectValue, int i) {
-        if (key == '\r' || key == '\n') {
-            String userInput = textField.getText().replaceAll("\\s", "").toLowerCase();
-            boolean isCorrect = userInput.equals(finalCorrectValue.trim().replaceAll("\\s", "").toLowerCase());
-
-            if (isCorrect) handleCorrectInput(textField, sourceCity, neighbor, start, end, i);
-            else {
-                userInput = userInput.replaceAll("[^0-9]", "");
-                finalCorrectValue = finalCorrectValue.replaceAll("[^0-9]", "");
-                boolean isShortestPath = false;
-                if(!userInput.equals(""))isShortestPath = Integer.valueOf(userInput) > Integer.valueOf(finalCorrectValue);
-                switch (level) {
-                    case 5:
-                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                        else hint = "Are you sure that you added the costs of the routes correctly";
-                        break;
-                    case 6:
-                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                        else hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
-                        break;
-                    case 7:
-                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                        else if(userInput.length() >= 2 && userInput.substring(0,2) != finalCorrectValue.substring(0,2)) {
-                            hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
-                        }
-                        else hint = "Is there a route to this city?\nIf there is no route the correct Value is Infinity.";
-                        break;
-                    default:
-                        hint = "To go to our treasury (starting point) we need 0 costs.\nDid you build the value correctly?\n(Shortage of precursor - Added costs)";
-                        stage.addActor(new HintGroup(hint, game));
-                        break;
+    public Image addConnectionHoverActor(Vector2 start, Vector2 end, Edge neighbor, boolean hasNeighbor) {
+        if (hasNeighbor) {
+            final Image connectionArea = new ConnectionAreaImage(start, end);
+            ConnectionHoverActor card = new ConnectionHoverActor(game, (start.x + end.x) / 2, (end.y + start.y) / 2,
+                    150, 60, game.getCities().get(neighbor.getSource()).getName(), game.getCities().get(neighbor.getDestination()).getName(), neighbor.getWeight());
+            final Table cardTableFinal = card.getTable();
+            connectionArea.addListener(new InputListener() {
+                @Override
+                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
+                    stage.addActor(cardTableFinal);
                 }
-                stage.addActor(new HintGroup(hint, game));
-                addHintListener(parrotImage);
-                addHintListener(infoImage);
-            }
-        }
+
+                @Override
+                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
+                    cardTableFinal.remove();
+                }
+            });
+            return connectionArea;
+        } else return null;
     }
 
-    private void addHintListener(Image image){
+    private void addHintListener(Image image) {
         image.clearListeners();
         image.addListener(new ClickListener() {
             @Override
@@ -428,23 +502,25 @@ public class GameScreen_Level3 implements Screen {
         });
     }
 
-    private void handleCorrectInput(TextField textField, City sourceCity, boolean neighbor, Vector2 start, Vector2 end, int i) {
+    private void handleCorrectInput(TextField textField, City sourceCity, boolean hasNeighbor, Vector2 start, Vector2 end, int i) {
         game.getDropSound().play();
         textField.setColor(Color.GREEN);
         if (level < 8) {
-            if (neighbor) {
+            if (hasNeighbor) {
                 linesToDraw.add(new LineData(start, end, Color.GREEN));
-                lookForPrecursors(i, start, sourceCity, Color.GREEN);
+                lookForPrecursors(i, start, sourceCity, Color.GREEN, true);
             }
             textField.setDisabled(true);
             for (EventListener listener : textField.getListeners()) textField.removeListener(listener);
-            checkIfNewRow(i);
         }
+        checkIfNewRow(i);
     }
 
-    private void lookForPrecursors(int i, Vector2 start, City sourceCity, Color color) {
+    private ArrayList<Image> lookForPrecursors(int i, Vector2 start, City sourceCity, Color color, boolean hasNeighbor) {
+        ArrayList<Image> connectionImages = new ArrayList<>();
+
         if (i <= 0) {
-            return; // No precursors to look for
+            return connectionImages; // No precursors to look for, empty list returned
         }
 
         int sourceCityIndex = cities.indexOf(sourceCity);
@@ -456,32 +532,53 @@ public class GameScreen_Level3 implements Screen {
             Vector2 precursorPosition = new Vector2(precursorCity.getX(), precursorCity.getY());
             linesToDraw.add(new LineData(precursorPosition, start, color));
 
+            List<Edge>[] adjacencyList = graph.getAdjacencyList();
+            Edge precursorEdge = null;
+            for (Edge edge : adjacencyList[precursorIndex]) {
+                if (edge.getDestination() == sourceCityIndex) {
+                    precursorEdge = edge;
+                }
+            }
+
+            if (precursorEdge != null) {
+                final Image connectionArea2 = addConnectionHoverActor(precursorPosition, start, precursorEdge, hasNeighbor);
+                connectionImages.add(connectionArea2); // Add the image to the list
+            }
+
             start = precursorPosition;
             sourceCityIndex = precursorIndex;
             i--;
         }
+
+        return connectionImages;
     }
 
     private void checkIfNewRow(int iteration) {
-
         // Check if we have filled all the fields in the current row
         correctlyFilledTextFieldsInCurrentRow++;
         if (correctlyFilledTextFieldsInCurrentRow != vertices) return;
 
-        if (level == 8)
+        if (level == 8) {
             stage.addActor(new HintGroup("Great job!\nLet's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path", game));
-        else if (iteration + 1 < dijkstraConnections.size() - 1) moveBoatToNextCity(iteration);
-        else {
+            addNewRow(iteration + 1);
+        } else if (iteration + 1 < dijkstraConnections.size() - 1) {
+            int width = (int) (camera.viewportWidth / 3);
+            int height = (int) (camera.viewportHeight / 5);
+            int x = (int) (camera.viewportWidth / 2 - width / 2);
+            int y = (int) (camera.viewportHeight / 2 - height / 2);
+            String correctAnswer = cities.get(dijkstraConnections.get(iteration + 1)).getShortName();
+            moveBoat = new CheckMoveBoatGroup(this, mangoCounterLabel, x, y, width, height, game, stage, correctAnswer, iteration, level);
+            stage.addActor(moveBoat);
+        } else {
             for (LineData line : linesToDraw) line.setColor(Color.GREEN);
             stage.addActor(checkCode);
         }
     }
 
-    private void moveBoatToNextCity(int iteration) {
+    public void moveBoatToNextCity(int iteration) {
+        if (moveBoat != null) moveBoat.remove();
         City nextCity = cities.get(dijkstraConnections.get(iteration + 1));
         if (level < 8) {
-            String hintText = "Let's move to " + nextCity.getName() + ", it has the current lowest costs! Like that we will always find the shortest Path";
-            stage.addActor(new HintGroup(hintText, game));
             boatImage.addAction(Actions.moveTo(nextCity.getX() - boatImage.getHeight() / 2,
                     nextCity.getY() - boatImage.getHeight() / 2 + offset,
                     1.5f));
