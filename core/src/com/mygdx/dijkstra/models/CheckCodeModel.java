@@ -114,6 +114,6 @@ public class CheckCodeModel {
     }
 
     public boolean checkInputAgainstCode(String code) {
-        return input.trim().equalsIgnoreCase(code.trim());
+        return input.trim().replaceAll("\\s", "").equalsIgnoreCase(code.trim().replaceAll("\\s", ""));
     }
 }

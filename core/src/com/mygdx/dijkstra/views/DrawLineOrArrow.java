@@ -37,7 +37,7 @@ public class DrawLineOrArrow {
         directionY /= length;
 
         // Shorten the arrow
-        float shortenBy = 15;
+        float shortenBy = 25;
         endX = startX + directionX * (length - shortenBy);
         endY = startY + directionY * (length - shortenBy);
 

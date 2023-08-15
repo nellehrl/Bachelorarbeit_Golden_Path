@@ -535,7 +535,7 @@ public class GameScreen_Level3 implements Screen {
             City precursorCity = cities.get(precursorIndex);
 
             Vector2 precursorPosition = new Vector2(precursorCity.getX(), precursorCity.getY());
-            linesToDraw.add(new LineData(precursorPosition, start, color));
+            if(level < 8)linesToDraw.add(new LineData(precursorPosition, start, color));
 
             List<Edge>[] adjacencyList = graph.getAdjacencyList();
             Edge precursorEdge = null;
