@@ -8,15 +8,15 @@ public class Graph {
     private final List<Edge>[] adjacencyList;
     private int numOfEdges;
 
-    public Graph(int numVertices) {
+    public Graph(int numVertices, boolean allMustBeDestination) {
         this.numVertices = numVertices;
         adjacencyList = new List[numVertices];
 
         for (int i = 0; i < numVertices; i++) adjacencyList[i] = new ArrayList<>();
-        createGraph(numVertices);
+        createGraph(numVertices, allMustBeDestination);
     }
 
-    public void createGraph(int vertices) {
+    public void createGraph(int vertices,  boolean allMustBeDestination) {
         double probability;
         probability = 0.3;
         for (int i = 0; i < vertices; i++) {
@@ -38,7 +38,7 @@ public class Graph {
             }
         }
         checkIfStartIsConnected();
-        ensureEachCityIsDestination();
+        if(allMustBeDestination) ensureEachCityIsDestination();
     }
 
     public void checkIfStartIsConnected(){
@@ -94,30 +94,28 @@ public class Graph {
 
     public int findOtherConnection(int source, int destination){
         int newDestination = 0;
-        for(int i = 0; i < 10; i++) {
+        boolean hasNewEdge = false;
+        while(hasNewEdge){
             newDestination = (int) (Math.random() * numVertices);
 
-            if (newDestination == source) continue;  // Skip if new destination is the same as the source.
+            if (newDestination == source) continue;
 
-            boolean hasNewEdge = false;
             for (Edge newEdgeCheck : adjacencyList[destination]) {
-                if (newEdgeCheck.getDestination() == source) {
+                if (newEdgeCheck.getDestination() != source) {
                     hasNewEdge = true;
                     break;
                 }
             }
 
             for (Edge newEdgeCheck : adjacencyList[source]) {
-                if (newEdgeCheck.getDestination() == newDestination) {
+                if (newEdgeCheck.getDestination() != newDestination) {
                     hasNewEdge = true;
                     break;
                 }
             }
-
-            if (!hasNewEdge) break; // If no duplicate edges found, exit the loop.
         }
 
-        return newDestination;  // Set the new destination for the edge
+        return newDestination;
     }
 
     public List<Edge> getNeighbors(int vertex) {

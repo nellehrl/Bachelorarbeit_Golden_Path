@@ -85,7 +85,7 @@ public class GameScreen_Level3 implements Screen {
 
     private void initializeEnvironment() {
         stage = new Stage(game.getFitViewport());
-        graph = new Graph(game.getVertices());
+        graph = new Graph(game.getVertices(),false);
 
         GraphAlgorithms dijkstra = new GraphAlgorithms(graph);
         distances = dijkstra.getDistances();

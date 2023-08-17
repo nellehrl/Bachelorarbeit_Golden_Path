@@ -85,10 +85,10 @@ public class GameScreen_Level1 implements Screen {
         switch (level) {
             case 1:
             case 2:
-                graph = new Graph(game.getVertices());
+                graph = new Graph(game.getVertices(),true);
                 break;
             case 3:
-                graph = new Graph(game.getVertices());
+                graph = new Graph(game.getVertices(),false);
                 dragAndDrop = new DragAndDrop();
                 break;
         }

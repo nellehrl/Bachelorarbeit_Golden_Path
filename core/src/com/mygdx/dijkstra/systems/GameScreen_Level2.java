@@ -71,7 +71,7 @@ public class GameScreen_Level2 implements Screen {
 
     private void initializeVariables() {
         stage = new Stage(game.getFitViewport());
-        graph = new Graph(game.getVertices());
+        graph = new Graph(game.getVertices(),false);
     }
 
     private void initializeUIElements() {
