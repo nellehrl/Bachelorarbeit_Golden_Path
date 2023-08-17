@@ -4,15 +4,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
 import com.mygdx.dijkstra.views.*;
@@ -24,24 +21,17 @@ import static com.badlogic.gdx.utils.Align.left;
 
 public class GameScreen_Level2 implements Screen {
     private final DijkstraAlgorithm game;
-    private OrthographicCamera camera;
-    private FitViewport fitViewport;
     private Stage stage;
-    private Batch batch;
-    private Skin fontSkin;
     private Image boatImage;
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private Label mangoCounterLabel;
     private Button mainMenuButton;
     private Group background;
-    private Group infotext;
-    private final ArrayList<City> currentConnection = new ArrayList<>();
+    private Group infoText;
     private final List<LineData> linesToDraw = new ArrayList<>();
     private Graph graph;
     private String text;
     private DrawLineOrArrow draw;
-    private int vertices, space, offset;
-    private ArrayList<City> cities;
     private CheckCode checkCode;
 
     public GameScreen_Level2(final DijkstraAlgorithm game) {
@@ -53,8 +43,8 @@ public class GameScreen_Level2 implements Screen {
 
     @Override
     public void render(float delta) {
-        // Update the camera and stage
-        camera.update();
+        // Update the game.getCamera() and stage
+        game.getCamera().update();
         stage.act(delta);
 
         // Clear the screen
@@ -62,13 +52,13 @@ public class GameScreen_Level2 implements Screen {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
         // Render the background
-        batch.setProjectionMatrix(camera.combined);
-        batch.begin();
-        background.draw(batch, 1.0f);
-        batch.end();
+        game.getBatch().setProjectionMatrix(game.getCamera().combined);
+        game.getBatch().begin();
+        background.draw(game.getBatch(), 1.0f);
+        game.getBatch().end();
 
         // Render the graph (lines)
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(game.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
         for (LineData lineData : linesToDraw) {
             draw.drawArrow(shapeRenderer, 3, lineData.getColor(), lineData.getStart(), lineData.getEnd());
@@ -80,17 +70,8 @@ public class GameScreen_Level2 implements Screen {
     }
 
     private void initializeVariables() {
-        camera = game.getCamera();
-        fitViewport = game.getFitViewport();
-        stage = new Stage(fitViewport);
-        cities = game.getCities();
-        vertices = game.getVertices();
-        space = game.getSpace();
-        offset = game.getOffset();
-        batch = game.getBatch();
-        fontSkin = game.getFontSkin();
-        currentConnection.add(cities.get(0));
-        graph = new Graph(vertices);
+        stage = new Stage(game.getFitViewport());
+        graph = new Graph(game.getVertices());
     }
 
     private void initializeUIElements() {
@@ -98,7 +79,7 @@ public class GameScreen_Level2 implements Screen {
         background = new BackgroundGroup(game, stage, text, 4);
         mainMenuButton = background.findActor("mainMenuButton");
         boatImage = background.findActor("boatImage");
-        infotext = background.findActor("infotext");
+        infoText = background.findActor("infotext");
         Table mangoCounter = background.findActor("mangoCounter");
         mangoCounterLabel = (Label) mangoCounter.getChild(1);
         initializeDropBoxItems();
@@ -107,12 +88,11 @@ public class GameScreen_Level2 implements Screen {
     private void initializeGameComponents() {
         draw = new DrawLineOrArrow();
         stage.addActor(new MapGroup_Level2_3(game,0, graph, boatImage, linesToDraw));
-        checkCode = new CheckCode(mangoCounterLabel,camera.viewportWidth / 4, camera.viewportHeight / 2, (float) (camera.viewportWidth * 0.6), camera.viewportHeight/5, "code", game, stage, 4);
-
-        // Add remaining actors
+        checkCode = new CheckCode(mangoCounterLabel,game.getCamera().viewportWidth / 4, game.getCamera().viewportHeight / 2, (float) (game.getCamera().viewportWidth * 0.6), game.getCamera().viewportHeight/5, "code", game, stage, 4);
+        
         stage.addActor(boatImage);
         stage.addActor(mainMenuButton);
-        stage.addActor(infotext);
+        stage.addActor(infoText);
     }
 
     public void initializeText() {
@@ -125,16 +105,16 @@ public class GameScreen_Level2 implements Screen {
     public void initializeDropBoxItems() {
         final int[] numOfEdges = {0};
         int count = 0;
-        for (int i = 0; i < vertices; i++) {
+        for (int i = 0; i < game.getVertices(); i++) {
 
             int j = 0;
             java.util.List<Edge> neighbors = graph.getNeighbors(i);
-            City sourceCity = cities.get(i);
+            City sourceCity = game.getCities().get(i);
 
             if(neighbors.size() != 0) {
                 for (Edge neighbor : neighbors) {
 
-                    City destCity = cities.get(neighbor.getDestination());
+                    City destCity = game.getCities().get(neighbor.getDestination());
                     final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
                     final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
 
@@ -145,7 +125,7 @@ public class GameScreen_Level2 implements Screen {
                     TextField textField = createTextField(fieldText, start, end, neighbor, numOfEdges);
 
                     infoTable.add(textField);
-                    infoTable.setBackground(fontSkin.getDrawable("color"));
+                    infoTable.setBackground(game.getFontSkin().getDrawable("color"));
                     stage.addActor(infoTable);
                     j++;
                 }
@@ -155,11 +135,11 @@ public class GameScreen_Level2 implements Screen {
     }
 
     private Table createInfoTable(String labelText, int i, int j) {
-        Table infoTable = new Table(fontSkin);
-        infoTable.setSize((camera.viewportWidth) / (vertices+1), (camera.viewportHeight / 3) / (vertices - 1));
-        infoTable.setPosition(2 * offset + infoTable.getWidth() * i + space * (i + 1), (float) ((camera.viewportHeight * 0.25) - offset - (infoTable.getHeight() + space) * j));
+        Table infoTable = new Table(game.getFontSkin());
+        infoTable.setSize((game.getCamera().viewportWidth) / (game.getVertices()+1), (game.getCamera().viewportHeight / 3) / (game.getVertices() - 1));
+        infoTable.setPosition(2 * game.getOffset() + infoTable.getWidth() * i + game.getSpace() * (i + 1), (float) ((game.getCamera().viewportHeight * 0.25) - game.getOffset() - (infoTable.getHeight() + game.getSpace()) * j));
 
-        Label codeLabel = new Label(labelText, fontSkin);
+        Label codeLabel = new Label(labelText, game.getFontSkin());
         codeLabel.setAlignment(left);
         codeLabel.setFontScale(0.75f);
         infoTable.add(codeLabel).row();
@@ -169,29 +149,19 @@ public class GameScreen_Level2 implements Screen {
 
     private TextField createTextField(final String fieldText, final Vector2 start, final Vector2 end, final Edge neighbor, final int[] numOfEdges) {
         //init default
-        final TextField textField = new TextField(fieldText, fontSkin);
+        final TextField textField = new TextField(fieldText, game.getFontSkin());
         textField.setColor(Color.BLACK);
         textField.setAlignment(left);
 
-        final Image connectionArea = new ConnectionAreaImage(start, end);
         ConnectionHoverActor card = new ConnectionHoverActor(game, (start.x + end.x) / 2, (end.y + start.y) / 2,
                 150, 60, game.getCities().get(neighbor.getSource()).getName(), game.getCities().get(neighbor.getDestination()).getName(), neighbor.getWeight());
         final Table cardTableFinal = card.getTable();
-        connectionArea.addListener(new InputListener() {
-            @Override
-            public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                stage.addActor(cardTableFinal);
-            }
+        final Image connectionArea = new ConnectionAreaImage(start, end, stage, cardTableFinal, true);
 
-            @Override
-            public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                cardTableFinal.remove();
-            }
-        });
         textField.addListener(new FocusListener() {
             @Override
             public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
-                if (!focused) {  // If the focus is no longer on the textField
+                if (!focused) { 
                     connectionArea.remove();
                     textField.setColor(Color.DARK_GRAY);
                     linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
@@ -202,7 +172,6 @@ public class GameScreen_Level2 implements Screen {
         textField.addListener(new ClickListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                //set connection red as visualization if clicked
                 textField.setColor(Color.RED);
                 stage.addActor(connectionArea);
                 linesToDraw.add(new LineData(start, end, Color.RED));
@@ -215,7 +184,7 @@ public class GameScreen_Level2 implements Screen {
                 String userInput = textField.getText();
                 String userInputSubstring = userInput.substring(userInput.length() - 2).trim();
                 boolean isCorrect = userInputSubstring.equals(String.valueOf(neighbor.getWeight()));
-                //set connection green if correct
+                
                 if (key == '\r' || key == '\n') {
                     if (isCorrect && !neighbor.isEdgeAdded()) {
                         game.getDropSound().play();
@@ -242,8 +211,8 @@ public class GameScreen_Level2 implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        fitViewport.update(width, height, true);
-        camera.position.set((float) 1200 / 2, (float) 720 / 2, 0);
+        game.getFitViewport().update(width, height, true);
+        game.getCamera().position.set((float) 1200 / 2, (float) 720 / 2, 0);
     }
 
     @Override

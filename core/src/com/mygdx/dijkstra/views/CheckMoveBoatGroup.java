@@ -1,86 +1,61 @@
 package com.mygdx.dijkstra.views;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
-import com.mygdx.dijkstra.models.CheckCodeModel;
-import com.mygdx.dijkstra.models.City;
 import com.mygdx.dijkstra.models.WrongUserInput;
 import com.mygdx.dijkstra.systems.GameScreen_Level3;
 
 import static com.badlogic.gdx.utils.Align.center;
-import static com.badlogic.gdx.utils.Align.left;
 
 public class CheckMoveBoatGroup extends Group {
     private Table codeTable;
     private String input = "";
     private final DijkstraAlgorithm game;
     private final int iteration;
-    private String correctAnswer;
-    private final Skin fontSkin;
-    private final int level;
-    private final Texture shadowTexture;
-    private final Texture xCloseTexture;
-    private Image shadowImage;
+    private final String correctAnswer;
     private final Label mangoCounterLabel;
-    private GameScreen_Level3 level3;
+    private final GameScreen_Level3 level3;
 
-    public CheckMoveBoatGroup(GameScreen_Level3 level3,Label mangoCounterLabel, final float x, final float y, final float width, final float height, final DijkstraAlgorithm game, final Stage stage, String correctAnswer, int iteration, int level) {
+    public CheckMoveBoatGroup(GameScreen_Level3 level3,Label mangoCounterLabel, final float x, final float y, final float width, final float height, final DijkstraAlgorithm game, final Stage stage, String correctAnswer, int iteration) {
         this.game = game;
         this.correctAnswer = correctAnswer;
         this.iteration = iteration;
-        this.fontSkin = game.getFontSkin();
-        this.level = level;
         this.mangoCounterLabel = mangoCounterLabel;
         this.level3 = level3;
 
-        // Preload the assets
-        shadowTexture = game.getAssetManager().get("shadow.png", Texture.class);
-        xCloseTexture = game.getAssetManager().get("xClose.png", Texture.class);
-
         initializeCodeTable(x, y, width, height, stage);
-
-        final Image shadowImage = createShadowImage();
-        addActor(shadowImage);
-        shadowImage.toBack();
     }
 
     private void initializeCodeTable(final float x, final float y, final float width, final float height, final Stage stage) {
 
         String text = "Which is the city with the current lowest costs?";
 
-        codeTable = new Table(fontSkin);
+        codeTable = new Table(game.getFontSkin());
         codeTable.setSize(width, height);
         codeTable.setPosition(x, y);
 
-        Label codeLabel = new Label(text, fontSkin);
+        Label codeLabel = new Label(text, game.getFontSkin());
         codeLabel.setWrap(true);
         codeLabel.setAlignment(center);
         codeLabel.setFontScale(1.0f);
 
         // Set the background color of the codeTable
-        codeTable.setBackground(fontSkin.getDrawable("color"));
+        codeTable.setBackground(game.getFontSkin().getDrawable("color"));
 
         // Handle input events or validation for the codeInput field as needed
-        handleLevel3(codeLabel, width, height, stage);
+        createCard(codeLabel, width, height, stage);
         addActor(codeTable);
     }
 
-    private void handleLevel3(Label codeLabel, float width, float height, final Stage stage) {
+    private void createCard(Label codeLabel, float width, float height, final Stage stage) {
         // Add an input field to the codeTable
         codeTable.add(codeLabel).expand().fill().center().padLeft(game.getSpace()).padRight(game.getSpace());
         codeTable.row().colspan(3);
-        final TextField codeInput = new TextField("", fontSkin);
+        final TextField codeInput = new TextField("", game.getFontSkin());
         codeInput.setMessageText("Shortage of city");
         codeTable.add(codeInput).width(width/2).height(height/6).center().padBottom(game.getSpace());
         codeInput.addListener(new InputListener() {
@@ -94,14 +69,6 @@ public class CheckMoveBoatGroup extends Group {
                 return super.keyTyped(event, key);
             }
         });
-    }
-
-    private Image createShadowImage() {
-        shadowImage = new Image(shadowTexture);
-        shadowImage.setSize(codeTable.getWidth(),codeTable.getHeight());
-        shadowImage.setPosition(codeTable.getX(), codeTable.getY() - game.getSpace());
-        shadowImage.setName("shadowImage");
-        return shadowImage;
     }
 
     private void checkIfLevelLost(String input, Stage stage, String correctAnswer,TextField textField) {

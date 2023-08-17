@@ -4,25 +4,16 @@ import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.systems.LevelWonScreen;
 
 public class CheckCodeModel {
-    private boolean isCorrect = false;
     private String input = "";
     private String text, option1, option2, option3;
     private final DijkstraAlgorithm game;
-    private int level;
+    private final int level;
 
     public CheckCodeModel(DijkstraAlgorithm game, int level){
         this.game = game;
         this.level = level;
 
         setTextByLevel(level);
-    }
-
-    public boolean isCorrect() {
-        return isCorrect;
-    }
-
-    public void setCorrect(boolean correct) {
-        isCorrect = correct;
     }
 
     public String getInput() {
@@ -110,7 +101,6 @@ public class CheckCodeModel {
         game.getDropSound().play();
         game.resetGlobalState();
         game.setScreen(new LevelWonScreen(game, level));
-        isCorrect = true;
     }
 
     public boolean checkInputAgainstCode(String code) {

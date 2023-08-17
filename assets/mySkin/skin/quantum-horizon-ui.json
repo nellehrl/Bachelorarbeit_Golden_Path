@@ -313,7 +313,7 @@ com.badlogic.gdx.scenes.scene2d.ui.ImageTextButton$ImageTextButtonStyle: {
 com.badlogic.gdx.scenes.scene2d.ui.Label$LabelStyle: {
 	default: {
 		font: default-font
-		fontColor: black
+		fontColor: white
 	},
 	title: {
 		font: title

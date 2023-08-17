@@ -16,41 +16,37 @@ public class GraphAlgorithms {
         this.distances = new int[vertices];
         this.iterations = new int[vertices][vertices];
         this.dijkstraConnections = new ArrayList<>();
-        dijkstra();
+        dijkstra(0);
     }
-    public void dijkstra() {
-        int count = 0, source = 0;
+    public void dijkstra(int source) {
+        int count = 0;
         boolean[] visited = new boolean[vertices];
 
-        Arrays.fill(distances, Integer.MAX_VALUE); //fill distances with infinity to initialize it
-        distances[source] = 0; //set distance to zero at source node
+        Arrays.fill(distances, Integer.MAX_VALUE);
+        distances[source] = 0;
 
-        //got the priorityQueue idea from chatgpt conversation on the 13th of July 3.32
-        Comparator<Node> nodeComparator = new Comparator<Node>() {
+        //priorityQueue from chatgpt conversation on the 13th of July 3.32pm
+        PriorityQueue<Node> minHeap = new PriorityQueue<>(new Comparator<Node>() {
             @Override
             public int compare(Node node1, Node node2) {
                 return Integer.compare(node1.getDistance(), node2.getDistance());
             }
-        };
-        PriorityQueue<Node> minHeap = new PriorityQueue<>(nodeComparator);
+        });
 
         precursor = new int[vertices][vertices];
         minHeap.add(new Node(source, 0));
 
-        //loop until all graph are found
         while (!minHeap.isEmpty()) {
-            //get the node with the lowest distances + current node
+
             Node currentNode = minHeap.poll();
             int vertex = currentNode.getVertex();
             if (!dijkstraConnections.contains(vertex)) dijkstraConnections.add(vertex);
 
-            // if node has already been visited go to next one otherwise set visited
             if (visited[vertex]) continue;
 
             visited[vertex] = true;
             List<Edge> neighbors = graph.getNeighbors(vertex);
 
-            //Calculate distance to each node and add to queue (which orders them then by distance)
             for (Edge edge : neighbors) {
                 int neighbor = edge.getDestination();
                 if (visited[neighbor]) continue;
@@ -58,16 +54,13 @@ public class GraphAlgorithms {
                 int weight = edge.getWeight();
                 int newDistance = distances[vertex] + weight;
 
-                //check if there has already been a shorter connection via a different node
                 if (newDistance < distances[neighbor]) {
-                    for(int i = count; i < vertices; i++){
-                        precursor[i][neighbor] = vertex;
-                    }
+                    precursor[count][neighbor] = vertex;
                     distances[neighbor] = newDistance;
                     minHeap.add(new Node(neighbor, newDistance));
                 }
-
             }
+            if (count + 1 < vertices) System.arraycopy(precursor[count], 0, precursor[count + 1], 0, vertices);
             System.arraycopy(distances, 0, iterations[count], 0, vertices);
             count++;
         }

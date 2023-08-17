@@ -1,7 +1,6 @@
 package com.mygdx.dijkstra.views;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.scenes.scene2d.Group;
@@ -16,25 +15,25 @@ public class InfoTextGroup extends Group {
     private Table table;
     private final int row_height;
 
-    public InfoTextGroup(final DijkstraAlgorithm game, String text, OrthographicCamera camera) {
+    public InfoTextGroup(final DijkstraAlgorithm game, String text) {
 
         this.game = game;
         this.row_height = game.getOffset();
 
         GlyphLayout layout = new GlyphLayout();
-        layout.setText(game.getFontSkin().getFont("font"), text, Color.BLACK, (float) (camera.viewportWidth * 0.62), left, true);
+        layout.setText(game.getFontSkin().getFont("font"), text, Color.BLACK, (float) (game.getCamera().viewportWidth * 0.62), left, true);
 
-        initializeTable(layout, camera, text);
-        initializeImagesAndButton(table, camera);
+        initializeTable(layout, text);
+        initializeImagesAndButton(table);
     }
 
-    private void initializeImagesAndButton(Table table, OrthographicCamera camera) {
+    private void initializeImagesAndButton(Table table) {
         Image shadowImage = game.createActor((int) (table.getWidth() * 1.25), (float) (table.getHeight() * 1.2), table.getX() - 90, table.getY() - 30, game.getAssetManager().get("shadow.png", Texture.class));
         shadowImage.setName("shadowImage");
         addActor(shadowImage);
         shadowImage.toBack();
 
-        int parrottWidth = (int) (camera.viewportWidth * 0.1);
+        int parrottWidth = (int) (game.getCamera().viewportWidth * 0.1);
         Image parrottImage = game.createActor(parrottWidth, (float) (parrottWidth * 1.25), table.getX() + table.getWidth() - parrottWidth,
                 table.getY() + table.getHeight() - game.getOffset(), game.getAssetManager().get("parrott.png", Texture.class));
         parrottImage.setName("parrottImage");
@@ -49,11 +48,11 @@ public class InfoTextGroup extends Group {
         closeButton.setName("closeButton");
     }
 
-    private void initializeTable(GlyphLayout layout, OrthographicCamera camera, String text) {
+    private void initializeTable(GlyphLayout layout, String text) {
         table = new Table();
         table.setBackground(game.getFontSkin().getDrawable("color"));
         table.setSize(layout.width, layout.height + row_height * 1.5f + 100);
-        table.setPosition(camera.viewportWidth / 2 - table.getWidth() / 2, camera.viewportHeight / 2 - table.getHeight() / 2);
+        table.setPosition(game.getCamera().viewportWidth / 2 - table.getWidth() / 2, game.getCamera().viewportHeight / 2 - table.getHeight() / 2);
         addActor(table);
 
         Label codeLabel = new Label(text, game.getFontSkin());

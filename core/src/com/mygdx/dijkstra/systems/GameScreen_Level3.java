@@ -4,8 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.*;
@@ -13,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.FocusListener;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
 import com.mygdx.dijkstra.views.*;
@@ -31,9 +28,7 @@ public class GameScreen_Level3 implements Screen {
     private Stage stage;
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private List<LineData> linesToDraw;
-    private FitViewport fitViewport;
     private Image boatImage, parrotImage, infoImage;
-    private OrthographicCamera camera;
     private Button mainMenuButton, doneButton;
     private ScrollPane dropBox;
     private Table algorithmTable;
@@ -44,14 +39,10 @@ public class GameScreen_Level3 implements Screen {
     private Label mangoCounterLabel;
     private DrawLineOrArrow draw;
     private ArrayList<Integer> dijkstraConnections;
-    private Group background, infotext;
+    private Group background, infoText;
     private CheckCode checkCode;
     private int correctlyFilledTextFieldsInCurrentRow = 0;
     public final int level;
-    private int vertices, offset;
-    private Batch batch;
-    private ArrayList<City> cities;
-    private Skin fontSkin;
 
     public GameScreen_Level3(final DijkstraAlgorithm game, final int level) {
 
@@ -66,50 +57,36 @@ public class GameScreen_Level3 implements Screen {
         stage.addActor(dropBox);
         stage.addActor(mainMenuButton);
         stage.addActor(boatImage);
-        stage.addActor(infotext);
+        stage.addActor(infoText);
         stage.addActor(doneButton);
     }
 
     @Override
     public void render(float delta) {
-        // tell the SpriteBatch to render in the coordinate system specified by the camera.
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+        game.getCamera().update();
+        game.getBatch().setProjectionMatrix(game.getCamera().combined);
 
-        //clear with background color
         Gdx.gl.glClearColor(0.95f, 0.871f, 0.726f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        //render background
-        batch.begin();
-        background.draw(batch, 1.0f); // Render the actors from the selected group
-        batch.end();
+        game.getBatch().begin();
+        background.draw(game.getBatch(), 1.0f); // Render the actors from the selected group
+        game.getBatch().end();
 
-        //draw lines
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(game.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (LineData lineData : linesToDraw) {
+        for (LineData lineData : linesToDraw)
             draw.drawArrow(shapeRenderer, 2, lineData.getColor(), lineData.getStart(), lineData.getEnd());
-        }
         shapeRenderer.end();
 
-        //render rest of stage
         stage.act();
         stage.draw();
     }
 
     private void initializeEnvironment() {
-        camera = game.getCamera();
-        fitViewport = game.getFitViewport();
-        stage = new Stage(fitViewport);
+        stage = new Stage(game.getFitViewport());
+        graph = new Graph(game.getVertices());
 
-        cities = game.getCities();
-        vertices = game.getVertices();
-        offset = game.getOffset();
-        batch = game.getBatch();
-        fontSkin = game.getFontSkin();
-
-        graph = new Graph(vertices);
         GraphAlgorithms dijkstra = new GraphAlgorithms(graph);
         distances = dijkstra.getDistances();
         iterations = dijkstra.getIterations();
@@ -126,7 +103,7 @@ public class GameScreen_Level3 implements Screen {
         background = new BackgroundGroup(game, stage, text, level);
         mainMenuButton = background.findActor("mainMenuButton");
         boatImage = background.findActor("boatImage");
-        infotext = background.findActor("infotext");
+        infoText = background.findActor("infotext");
         parrotImage = background.findActor("parrotImage");
         infoImage = background.findActor("infoImage");
         Table mangoCounter = background.findActor("mangoCounter");
@@ -136,35 +113,41 @@ public class GameScreen_Level3 implements Screen {
     }
 
     private void processDijkstraAndPrepareTable() {
-
-        algorithmTable = new Table(fontSkin);
-        algorithmTable.setBackground(fontSkin.getDrawable("color"));
+        algorithmTable = new Table(game.getFontSkin());
+        algorithmTable.setBackground(game.getFontSkin().getDrawable("color"));
         createTable();
 
         ScrollPane.ScrollPaneStyle scrollPaneStyle = new ScrollPane.ScrollPaneStyle();
-        scrollPaneStyle.background = fontSkin.getDrawable("window-c");
+        scrollPaneStyle.background = game.getFontSkin().getDrawable("window-c");
         dropBox = new ScrollPane(algorithmTable, scrollPaneStyle);
-        dropBox.setSize(camera.viewportWidth + 20, (float) (camera.viewportHeight * 0.33) + offset);
+        dropBox.setSize(game.getCamera().viewportWidth + 20, (float) (game.getCamera().viewportHeight * 0.33) + game.getOffset());
         dropBox.setPosition(-10, -10);
     }
 
     private void initializeCodeCheck() {
         buildCode();
-        float width = camera.viewportWidth / 2;
-        float height = camera.viewportHeight / 5;
+        float width = game.getCamera().viewportWidth / 2;
+        float height = game.getCamera().viewportHeight / 5;
         float x = parrotImage.getX() - width;
         float y = parrotImage.getY() + parrotImage.getHeight();
         infoImage.remove();
         checkCode = new CheckCode(mangoCounterLabel, x, y, width, height, code, game, stage, level);
         doneButton = new TextButton("Done", game.getMySkin(), "default");
-        doneButton.setSize(4 * offset, (float) (1.5 * offset));
-        doneButton.setPosition(offset, camera.viewportHeight - (3 * offset) - mainMenuButton.getHeight());
+        doneButton.setSize(4 * game.getOffset(), (float) (1.5 * game.getOffset()));
+        doneButton.setPosition(game.getOffset(), game.getCamera().viewportHeight - (3 * game.getOffset()) - mainMenuButton.getHeight());
         doneButton.addListener(new ClickListener() {
             @Override
             public void clicked(InputEvent event, float x, float y) {
                 stage.addActor(checkCode);
+                checkCode.findActor("xClose").addListener(new ClickListener() {
+                    @Override
+                    public void clicked(InputEvent event, float x, float y) {
+                        checkCode.remove();
+                    }
+                });
             }
         });
+
     }
 
     private void createTextForMode(int level) {
@@ -173,8 +156,8 @@ public class GameScreen_Level3 implements Screen {
             case 5:
                 textBuilder.append("Servus Captain,\n\nThese damn mangooos are hard to get. We need to find the shortest" +
                         " paths to each city from our hometown to get them before the other crews! \nFill out the table below, " +
-                        "I will help you! Ultimately, we will know how long it takes us to travel to each city from our treasury" +
-                        " and the fastest path!\nI am sure you will find out how it works!\n\nWe will need to find the " +
+                        "I will help you! Ultimately, we will know how long it takes us to travel to each city from our treasury!" +
+                        " \nI am sure you will find out how it works - click in a text field to start!\nP.S.:We will need to find the " +
                         "code to unlock this treasure I have found!\nCode: The code is built by the costs of the connection " +
                         "to the city. For INFINITY, it was a ...... 0");
                 break;
@@ -207,23 +190,23 @@ public class GameScreen_Level3 implements Screen {
     }
 
     private String getTopLabelText(int col) {
-        return (col == 0) ? "Input" : String.format("%s (%s)", cities.get(col - 1).getName(), cities.get(col - 1).getShortName());
+        return (col == 0) ? "Input" : String.format("%s (%s)", game.getCities().get(col - 1).getName(), game.getCities().get(col - 1).getShortName());
     }
 
     private void createTable() {
         Table topLabelsTable = createTopLabelsTable();
-        algorithmTable.add(topLabelsTable).colspan(vertices + 1);
+        algorithmTable.add(topLabelsTable).colspan(game.getVertices() + 1);
         algorithmTable.setColor(LABEL_COLOR);
         stage.addActor(algorithmTable);
         addNewRow(0);
     }
 
     private Table createTopLabelsTable() {
-        Table topLabelsTable = new Table(fontSkin);
+        Table topLabelsTable = new Table(game.getFontSkin());
         topLabelsTable.defaults().width(CELL_WIDTH).height(CELL_HEIGHT).pad(0).space(0);
 
-        for (int col = 0; col < vertices + 1; col++) {
-            Label topLabel = new Label(getTopLabelText(col), fontSkin);
+        for (int col = 0; col < game.getVertices() + 1; col++) {
+            Label topLabel = new Label(getTopLabelText(col), game.getFontSkin());
             topLabelsTable.add(topLabel).top().padBottom(PAD_BOTTOM);
         }
 
@@ -239,13 +222,13 @@ public class GameScreen_Level3 implements Screen {
             int precursorCode = precursor[precursorLengthAtIndex][end];
             int[] codeArray = new int[end];
             codeArray[codeArray.length - 1] = precursorCode;
-            code = cities.get(0).getShortName();
+            code = game.getCities().get(0).getShortName();
             while (precursorCode != 0) {
                 precursorCode = precursor[precursorLengthAtIndex][precursorCode];
                 codeArray[codeArray.length - count] = precursorCode;
                 count++;
             }
-            for (int i : codeArray) if (i != 0) code += " - " + cities.get(i).getShortName();
+            for (int i : codeArray) if (i != 0) code += " - " + game.getCities().get(i).getShortName();
             code += " - " + distances[end];
         } else {
             for (int i = 0; i < distances.length; i++) {
@@ -266,11 +249,11 @@ public class GameScreen_Level3 implements Screen {
         initializeColumns(newRow, neighbors, iteration);
 
         algorithmTable.row();
-        algorithmTable.add(newRow).colspan(vertices + 1).padRight(5);
+        algorithmTable.add(newRow).colspan(game.getVertices() + 1).padRight(5);
     }
 
     private void initializeFirstColumn(Table newRow) {
-        final TextField textField0 = new TextField(" ", fontSkin);
+        final TextField textField0 = new TextField(" ", game.getFontSkin());
         textField0.setColor(0, 0, 0, 1);
         textField0.setText("Precursor - Costs");
         newRow.add(textField0).expandX().fillX();
@@ -282,12 +265,12 @@ public class GameScreen_Level3 implements Screen {
     }
 
     private void initializeColumns(Table newRow, List<Edge> neighbors, int iteration) {
-        for (int col = 0; col < vertices; col++) {
-            TextField textField = new TextField(" ", fontSkin);
+        for (int col = 0; col < game.getVertices(); col++) {
+            TextField textField = new TextField(" ", game.getFontSkin());
             textField.setColor(0, 0, 0, 1);
 
             int costs = iterations[iteration][col];
-            String precursorString = cities.get(precursor[iteration][col]).getShortName();
+            String precursorString = game.getCities().get(precursor[iteration][col]).getShortName();
             String correctValue = buildCorrectValue(costs, precursorString);
 
             switch (level) {
@@ -304,15 +287,15 @@ public class GameScreen_Level3 implements Screen {
                     break;
             }
 
-            // Modify and add listeners based on the neighboring cities
+            // Modify and add listeners based on the neighboring game.getCities()
             textField = addListenersToTextField(textField, correctValue, neighbors, iteration, col);
             newRow.add(textField).expandX().fillX();
         }
     }
 
     private TextField addListenersToTextField(TextField textField, String correctValue, List<Edge> neighbors, int iteration, int col) {
-        City sourceCity = cities.get(dijkstraConnections.get(iteration));
-        City destCity = cities.get(col);
+        City sourceCity = game.getCities().get(dijkstraConnections.get(iteration));
+        City destCity = game.getCities().get(col);
 
         Edge neighbor = new Edge(Integer.MAX_VALUE, Integer.MAX_VALUE, Integer.MAX_VALUE);
         for (Edge edge : neighbors) {
@@ -327,174 +310,141 @@ public class GameScreen_Level3 implements Screen {
     private void disableTextField(TextField textField, String correctValue) {
         correctlyFilledTextFieldsInCurrentRow++;
         textField.setText(correctValue);
-        textField.setColor(Color.GREEN);
+        if (level < 8) textField.setColor(Color.GREEN);
         textField.setDisabled(true);
         for (EventListener listener : textField.getListeners()) {
             textField.removeListener(listener);
         }
     }
 
-    private TextField addNeighborListener(final TextField textField, final City sourceCity, City destCity, final String finalCorrectValue, final int i, final boolean hasNeighbor, final Edge neighbor) {
+    private TextField addNeighborListener(TextField textField, final City sourceCity, City destCity, final String finalCorrectValue, final int i, final boolean hasNeighbor, final Edge neighbor) {
         final Vector2 start = new Vector2(sourceCity.getX(), sourceCity.getY());
         final Vector2 end = new Vector2(destCity.getX(), destCity.getY());
         final Image connectionArea = addConnectionHoverActor(start, end, neighbor, hasNeighbor);
-        final ArrayList<Image>[] connectionAreas = new ArrayList[]{new ArrayList<>()};
+        final ArrayList<Image>[] connectionAreas = new ArrayList[game.getVertices()];
 
+        for (int j = 0; j < game.getVertices(); j++) {
+            connectionAreas[j] = new ArrayList<>();
+        }
+
+        textField = createFocusListener(textField, start, end, connectionAreas);
+        textField = createClickListener(textField, hasNeighbor, connectionAreas, start, end, finalCorrectValue, i, connectionArea, sourceCity);
+        textField = createTextFieldListener(textField, connectionAreas, i, start, end, finalCorrectValue, sourceCity, hasNeighbor);
+
+        return textField;
+    }
+
+    public void generateTextFieldListenerHints(boolean isShortestPath, String userInput, String correctValue) {
         switch (level) {
             case 5:
-            case 6:
-            case 7:
-                textField.addListener(new FocusListener() {
-                    @Override
-                    public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
-                        if (!focused) {
-                            textField.setColor(Color.DARK_GRAY);
-                            linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
-                            for (Image image : connectionAreas[0]) {
-                                if (image != null) {
-                                    image.remove();
-                                }
-                            }
-                        }
-                    }
-                });
-                textField.addListener(new ClickListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        if (hasNeighbor) {
-                            linesToDraw.add(new LineData(start, end, Color.RED));
-                            connectionAreas[0] = lookForPrecursors(i, start, sourceCity, Color.RED, true);
-                            connectionAreas[0].add(connectionArea);
-                            textField.setColor(Color.RED);
-                            for (Image image : connectionAreas[0]) {
-                                stage.addActor(image);
-                            }
-                        } else {
-                            if (finalCorrectValue.equals("INFINITY")) {
-                                hint = "I can`t find a route to this city yet, you? Maybe we will find one later";
-                                stage.addActor(new HintGroup(hint, game));
-                            } else {
-                                hint = "I can`t find a new connection to this city from " + sourceCity.getName() + ". We may find another one later but lets stick to the one we know.";
-                                stage.addActor(new HintGroup(hint, game));
-                            }
-                        }
-                        return true;
-                    }
-                });
-
-                textField.setTextFieldListener(new TextField.TextFieldListener() {
-                    @Override
-                    public void keyTyped(TextField textField, char key) {
-                        if (key == '\r' || key == '\n') {
-                            String userInput = textField.getText().replaceAll("\\s", "").toLowerCase();
-                            boolean isCorrect = userInput.equals(finalCorrectValue.trim().replaceAll("\\s", "").toLowerCase());
-                            if (isCorrect) {
-                                for (Image image : connectionAreas[0]) {
-                                    if (image != null) {
-                                        image.remove();
-                                    }
-                                }
-                                handleCorrectInput(textField, sourceCity, hasNeighbor, start, end, i);
-                            } else {
-                                userInput = userInput.replaceAll("[^0-9]", "");
-                                String correctValue = finalCorrectValue.replaceAll("[^0-9]", "");
-                                boolean isShortestPath = false;
-                                if (!userInput.equals(""))
-                                    isShortestPath = Integer.parseInt(userInput) > Integer.parseInt(correctValue);
-                                switch (level) {
-                                    case 5:
-                                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                                        else hint = "Are you sure that you added the costs of the routes correctly";
-                                        break;
-                                    case 6:
-                                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                                        else
-                                            hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
-                                        break;
-                                    case 7:
-                                        if (isShortestPath) hint = "Are you sure you chose the shortest path?";
-                                        else if (userInput.length() >= 2 && !userInput.substring(0, 2).equals(correctValue.substring(0, 2))) {
-                                            hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
-                                        } else
-                                            hint = "Is there a route to this city?\nIf there is no route the correct Value is Infinity.";
-                                        break;
-                                    default:
-                                        hint = "To go to our treasury (starting point) we need 0 costs.\nDid you build the value correctly?\n(Shortage of precursor - Added costs)";
-                                        stage.addActor(new HintGroup(hint, game));
-                                        break;
-                                }
-                                stage.addActor(new HintGroup(hint, game));
-                                addHintListener(parrotImage);
-                                addHintListener(infoImage);
-                            }
-                        }
-                    }
-                });
+                if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                else hint = "Are you sure that you added the costs of the routes correctly";
                 break;
-            case 8:
-                textField.addListener(new FocusListener() {
-                    @Override
-                    public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
-                        if (!focused) {
-                            for (Image image : connectionAreas[0]) {
-                                if (image != null) {
-                                    image.remove();
-                                }
-                            }
-                        }
-                    }
-                });
-                textField.addListener(new ClickListener() {
-                    @Override
-                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                        if (hasNeighbor) {
-                            connectionAreas[0] = lookForPrecursors(i, start, sourceCity, Color.RED, true);
-                            connectionAreas[0].add(connectionArea);
-                            for (Image image : connectionAreas[0]) {
-                                stage.addActor(image);
-                            }
-                        }
-                        return true;
-                    }
-                });
-
-                textField.setTextFieldListener(new TextField.TextFieldListener() {
-                    @Override
-                    public void keyTyped(TextField textField, char key) {
-                        if (key == '\r' || key == '\n') {
-                            for (Image image : connectionAreas[0]) {
-                                if (image != null) {
-                                    image.remove();
-                                }
-                            }
-                            checkIfNewRow(i);
-                        }
-                    }
-                });
+            case 6:
+                if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                else
+                    hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
+                break;
+            case 7:
+                if (isShortestPath) hint = "Are you sure you chose the shortest path?";
+                else if (userInput.length() >= 2 && !userInput.substring(0, 2).equals(correctValue.substring(0, 2))) {
+                    hint = "Did you build the value correctly?\n(Shortage of precursor - Added costs)";
+                } else
+                    hint = "Is there a route to this city?\nIf there is no route the correct Value is Infinity.";
+                break;
+            default:
+                hint = "To go to our treasury (starting point) we need 0 costs.\nDid you build the value correctly?\n(Shortage of precursor - Added costs)";
+                stage.addActor(new HintGroup(hint, game));
                 break;
         }
+    }
+
+    public void generateClickListenerHints(String finalCorrectValue, City sourceCity) {
+        if (finalCorrectValue.equals("INFINITY")) {
+            hint = "I can`t find a route to this city yet, you? Maybe we will find one later";
+            stage.addActor(new HintGroup(hint, game));
+        } else {
+            hint = "I can`t find a new connection to this city from " + sourceCity.getName() + ". We may find another one later but lets stick to the one we know.";
+            stage.addActor(new HintGroup(hint, game));
+        }
+    }
+
+    public TextField createTextFieldListener(final TextField textField, final ArrayList<Image>[] connectionAreas, final int row, final Vector2 start, final Vector2 end, final String finalCorrectValue, final City sourceCity, final boolean hasNeighbor) {
+        textField.setTextFieldListener(new TextField.TextFieldListener() {
+            @Override
+            public void keyTyped(TextField textField, char key) {
+                if (key == '\r' || key == '\n') {
+                    String userInput = textField.getText().replaceAll("\\s", "").toLowerCase();
+                    boolean isCorrect = userInput.equals(finalCorrectValue.trim().replaceAll("\\s", "").toLowerCase());
+                    if (isCorrect || level == 8) {
+                        for (Image image : connectionAreas[0]) {
+                            if (image != null) {
+                                image.remove();
+                            }
+                        }
+                        if (level < 8) handleCorrectInput(textField, sourceCity, hasNeighbor, start, end, row);
+                    } else {
+                        if (level < 8) {
+                            userInput = userInput.replaceAll("[^0-9]", "");
+                            String correctValue = finalCorrectValue.replaceAll("[^0-9]", "");
+                            generateTextFieldListenerHints(Integer.parseInt(userInput) > Integer.parseInt(correctValue), userInput, correctValue);
+                            stage.addActor(new HintGroup(hint, game));
+                            addHintListener(parrotImage);
+                            addHintListener(infoImage);
+                        }
+                    }
+                }
+            }
+        });
+        return textField;
+    }
+
+    public TextField createClickListener(final TextField textField, final boolean hasNeighbor, final ArrayList<Image>[] connectionAreas, final Vector2 start, final Vector2 end, final String finalCorrectValue, final int row, final Image connectionArea, final City sourceCity) {
+        textField.addListener(new ClickListener() {
+            @Override
+            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+                if (hasNeighbor) {
+                    connectionAreas[0] = lookForPrecursors(row, start, sourceCity, Color.RED);
+                    connectionAreas[0].add(connectionArea);
+                    if (level < 8) {
+                        linesToDraw.add(new LineData(start, end, Color.RED));
+                        textField.setColor(Color.RED);
+                    }
+                    for (Image image : connectionAreas[0]) stage.addActor(image);
+                } else if (level < 8) generateClickListenerHints(finalCorrectValue, sourceCity);
+                return true;
+            }
+        });
+        return textField;
+    }
+
+    public TextField createFocusListener(final TextField textField, final Vector2 start, final Vector2 end, final ArrayList<Image>[] connectionAreas) {
+        textField.addListener(new FocusListener() {
+            @Override
+            public void keyboardFocusChanged(FocusEvent event, Actor actor, boolean focused) {
+                if (!focused) {
+                    if (level < 8) {
+                        textField.setColor(Color.DARK_GRAY);
+                        linesToDraw.add(new LineData(start, end, Color.DARK_GRAY));
+                    }
+                    for (Image image : connectionAreas[0]) {
+                        if (image != null) {
+                            image.remove();
+                        }
+                    }
+                }
+            }
+        });
         return textField;
     }
 
     public Image addConnectionHoverActor(Vector2 start, Vector2 end, Edge neighbor, boolean hasNeighbor) {
         if (hasNeighbor) {
-            final Image connectionArea = new ConnectionAreaImage(start, end);
             ConnectionHoverActor card = new ConnectionHoverActor(game, (start.x + end.x) / 2, (end.y + start.y) / 2,
                     150, 60, game.getCities().get(neighbor.getSource()).getName(), game.getCities().get(neighbor.getDestination()).getName(), neighbor.getWeight());
             final Table cardTableFinal = card.getTable();
-            connectionArea.addListener(new InputListener() {
-                @Override
-                public void enter(InputEvent event, float x, float y, int pointer, Actor fromActor) {
-                    stage.addActor(cardTableFinal);
-                }
-
-                @Override
-                public void exit(InputEvent event, float x, float y, int pointer, Actor toActor) {
-                    cardTableFinal.remove();
-                }
-            });
-            return connectionArea;
-        } else return null;
+            return new ConnectionAreaImage(start, end, stage, cardTableFinal, true);
+        }return null;
     }
 
     private void addHintListener(Image image) {
@@ -513,7 +463,7 @@ public class GameScreen_Level3 implements Screen {
         if (level < 8) {
             if (hasNeighbor) {
                 linesToDraw.add(new LineData(start, end, Color.GREEN));
-                lookForPrecursors(i, start, sourceCity, Color.GREEN, true);
+                lookForPrecursors(i, start, sourceCity, Color.GREEN);
             }
             textField.setDisabled(true);
             for (EventListener listener : textField.getListeners()) textField.removeListener(listener);
@@ -521,38 +471,38 @@ public class GameScreen_Level3 implements Screen {
         checkIfNewRow(i);
     }
 
-    private ArrayList<Image> lookForPrecursors(int i, Vector2 start, City sourceCity, Color color, boolean hasNeighbor) {
+    private ArrayList<Image> lookForPrecursors(int iteration, Vector2 start, City currentCity, Color color) {
         ArrayList<Image> connectionImages = new ArrayList<>();
 
-        if (i <= 0) {
+        if (iteration <= 0) {
             return connectionImages; // No precursors to look for, empty list returned
         }
 
-        int sourceCityIndex = cities.indexOf(sourceCity);
+        int currentCityIndex = game.getCities().indexOf(currentCity);
 
-        while (i > 0) {
-            int precursorIndex = precursor[i - 1][sourceCityIndex];
-            City precursorCity = cities.get(precursorIndex);
+        while (iteration > 0) {
+            int precursorIndex = precursor[iteration - 1][currentCityIndex];
+            City precursorCity = game.getCities().get(precursorIndex);
 
             Vector2 precursorPosition = new Vector2(precursorCity.getX(), precursorCity.getY());
-            if(level < 8)linesToDraw.add(new LineData(precursorPosition, start, color));
+            if (level < 8) linesToDraw.add(new LineData(precursorPosition, start, color));
 
-            List<Edge>[] adjacencyList = graph.getAdjacencyList();
+            List<Edge> edgesForPrecursor = graph.getAdjacencyList()[precursorIndex];
             Edge precursorEdge = null;
-            for (Edge edge : adjacencyList[precursorIndex]) {
-                if (edge.getDestination() == sourceCityIndex) {
+            for (Edge edge : edgesForPrecursor) {
+                if (edge.getDestination() == currentCityIndex) {
                     precursorEdge = edge;
                 }
             }
 
             if (precursorEdge != null) {
-                final Image connectionArea2 = addConnectionHoverActor(precursorPosition, start, precursorEdge, hasNeighbor);
+                final Image connectionArea2 = addConnectionHoverActor(precursorPosition, start, precursorEdge, true);
                 connectionImages.add(connectionArea2); // Add the image to the list
             }
 
             start = precursorPosition;
-            sourceCityIndex = precursorIndex;
-            i--;
+            currentCityIndex = precursorIndex;
+            iteration--;
         }
 
         return connectionImages;
@@ -561,18 +511,14 @@ public class GameScreen_Level3 implements Screen {
     private void checkIfNewRow(int iteration) {
         // Check if we have filled all the fields in the current row
         correctlyFilledTextFieldsInCurrentRow++;
-        if (correctlyFilledTextFieldsInCurrentRow != vertices) return;
+        if (correctlyFilledTextFieldsInCurrentRow != game.getVertices()) return;
 
         if (level == 8) {
-            stage.addActor(new HintGroup("Great job!\nLet's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path", game));
+            text = "Great job!\nLet's move (click) to the city with the current lowest costs! Like that we will always find the shortest Path";
+            stage.addActor(new HintGroup(text, game));
             addNewRow(iteration + 1);
         } else if (iteration + 1 < dijkstraConnections.size() - 1) {
-            int width = (int) (camera.viewportWidth / 4);
-            int height = (int) (camera.viewportHeight / 8);
-            int x = (int) (parrotImage.getX() - width);
-            int y = (int) (parrotImage.getY() + parrotImage.getHeight());
-            String correctAnswer = cities.get(dijkstraConnections.get(iteration + 1)).getShortName();
-            moveBoat = new CheckMoveBoatGroup(this, mangoCounterLabel, x, y, width, height, game, stage, correctAnswer, iteration, level);
+            createMoveBoat(iteration);
             infoImage.remove();
             stage.addActor(moveBoat);
         } else {
@@ -581,38 +527,45 @@ public class GameScreen_Level3 implements Screen {
         }
     }
 
+    public void createMoveBoat(int iteration) {
+        int width = (int) (game.getCamera().viewportWidth / 4);
+        int height = (int) (game.getCamera().viewportHeight / 8);
+        int x = (int) (parrotImage.getX() - width);
+        int y = (int) (parrotImage.getY() + parrotImage.getHeight());
+        String correctAnswer = game.getCities().get(dijkstraConnections.get(iteration + 1)).getShortName();
+        moveBoat = new CheckMoveBoatGroup(this, mangoCounterLabel, x, y, width, height, game, stage, correctAnswer, iteration);
+    }
+
     public void moveBoatToNextCity(int iteration) {
-        City nextCity = cities.get(dijkstraConnections.get(iteration + 1));
-        if (moveBoat != null){
+        City nextCity = game.getCities().get(dijkstraConnections.get(iteration + 1));
+        if (moveBoat != null) {
             moveBoat.remove();
             stage.addActor(infoImage);
-            stage.addActor(new HintGroup("Yes! Let´s move to " + nextCity.getName() + " and discover the other connections!",game));
+            stage.addActor(new HintGroup("Yes! Let´s move to " + nextCity.getName() + " and discover the other connections!", game));
         }
         if (level < 8) {
             boatImage.addAction(Actions.moveTo(nextCity.getX() - boatImage.getHeight() / 2,
-                    nextCity.getY() - boatImage.getHeight() / 2 + offset,
-                    1.5f));
+                    nextCity.getY() - boatImage.getHeight() / 2 + game.getOffset(), 1.5f));
         }
         correctNodes.add(dijkstraConnections.get(iteration + 1));
         addNewRow(iteration + 1);
     }
 
     public String buildCorrectValue(int costs, String precursorString) {
+        if (costs == Integer.MAX_VALUE) return infinity;
         if (level == 5) {
-            if (costs == Integer.MAX_VALUE) return infinity;
-            else if (costs == 0) return " 0";
+            if (costs == 0) return " 0";
             else return String.valueOf(costs);
         } else {
-            if (costs == Integer.MAX_VALUE) return infinity;
-            else if (costs == 0) return precursorString + " - 0";
+            if (costs == 0) return precursorString + " - 0";
             else return precursorString + " - " + costs;
         }
     }
 
     @Override
     public void resize(int width, int height) {
-        fitViewport.update(width, height, true);
-        camera.position.set((float) 1200 / 2, (float) 720 / 2, 0);
+        game.getFitViewport().update(width, height, true);
+        game.getCamera().position.set((float) 1200 / 2, (float) 720 / 2, 0);
     }
 
     @Override

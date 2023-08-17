@@ -22,7 +22,7 @@ public class DijkstraAlgorithm extends Game {
     private BitmapFont font;
     private float volume = 1;
     private int offset, vertices, space, mangos = 30;
-    private ArrayList<City> northWest = new ArrayList<>(), northMid = new ArrayList<>(), northEast = new ArrayList<>(),
+    private final  ArrayList<City> northWest = new ArrayList<>(), northMid = new ArrayList<>(), northEast = new ArrayList<>(),
             southWest = new ArrayList<>(), southMid = new ArrayList<>(), southEast = new ArrayList<>();
     private Skin mySkin;
     private Skin fontSkin;
@@ -58,8 +58,8 @@ public class DijkstraAlgorithm extends Game {
         batch = new SpriteBatch();
 
         font = new BitmapFont(); // use libGDX's default Arial font
-        mySkin = new Skin(Gdx.files.internal("quantum-horizon/skin/quantum-horizon-ui.json"));
-        fontSkin = new Skin(Gdx.files.internal("neon/skin/neon-ui.json"));
+        mySkin = new Skin(Gdx.files.internal("mySkin/skin/quantum-horizon-ui.json"));
+        fontSkin = new Skin(Gdx.files.internal("fontSkin/skin/neon-ui.json"));
 
         backGroundMusic = assetManager.get("pirates.mp3", Music.class);
         backGroundMusic.setLooping(true);
@@ -170,10 +170,10 @@ public class DijkstraAlgorithm extends Game {
         assetManager.load("transparent.png", Texture.class);
         assetManager.load("treasure.png", Texture.class);
         assetManager.load("triangle.png", Texture.class);
-        assetManager.load("white 1.png", Texture.class);
+        assetManager.load("white.png", Texture.class);
         assetManager.load("levelWon.png", Texture.class);
         assetManager.load("gameWon.png", Texture.class);
-        assetManager.load("worldMap 1.png", Texture.class);
+        assetManager.load("worldMap.png", Texture.class);
         assetManager.load("blood.png", Texture.class);
         assetManager.load("box.png", Texture.class);
         assetManager.load("xClose.png", Texture.class);

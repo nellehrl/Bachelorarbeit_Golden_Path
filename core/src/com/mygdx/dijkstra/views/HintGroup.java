@@ -33,7 +33,7 @@ public class HintGroup extends Group {
         textBoxTable.setPosition(game.getParrotImage().getX() - textBoxTable.getWidth() - game.getSpace(),
                 game.getParrotImage().getY() + game.getParrotImage().getHeight(), left);
 
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white 1.png", Texture.class)));
+        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white.png", Texture.class)));
         textBoxTable.setBackground(backgroundDrawable);
 
         return textBoxTable;

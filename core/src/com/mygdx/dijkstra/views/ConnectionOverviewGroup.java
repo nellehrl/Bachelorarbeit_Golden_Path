@@ -45,15 +45,15 @@ public class ConnectionOverviewGroup extends Group {
                 infoTable.setSize(width, (float) height / 3);
                 infoTable.setPosition(x + infoTable.getWidth() * i + space * (i + 1), y - infoTable.getHeight() * j - space * j);
 
-                createCodeLabel(boxText, game.getFontSkin(), infoTable, game);
-                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white 1.png", Texture.class)));
+                createCodeLabel(boxText, game.getFontSkin(), infoTable);
+                Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white.png", Texture.class)));
                 infoTable.setBackground(backgroundDrawable);
                 addActor(infoTable);
             }
         }
     }
 
-    private void createCodeLabel(String boxText, Skin skin, Table infoTable, DijkstraAlgorithm game) {
+    private void createCodeLabel(String boxText, Skin skin, Table infoTable) {
         Label codeLabel = new Label(boxText, skin);
         codeLabel.setAlignment(left);
         codeLabel.setFontScale(0.7f);

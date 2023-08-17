@@ -27,7 +27,7 @@ public class LevelDescriptionHoverActor extends Actor {
         GlyphLayout layout = new GlyphLayout();
         layout.setText(game.getFontSkin().getFont("font"), text, Color.BLACK, width, left, true);
         createTable(layout, x, y);
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white 1.png", Texture.class)));
+        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white.png", Texture.class)));
         cardTable.setBackground(backgroundDrawable);
     }
 

@@ -4,10 +4,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.mygdx.dijkstra.DijkstraAlgorithm;
 import com.mygdx.dijkstra.models.*;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -16,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.*;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.mygdx.dijkstra.views.*;
 
 import java.util.ArrayList;
@@ -27,35 +24,29 @@ public class GameScreen_Level1 implements Screen {
     private final DijkstraAlgorithm game;
     private int countTotalWeights;
     private CheckCode checkCode;
+    private Image[] connectionAreas;
     private Action move;
     private final int level;
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     private Image boatImage;
-    private Image[] conenctionAreas;
-    private Table portTable;
-    private Group infotext;
-    private OrthographicCamera camera;
-    private FitViewport fitViewport;
+    private Group infoText;
     private Graph graph;
-    private Stage stage;
+    private final Stage stage;
     private final ArrayList<City> currentConnection = new ArrayList<>();
-    private final ArrayList<Integer> validConnection = new ArrayList<>();
     private java.util.List<LineData> linesToDraw;
     private Group background;
-    private ArrayList<City> cities;
     boolean[] visited, added;
     private DragAndDrop dragAndDrop;
     private Label mangoCounterLabel;
     private DrawLineOrArrow draw;
-    private int vertices, space, offset, triangleSize = 40;
-    private Batch batch;
+    final private int triangleSize = 40;
     private Button mainMenuButton;
 
     public GameScreen_Level1(final DijkstraAlgorithm game, final int level) {
         this.level = level;
         this.game = game;
-
-        initializeCameraAndViewport();
+        stage = new Stage(game.getFitViewport());
+        
         defineGraphBasedOnLevel();
         initializeUIElements();
         initializeCityAndConnectionData();
@@ -64,17 +55,15 @@ public class GameScreen_Level1 implements Screen {
 
     @Override
     public void render(float delta) {
-        // Tell the SpriteBatch to render in the coordinate system specified by the camera.
-        camera.update();
-        batch.setProjectionMatrix(camera.combined);
+        game.getCamera().update();
+        game.getBatch().setProjectionMatrix(game.getCamera().combined);
 
         Gdx.gl.glClearColor(0.95f, 0.871f, 0.726f, 1);
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-        batch.begin();
+        game.getBatch().begin();
 
-        // Render background
-        background.draw(batch, 1.0f);
+        background.draw(game.getBatch(), 1.0f);
 
         switch (level) {
             case 1:
@@ -86,31 +75,20 @@ public class GameScreen_Level1 implements Screen {
                 break;
         }
 
-        batch.end();
+        game.getBatch().end();
 
         stage.act();
         stage.draw();
-    }
-
-    private void initializeCameraAndViewport() {
-        camera = game.getCamera();
-        fitViewport = game.getFitViewport();
-        stage = new Stage(fitViewport);
-        cities = game.getCities();
-        vertices = game.getVertices();
-        space = game.getSpace();
-        offset = game.getOffset();
-        batch = game.getBatch();
     }
 
     private void defineGraphBasedOnLevel() {
         switch (level) {
             case 1:
             case 2:
-                graph = new Graph(vertices);
+                graph = new Graph(game.getVertices());
                 break;
             case 3:
-                graph = new Graph(vertices);
+                graph = new Graph(game.getVertices());
                 dragAndDrop = new DragAndDrop();
                 break;
         }
@@ -118,7 +96,7 @@ public class GameScreen_Level1 implements Screen {
 
     private void initializeUIElements() {
         linesToDraw = new ArrayList<>();
-        visited = new boolean[cities.size()];
+        visited = new boolean[game.getCities().size()];
         added = new boolean[graph.getNumOfEdges()];
         draw = new DrawLineOrArrow();
 
@@ -127,29 +105,28 @@ public class GameScreen_Level1 implements Screen {
         background = new BackgroundGroup(game, stage, text, level);
         mainMenuButton = background.findActor("mainMenuButton");
         boatImage = background.findActor("boatImage");
-        infotext = background.findActor("infotext");
+        infoText = background.findActor("infotext");
         Table mangoCounter = background.findActor("mangoCounter");
         mangoCounterLabel = (Label) mangoCounter.getChild(1);
     }
 
     private void initializeCityAndConnectionData() {
         initializeCities();
-        currentConnection.add(cities.get(0));
-        validConnection.add(0);
-        checkCode = new CheckCode(mangoCounterLabel, camera.viewportWidth / 4, camera.viewportHeight / 2, camera.viewportWidth / 2, camera.viewportHeight / 5, "code", game, stage, level);
+        currentConnection.add(game.getCities().get(0));
+        checkCode = new CheckCode(mangoCounterLabel, game.getCamera().viewportWidth / 4, game.getCamera().viewportHeight / 2, game.getCamera().viewportWidth / 2, game.getCamera().viewportHeight / 5, "code", game, stage, level);
     }
 
     private void initializeActorsForStage() {
-        int x = 3 * offset;
-        int y = (int) (camera.viewportHeight * 0.25);
-        int width = (int) ((camera.viewportWidth - 3 * x) / vertices);
-        int height = (int) (camera.viewportHeight / 6 - space);
-        if (level == 3) y = y - triangleSize - space;
+        int x = 3 * game.getOffset();
+        int y = (int) (game.getCamera().viewportHeight * 0.25);
+        int width = (int) ((game.getCamera().viewportWidth - 3 * x) / game.getVertices());
+        int height = (int) (game.getCamera().viewportHeight / 6 - game.getSpace());
+        if (level == 3) y = y - triangleSize - game.getSpace();
 
-        stage.addActor(new ConnectionOverviewGroup(vertices, cities, game, width, height, x, y, graph, level));
+        stage.addActor(new ConnectionOverviewGroup(game.getVertices(), game.getCities(), game, width, height, x, y, graph, level));
         stage.addActor(boatImage);
         stage.addActor(mainMenuButton);
-        stage.addActor(infotext);
+        stage.addActor(infoText);
     }
 
     private String createTextForLevel() {
@@ -157,11 +134,11 @@ public class GameScreen_Level1 implements Screen {
 
         switch (level) {
             case 1:
-                textBuilder.append("Howdy Captain,\n\nLet's see what we got here. On the map, you can see our target cities. " +
+                textBuilder.append("Howdy Captain,\n\nLet's see what we got here. On the map, you can see our target cities " +
                         "We need to visit all of them, then return to bring all our conquests to our treasury.\n" +
                         "Can you see the box with all the connections down on the radar?\n" +
-                        "The connections go both ways - they are undirected. Let's visit all cities but remember to stay +" +
-                        "on the route cause there are other pirates out there with canooons waiting for a fight.");
+                        "The connections go both ways - they are undirected. Let's visit all cities but remember to stay" +
+                        " on the route cause there are other pirates out there with canooons waiting for a fight.\nP.S: You can travel to a city as often as you want. Click on a city to start.");
                 break;
             case 2:
                 textBuilder.append("What's kickin', Captain?\n\nThat was great. Those mangos are pretty delicious. " +
@@ -169,7 +146,7 @@ public class GameScreen_Level1 implements Screen {
                         "It is windy and stormy around this time of the year. Let's use it to our advantage!\n" +
                         "Can you see the connections on the radar again? Keep in mind to check the directions that are marked for each connection. " +
                         "We can't go in the other direction - the wind will hold us back, and we will cross other pirates. " +
-                        "I really can't see blood!\n I am always getting sick when I see it.");
+                        "I really can't see blood! I am always getting sick when I see it.\nP.S: You can travel to a city as often as you want. Click on a city to start.");
                 break;
             case 3:
                 textBuilder.append("Ahoy, Captain! \n\n Wow, we are fast, and our mango stock is growing! It's great " +
@@ -177,7 +154,7 @@ public class GameScreen_Level1 implements Screen {
                         "and we can get more strategic now. In the box below, you can see all the connections again. Can you see the costs too?\n" +
                         "We need to match the costs to the corresponding connections. Through that, we will better " +
                         "understand the current situation and how long we need for each city. Just grab a cost and drop " +
-                        "it on the proper connection!");
+                        "it on the proper connection!\nP.S.: Make sure to take the weight that match the connection. The weights are ordered!");
                 break;
         }
 
@@ -186,10 +163,10 @@ public class GameScreen_Level1 implements Screen {
 
     private void initializeCities() {
         int index = 0;
-        conenctionAreas = new Image[graph.getNumOfEdges()];
-        for (int i = 0; i < vertices; i++) {
-            final City currentCity = cities.get(i);
-            portTable = new Ports(currentCity, game);
+        connectionAreas = new Image[graph.getNumOfEdges()];
+        for (int i = 0; i < game.getVertices(); i++) {
+            final City currentCity = game.getCities().get(i);
+            Table portTable = new Ports(currentCity, game);
 
             if (level <= 2) {
                 portTable.addListener(new ClickListener() {
@@ -201,8 +178,8 @@ public class GameScreen_Level1 implements Screen {
             } else if (level == 3) {
                 java.util.List<Edge> neighbors = graph.getNeighbors(i);
                 for (int j = 0; j < neighbors.size(); j++) {
-                    City sourceCity = cities.get(i);
-                    City destCity = cities.get(neighbors.get(j).getDestination());
+                    City sourceCity = game.getCities().get(i);
+                    City destCity = game.getCities().get(neighbors.get(j).getDestination());
 
 
                     initializeConnectionArea(new Vector2(sourceCity.getX(), sourceCity.getY()), new Vector2(destCity.getX(), destCity.getY()), neighbors.get(j).getWeight(), index);
@@ -210,21 +187,20 @@ public class GameScreen_Level1 implements Screen {
                     index++;
                 }
             }
-
             stage.addActor(portTable);
         }
     }
 
     private void initializeConnectionArea(Vector2 sourceCity, Vector2 destCity, int weight, int i) {
-        Image connectionArea = new ConnectionAreaImage(sourceCity, destCity);
+        Image connectionArea = new ConnectionAreaImage(sourceCity, destCity, stage, null, false);
         connectionArea.setName(" " + weight);
-        conenctionAreas[i] = connectionArea;
+        connectionAreas[i] = connectionArea;
     }
 
     private void initializDraggableWeightStack(java.util.List<Edge> neighbors, int j, int index) {
-        int start = 5 * offset + space;
+        int start = 5 * game.getOffset() + game.getSpace();
         Stack stack = createWeights(String.valueOf(neighbors.get(j).getWeight()),
-                start + countTotalWeights * (space + triangleSize), (float) (camera.viewportHeight * 0.3 - space / 2));
+                start + countTotalWeights * (game.getSpace() + triangleSize), (float) (game.getCamera().viewportHeight * 0.3 - game.getSpace() / 2));
         stack.setName(" " + neighbors.get(j).getWeight());
         addDragAndDrop(stack, index);
         stage.addActor(stack);
@@ -242,7 +218,7 @@ public class GameScreen_Level1 implements Screen {
     }
 
     private void drawConnections() {
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(game.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
         for (LineData lineData : linesToDraw) {
@@ -264,14 +240,14 @@ public class GameScreen_Level1 implements Screen {
     }
 
     private void renderCurrentConnectionsLevel3() {
-        shapeRenderer.setProjectionMatrix(camera.combined);
+        shapeRenderer.setProjectionMatrix(game.getCamera().combined);
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        for (int i = 0; i < vertices; i++) {
+        for (int i = 0; i < game.getVertices(); i++) {
             java.util.List<Edge> neighbors = graph.getNeighbors(i);
             for (Edge neighbor : neighbors) {
                 int destination = neighbor.getDestination();
-                City destCity = cities.get(destination);
-                City sourceCity = cities.get(i);
+                City destCity = game.getCities().get(destination);
+                City sourceCity = game.getCities().get(i);
                 Vector2 point1 = new Vector2(sourceCity.getX(), sourceCity.getY());
                 Vector2 point2 = new Vector2(destCity.getX(), destCity.getY());
                 draw.drawArrow(shapeRenderer, 3, Color.BLACK, point1, point2);
@@ -281,14 +257,14 @@ public class GameScreen_Level1 implements Screen {
     }
 
     private boolean checkConnectionValidity(int i, boolean lastConnection) {
-        // Not enough cities or no more graph to check
+        // Not enough game.getCities() or no more graph to check
         if (currentConnection.size() < 2 || i >= currentConnection.size() - 1) {
             return false;
         }
 
         //define source and dest city index
-        int source = cities.indexOf(currentConnection.get(i));
-        int dest = cities.indexOf(currentConnection.get(i + 1));
+        int source = game.getCities().indexOf(currentConnection.get(i));
+        int dest = game.getCities().indexOf(currentConnection.get(i + 1));
 
         //define all possible destinations
         Set<Integer> neighborDestinations = new HashSet<>();
@@ -301,7 +277,7 @@ public class GameScreen_Level1 implements Screen {
         }
 
         if (isValidConnection) {
-            visited[cities.indexOf(currentConnection.get(i + 1))] = true; // Mark the city as visited
+            visited[game.getCities().indexOf(currentConnection.get(i + 1))] = true; // Mark the city as visited
             if (checkAllCitiesVisited()) {
                 stage.addActor(checkCode);
             }
@@ -329,9 +305,9 @@ public class GameScreen_Level1 implements Screen {
 
             @Override
             public DragAndDrop.Payload dragStart(InputEvent event, float x, float y, int pointer) {
-                DragAndDrop.Target target = createTarget(conenctionAreas[index], index);
+                DragAndDrop.Target target = createTarget(connectionAreas[index], index);
                 dragAndDrop.addTarget(target);
-                stage.addActor(conenctionAreas[index]);
+                stage.addActor(connectionAreas[index]);
                 initialX = stack.getX();
                 initialY = stack.getY();
 
@@ -351,7 +327,7 @@ public class GameScreen_Level1 implements Screen {
                     stack.setPosition(initialX, initialY);
                     new WrongUserInput(mangoCounterLabel, game, stage, level);
                 }
-                conenctionAreas[index].remove();
+                connectionAreas[index].remove();
             }
         };
     }
@@ -368,7 +344,7 @@ public class GameScreen_Level1 implements Screen {
             @Override
             public void drop(DragAndDrop.Source source, DragAndDrop.Payload payload, float x, float y, int pointer) {
 
-                payload.getDragActor().setUserObject(conenctionAreas[index]);
+                payload.getDragActor().setUserObject(connectionAreas[index]);
                 payload.getDragActor().toFront();
 
                 added[index] = true; // Mark the edge as added
@@ -382,21 +358,20 @@ public class GameScreen_Level1 implements Screen {
 
     public void move(int index) {
         float x = currentConnection.get(index).getX() - boatImage.getWidth() / 2;
-        float y = currentConnection.get(index).getY() - boatImage.getHeight() / 2;
+        float y = currentConnection.get(index).getY() - boatImage.getHeight() / 5;
         float duration = 1f;
         move = Actions.moveTo(x, y, duration);
     }
 
-    private Label createLabel(String text, Color fontColor) {
+    private Label createLabel(String text) {
         Label.LabelStyle labelStyle = game.getMySkin().get(Label.LabelStyle.class);
-        labelStyle.fontColor = fontColor;
         return new Label(text, labelStyle);
     }
 
     private Stack createWeights(String weight, float centerX, float centerY) {
         //init Label & Image
         Image triangleImage = new Image(game.getAssetManager().get("triangle.png", Texture.class));
-        Label numberLabel = createLabel(weight, Color.WHITE);
+        Label numberLabel = createLabel(weight);
 
         // Create a table to hold the label at the center of the triangle
         Table labelTable = new Table();
@@ -408,7 +383,7 @@ public class GameScreen_Level1 implements Screen {
         Stack stack = new Stack();
         stack.add(triangleTable);
         stack.add(labelTable);
-        stack.setPosition(centerX - offset, centerY - offset);
+        stack.setPosition(centerX - game.getOffset(), centerY - game.getOffset());
         stack.setSize(triangleSize, triangleSize);
 
         return stack;
@@ -434,8 +409,8 @@ public class GameScreen_Level1 implements Screen {
 
     @Override
     public void resize(int width, int height) {
-        fitViewport.update(width, height, true);
-        camera.update(true);
+        game.getFitViewport().update(width, height, true);
+        game.getCamera().update(true);
     }
 
     @Override

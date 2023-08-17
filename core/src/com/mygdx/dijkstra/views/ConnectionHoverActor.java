@@ -12,7 +12,7 @@ import com.mygdx.dijkstra.DijkstraAlgorithm;
 import static com.badlogic.gdx.utils.Align.left;
 
 public class ConnectionHoverActor extends Actor {
-    private Table cardTable;
+    private final Table cardTable;
 
     public ConnectionHoverActor(final DijkstraAlgorithm game, float x, float y, float width, float height, String source, String destination, int weight) {
         String text = "Connection\n From: " + source + "\n To: " + destination + "\n Costs: " + weight;
@@ -28,7 +28,7 @@ public class ConnectionHoverActor extends Actor {
         cardTable.add(cardLabel).expand().fill().pad(10f);
 
         // Set the background color of the cardTable
-        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white 1.png", Texture.class)));
+        Drawable backgroundDrawable = new TextureRegionDrawable(new TextureRegion(game.getAssetManager().get("white.png", Texture.class)));
         cardTable.setBackground(backgroundDrawable);
     }
 

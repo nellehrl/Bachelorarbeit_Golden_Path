@@ -1,7 +1,6 @@
 package com.mygdx.dijkstra.views;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -19,19 +18,15 @@ public class CheckCode extends Group {
     private Table codeTable;
     private String input = "";
     private final DijkstraAlgorithm game;
-    private String text;
-    private final Skin fontSkin;
     private final int level;
-    private CheckCodeModel model;
+    private final CheckCodeModel model;
     private final Texture treasureTexture;
     private final Texture shadowTexture;
     private final Texture xCloseTexture;
-    private Image shadowImage;
     private final Label mangoCounterLabel;
 
     public CheckCode(Label mangoCounterLabel, final float x, final float y, final float width, final float height, final String code, final DijkstraAlgorithm game, final Stage stage, final int level) {
         this.game = game;
-        this.fontSkin = game.getFontSkin();
         this.level = level;
         this.mangoCounterLabel = mangoCounterLabel;
 
@@ -51,20 +46,20 @@ public class CheckCode extends Group {
     }
 
     private void initializeCodeTable(final float x, final float y, final float width, final float height, final String code, final Stage stage) {
-        codeTable = new Table(fontSkin);
+        codeTable = new Table(game.getFontSkin());
         codeTable.setSize(width, (float) (height * 0.66));
         codeTable.setPosition(x, y);
 
-        text = model.getText();
+        String text = model.getText();
         final Image treasure = new Image(treasureTexture);
 
-        Label codeLabel = new Label(text, fontSkin);
+        Label codeLabel = new Label(text, game.getFontSkin());
         codeLabel.setWrap(true);
         codeLabel.setAlignment(center);
         codeLabel.setFontScale(1.0f);
 
         // Set the background color of the codeTable
-        codeTable.setBackground(fontSkin.getDrawable("color"));
+        codeTable.setBackground(game.getFontSkin().getDrawable("color"));
         int parrottWidth = (int) (Gdx.graphics.getWidth() * 0.04);
 
         // Handle input events or validation for the codeInput field as needed
@@ -79,9 +74,9 @@ public class CheckCode extends Group {
         codeTable.row().colspan(3);
 
         model.setOptionsByLevel(level);
-        final CheckBox option1Button = new CheckBox(model.getOption1(), fontSkin);
-        final CheckBox option2Button = new CheckBox(model.getOption2(), fontSkin);
-        final CheckBox option3Button = new CheckBox(model.getOption3(), fontSkin);
+        final CheckBox option1Button = new CheckBox(model.getOption1(), game.getFontSkin());
+        final CheckBox option2Button = new CheckBox(model.getOption2(), game.getFontSkin());
+        final CheckBox option3Button = new CheckBox(model.getOption3(), game.getFontSkin());
 
         option1Button.addListener(new ClickListener() {
             @Override
@@ -119,7 +114,7 @@ public class CheckCode extends Group {
             }
         });
 
-        Table buttonTable = new Table(fontSkin);
+        Table buttonTable = new Table(game.getFontSkin());
         buttonTable.add(option1Button).padLeft(20f);
         buttonTable.add(option2Button).padLeft(20f);
         buttonTable.add(option3Button).padLeft(20f);
@@ -131,7 +126,7 @@ public class CheckCode extends Group {
         codeTable.add(image).size(parrottWidth, parrottWidth).left().padTop(-40f).padLeft(50f);
         codeTable.add(codeLabel).expand().fill().center().padLeft(-75f).padTop(-20f);
         codeTable.row().colspan(3);
-        final TextField codeInput = new TextField("", fontSkin);
+        final TextField codeInput = new TextField("", game.getFontSkin());
         codeInput.setMessageText("Code");
         codeTable.add(codeInput).width(width / 2).height(height / 6).center().padTop(-50f);
         codeInput.addListener(new InputListener() {
@@ -149,7 +144,7 @@ public class CheckCode extends Group {
     }
 
     private Image createShadowImage() {
-        shadowImage = new Image(shadowTexture);
+        Image shadowImage = new Image(shadowTexture);
         shadowImage.setSize((float) (codeTable.getWidth() * 1.25), (float) (codeTable.getHeight() * 1.15));
         shadowImage.setPosition(codeTable.getX() - 70, codeTable.getY() - game.getSpace());
         shadowImage.setName("shadowImage");
@@ -161,15 +156,8 @@ public class CheckCode extends Group {
         xClose.setSize(20, 20);
         xClose.setPosition(codeTable.getX() + xClose.getWidth(),
                 codeTable.getY() + codeTable.getHeight() - xClose.getHeight() - game.getSpace());
-        xClose.addListener(new ClickListener() {
-            @Override
-            public void clicked(InputEvent event, float x, float y) {
-                removeActor(codeTable);
-                removeActor(xClose);
-                removeActor(shadowImage);
-            }
-        });
         addActor(xClose);
+        xClose.setName("xClose");
     }
 
     private void checkIfLevelLost(String code, Stage stage, TextField textField) {
