@@ -38,6 +38,7 @@ public class Graph {
             }
         }
         checkIfStartIsConnected();
+        ensureEachCityIsDestination();
     }
 
     public void checkIfStartIsConnected(){
@@ -45,17 +46,31 @@ public class Graph {
             int randomNode = (int) (Math.random() * numVertices);
             this.addEdge(0, randomNode, (int) (Math.random() * 10 + 1));
         }
-        boolean isDestination = false;
-        for(int i = 0; i<numVertices; i++) {
-            if (hasEdge(i, 0)) {
-                isDestination = true;
+    }
+    public void ensureEachCityIsDestination() {
+        for (int i = 0; i < numVertices; i++) {
+            boolean isDestination = false;
+
+            for (int j = 0; j < numVertices; j++) {
+                if (i != j) {
+                    if (hasEdge(j, i)) {
+                        isDestination = true;
+                        break;
+                    }
+                }
+            }
+
+            if (!isDestination) {
+                int randomSource;
+                do {
+                    randomSource = (int) (Math.random() * numVertices);
+                } while (randomSource == i || hasEdge(randomSource, i) || hasEdge(i, randomSource));
+
+                Edge edge = new Edge(randomSource, i, (int) (Math.random() * 10 + 1));
+                adjacencyList[randomSource].add(edge);
+                numOfEdges++;
             }
         }
-        if(!isDestination){
-            int randomNode = (int) (Math.random() * numVertices);
-            this.addEdge(randomNode, 0, (int) (Math.random() * 10 + 1));
-        }
-
     }
 
     public void addEdge(int source, int destination, int weight) {
